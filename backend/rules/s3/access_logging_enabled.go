@@ -18,12 +18,13 @@ func (AccessLoggingEnabled) Description() string {
 }
 
 func (AccessLoggingEnabled) Severity() types.Severity {
-	return types.High
+	return types.Moderate
 }
 
 func (AccessLoggingEnabled) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.InsufficientLogging,
+		types.InsufficientMonitoring,
+		types.DataAccess,
 	}
 }
 

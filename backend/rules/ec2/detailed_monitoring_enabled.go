@@ -23,7 +23,7 @@ func (DetailedMonitoringEnabled) Severity() types.Severity {
 
 func (DetailedMonitoringEnabled) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.InsufficientLogging,
+		types.InsufficientMonitoring,
 	}
 }
 

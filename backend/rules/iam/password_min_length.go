@@ -19,7 +19,7 @@ func (PasswordMinLength) Description() string {
 }
 
 func (PasswordMinLength) Severity() types.Severity {
-	return types.High
+	return types.Moderate
 }
 
 func (PasswordMinLength) RiskCategories() types.RiskCategoryList {

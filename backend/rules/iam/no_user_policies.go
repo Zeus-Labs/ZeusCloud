@@ -18,7 +18,7 @@ func (NoUserPolicies) Description() string {
 }
 
 func (NoUserPolicies) Severity() types.Severity {
-	return types.Moderate
+	return types.Low
 }
 
 func (NoUserPolicies) RiskCategories() types.RiskCategoryList {

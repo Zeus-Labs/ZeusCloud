@@ -22,7 +22,9 @@ func (UnusedSecurityGroups) Severity() types.Severity {
 }
 
 func (UnusedSecurityGroups) RiskCategories() types.RiskCategoryList {
-	return []types.RiskCategory{}
+	return []types.RiskCategory{
+		types.PubliclyExposed,
+	}
 }
 
 func (UnusedSecurityGroups) Execute(tx neo4j.Transaction) ([]types.Result, error) {

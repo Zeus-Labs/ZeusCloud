@@ -18,7 +18,7 @@ func (SecretRotationEnabled) Description() string {
 }
 
 func (SecretRotationEnabled) Severity() types.Severity {
-	return types.Critical
+	return types.Moderate
 }
 
 func (SecretRotationEnabled) RiskCategories() types.RiskCategoryList {

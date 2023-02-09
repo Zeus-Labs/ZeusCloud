@@ -18,12 +18,13 @@ func (RootAccountUsage) Description() string {
 }
 
 func (RootAccountUsage) Severity() types.Severity {
-	return types.Critical
+	return types.Low
 }
 
 func (RootAccountUsage) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.InsufficientLogging,
+		types.InsufficientMonitoring,
+		types.IamMisconfiguration,
 	}
 }
 

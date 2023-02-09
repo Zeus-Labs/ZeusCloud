@@ -18,7 +18,7 @@ func (TrailsAtRestEncrypted) Description() string {
 }
 
 func (TrailsAtRestEncrypted) Severity() types.Severity {
-	return types.Critical
+	return types.High
 }
 
 func (TrailsAtRestEncrypted) RiskCategories() types.RiskCategoryList {

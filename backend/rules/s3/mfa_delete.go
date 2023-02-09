@@ -18,11 +18,13 @@ func (MFADelete) Description() string {
 }
 
 func (MFADelete) Severity() types.Severity {
-	return types.High
+	return types.Moderate
 }
 
 func (MFADelete) RiskCategories() types.RiskCategoryList {
-	return []types.RiskCategory{}
+	return []types.RiskCategory{
+		types.PoorBackup,
+	}
 }
 
 func (MFADelete) Execute(tx neo4j.Transaction) ([]types.Result, error) {

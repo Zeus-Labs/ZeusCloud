@@ -18,12 +18,12 @@ func (VPCChanges) Description() string {
 }
 
 func (VPCChanges) Severity() types.Severity {
-	return types.Critical
+	return types.Low
 }
 
 func (VPCChanges) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.InsufficientLogging,
+		types.InsufficientMonitoring,
 	}
 }
 

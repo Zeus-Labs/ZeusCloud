@@ -18,12 +18,12 @@ func (OrganizationChanges) Description() string {
 }
 
 func (OrganizationChanges) Severity() types.Severity {
-	return types.Critical
+	return types.Low
 }
 
 func (OrganizationChanges) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.InsufficientLogging,
+		types.InsufficientMonitoring,
 	}
 }
 

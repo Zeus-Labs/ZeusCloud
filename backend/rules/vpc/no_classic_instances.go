@@ -19,7 +19,7 @@ func (NoClassicInstances) Description() string {
 }
 
 func (NoClassicInstances) Severity() types.Severity {
-	return types.Critical
+	return types.Low
 }
 
 func (NoClassicInstances) RiskCategories() types.RiskCategoryList {

@@ -18,12 +18,12 @@ func (AWSConsoleAuthFailures) Description() string {
 }
 
 func (AWSConsoleAuthFailures) Severity() types.Severity {
-	return types.Critical
+	return types.Low
 }
 
 func (AWSConsoleAuthFailures) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.InsufficientLogging,
+		types.InsufficientMonitoring,
 	}
 }
 

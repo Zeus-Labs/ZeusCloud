@@ -24,6 +24,7 @@ func (SecretUnused90Days) Severity() types.Severity {
 func (SecretUnused90Days) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.IamMisconfiguration,
+		types.UnusedResource,
 	}
 }
 

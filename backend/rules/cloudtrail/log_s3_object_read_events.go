@@ -18,12 +18,13 @@ func (LogS3ObjectReadEvents) Description() string {
 }
 
 func (LogS3ObjectReadEvents) Severity() types.Severity {
-	return types.High
+	return types.Moderate
 }
 
 func (LogS3ObjectReadEvents) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.InsufficientLogging,
+		types.InsufficientMonitoring,
+		types.DataAccess,
 	}
 }
 

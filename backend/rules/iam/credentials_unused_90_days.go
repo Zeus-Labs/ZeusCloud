@@ -18,12 +18,13 @@ func (CredentialsUnused90Days) Description() string {
 }
 
 func (CredentialsUnused90Days) Severity() types.Severity {
-	return types.Critical
+	return types.High
 }
 
 func (CredentialsUnused90Days) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.IamMisconfiguration,
+		types.UnusedResource,
 	}
 }
 

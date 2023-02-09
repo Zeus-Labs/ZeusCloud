@@ -18,7 +18,7 @@ func (SecretRotatesWithin90Days) Description() string {
 }
 
 func (SecretRotatesWithin90Days) Severity() types.Severity {
-	return types.High
+	return types.Low
 }
 
 func (SecretRotatesWithin90Days) RiskCategories() types.RiskCategoryList {

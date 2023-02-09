@@ -18,11 +18,13 @@ func (LogFileValidationEnabled) Description() string {
 }
 
 func (LogFileValidationEnabled) Severity() types.Severity {
-	return types.High
+	return types.Moderate
 }
 
 func (LogFileValidationEnabled) RiskCategories() types.RiskCategoryList {
-	return []types.RiskCategory{}
+	return []types.RiskCategory{
+		types.InsufficientMonitoring,
+	}
 }
 
 func (LogFileValidationEnabled) Execute(tx neo4j.Transaction) ([]types.Result, error) {

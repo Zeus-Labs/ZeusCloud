@@ -18,12 +18,13 @@ func (SignInWithoutMFA) Description() string {
 }
 
 func (SignInWithoutMFA) Severity() types.Severity {
-	return types.Critical
+	return types.Low
 }
 
 func (SignInWithoutMFA) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.InsufficientLogging,
+		types.InsufficientMonitoring,
+		types.IamMisconfiguration,
 	}
 }
 

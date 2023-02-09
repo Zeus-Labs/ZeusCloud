@@ -23,7 +23,8 @@ func (LogS3ObjectWriteEvents) Severity() types.Severity {
 
 func (LogS3ObjectWriteEvents) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.InsufficientLogging,
+		types.InsufficientMonitoring,
+		types.DataAccess,
 	}
 }
 

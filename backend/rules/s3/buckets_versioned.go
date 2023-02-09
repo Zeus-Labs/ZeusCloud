@@ -18,11 +18,13 @@ func (BucketsVersioned) Description() string {
 }
 
 func (BucketsVersioned) Severity() types.Severity {
-	return types.High
+	return types.Moderate
 }
 
 func (BucketsVersioned) RiskCategories() types.RiskCategoryList {
-	return []types.RiskCategory{}
+	return []types.RiskCategory{
+		types.PoorBackup,
+	}
 }
 
 func (BucketsVersioned) Execute(tx neo4j.Transaction) ([]types.Result, error) {

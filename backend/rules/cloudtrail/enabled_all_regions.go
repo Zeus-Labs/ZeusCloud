@@ -18,11 +18,13 @@ func (EnabledAllRegions) Description() string {
 }
 
 func (EnabledAllRegions) Severity() types.Severity {
-	return types.Critical
+	return types.High
 }
 
 func (EnabledAllRegions) RiskCategories() types.RiskCategoryList {
-	return []types.RiskCategory{}
+	return []types.RiskCategory{
+		types.InsufficientMonitoring,
+	}
 }
 
 // TODO add logic checking event selectors

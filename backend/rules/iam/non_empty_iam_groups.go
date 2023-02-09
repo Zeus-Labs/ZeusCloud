@@ -24,6 +24,7 @@ func (NonEmptyIAMGroups) Severity() types.Severity {
 func (NonEmptyIAMGroups) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.IamMisconfiguration,
+		types.UnusedResource,
 	}
 }
 

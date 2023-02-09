@@ -18,7 +18,7 @@ func (AccessKeysRotated90Days) Description() string {
 }
 
 func (AccessKeysRotated90Days) Severity() types.Severity {
-	return types.Critical
+	return types.Moderate
 }
 
 func (AccessKeysRotated90Days) RiskCategories() types.RiskCategoryList {

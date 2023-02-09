@@ -18,7 +18,7 @@ func (SupportPolicy) Description() string {
 }
 
 func (SupportPolicy) Severity() types.Severity {
-	return types.Moderate
+	return types.Low
 }
 
 func (SupportPolicy) RiskCategories() types.RiskCategoryList {

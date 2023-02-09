@@ -18,12 +18,12 @@ func (CloudtrailConfigurationChanges) Description() string {
 }
 
 func (CloudtrailConfigurationChanges) Severity() types.Severity {
-	return types.Critical
+	return types.Low
 }
 
 func (CloudtrailConfigurationChanges) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.InsufficientLogging,
+		types.InsufficientMonitoring,
 	}
 }
 

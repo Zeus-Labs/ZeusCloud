@@ -18,7 +18,7 @@ func (UserActiveAccessKeys) Description() string {
 }
 
 func (UserActiveAccessKeys) Severity() types.Severity {
-	return types.Moderate
+	return types.Low
 }
 
 func (UserActiveAccessKeys) RiskCategories() types.RiskCategoryList {
