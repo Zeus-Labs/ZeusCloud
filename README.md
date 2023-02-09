@@ -7,12 +7,15 @@
 
 <div align="center">
 
+
 [![Prs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=shields)](http://makeapullrequest.com)
 [![Join Slack](https://img.shields.io/badge/slack%20community-join-blue)](https://join.slack.com/t/ironleapcommunity/shared_invite/zt-1oxm8asmq-4oyM4fdqarSHMoMstGH6Lw)
 [![License](https://img.shields.io/badge/license-Apache2.0-brightgreen)](/LICENSE)
 
+
 </div>
 
+<<<<<<< Updated upstream
 ## IronCloud is an open-source cloud security platform that helps teams prioritize and remediate the risks they have in their cloud. 
 
 ---
@@ -22,6 +25,20 @@
 - Contextually prioritize and remediate security findings
 - Ensure compliance standards are met with PCI DSS, CIS, and more!
 ---
+=======
+<!-- omit in toc -->
+## IronCloud is an open-source cloud security platform.
+
+
+Discover, prioritize, and remediate your risks in the cloud. 
+
+
+- Build an asset inventory of your AWS accounts.
+- Continuously monitor your environments for misconfigurations and attack paths.
+- Customize security and compliance controls to fit your needs. 
+- Contextually prioritize and remediate security findings
+- Meet compliance standards PCI DSS, CIS, and more!
+>>>>>>> Stashed changes
 
 
 ## Table of Contents
