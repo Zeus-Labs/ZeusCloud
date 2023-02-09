@@ -15,31 +15,13 @@
 
 </div>
 
-<<<<<<< Updated upstream
 ## IronCloud is an open-source cloud security platform that helps teams prioritize and remediate the risks they have in their cloud. 
 
----
 - Seamlessly connect and scan your AWS accounts
 - Customize security and compliance controls most important for your AWS environment 
 - Full transparency over what is protected in the cloud
 - Contextually prioritize and remediate security findings
 - Ensure compliance standards are met with PCI DSS, CIS, and more!
----
-=======
-<!-- omit in toc -->
-## IronCloud is an open-source cloud security platform.
-
-
-Discover, prioritize, and remediate your risks in the cloud. 
-
-
-- Build an asset inventory of your AWS accounts.
-- Continuously monitor your environments for misconfigurations and attack paths.
-- Customize security and compliance controls to fit your needs. 
-- Contextually prioritize and remediate security findings
-- Meet compliance standards PCI DSS, CIS, and more!
->>>>>>> Stashed changes
-
 
 ## Table of Contents
 
