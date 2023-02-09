@@ -1,0 +1,117 @@
+# Don't deploy this in production!
+version: '3.7'
+services:
+  postgres:
+    image: postgres:14.6-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - 5432:5432
+    volumes:
+      - ${POSTGRES_DATA_PATH}:/var/lib/postgresql/data
+    networks:
+      - app_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  neo4j:
+    image: neo4j:4.4
+    restart: unless-stopped
+    ports:
+      - 7474:7474
+      - 7687:7687
+    volumes:
+      - ./.compose/neo4j/conf:/conf
+      - ./.compose/neo4j/data:/data
+      - ./.compose/neo4j/import:/import
+      - ./.compose/neo4j/logs:/logs
+      - ./.compose/neo4j/plugins:/plugins
+    environment:
+      # Raise memory limits:
+      - NEO4J_dbms_memory_pagecache_size=1G
+      - NEO4J_dbms.memory.heap.initial_size=1G
+      - NEO4J_dbms_memory_heap_max__size=1G
+      # Auth:
+      - NEO4J_AUTH=none
+      # Add APOC and GDS:
+      - apoc.export.file.enabled=true
+      - apoc.import.file.enabled=true
+      - apoc.import.file.use_neo4j_config=true
+      - NEO4JLABS_PLUGINS=["graph-data-science", "apoc"]
+      - NEO4J_dbms_security_procedures_allowlist=gds.*, apoc.*
+      - NEO4J_dbms_security_procedures_unrestricted=gds.*, apoc.*
+      # Networking:
+      - dbms.connector.bolt.listen_address=0.0.0.0:7687
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7474"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  cartography:
+    build:
+      context: ./cartography
+      dockerfile: ./Dockerfile
+    entrypoint: ["gunicorn", "--bind=0.0.0.0:6000", "cartography.wsgi:app"]
+    environment:
+      - CARTOGRAPHY_NEO4J_URI=${NEO4J_URI}
+      - CARTOGRAPHY_VERBOSE=True
+    networks:
+      - app_network
+    user: cartography
+    init: true
+    restart: on-failure
+    depends_on:
+      - neo4j
+    ports:
+      - 6000:6000
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ./Dockerfile.dev
+    environment: 
+      - REACT_APP_API_DOMAIN=${REACT_APP_API_DOMAIN}
+    volumes:
+      - ./frontend:/usr/src/app
+    networks:
+      - app_network
+    depends_on:
+      - backend
+    ports:
+      - 3000:3000
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+    environment:
+      - WEBSITE_DOMAIN=${WEBSITE_DOMAIN}
+      - NEO4J_URI=${NEO4J_URI}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - CARTOGRAPHY_URI=${CARTOGRAPHY_URI}
+    networks:
+      - app_network
+    depends_on:
+      - postgres
+      - neo4j
+      - cartography
+    ports:
+      - 8080:8080
+
+networks:
+  app_network:
+    driver: bridge

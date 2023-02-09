@@ -1,0 +1,21 @@
+version: "3.7"
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ./Dockerfile
+      args:
+        # For any arg passed here, update the frontend/Dockerfile
+        # to copy the arg to an env variable within that Dockefile
+        - REACT_APP_API_DOMAIN=${REACT_APP_API_DOMAIN}
+    image: ironleap/ironcloud-frontend:${BUILD_VERSION}
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+    image: ironleap/ironcloud-backend:${BUILD_VERSION}
+  cartography:
+    build:
+      context: ./cartography
+      dockerfile: ./Dockerfile
+    image: ironleap/ironcloud-cartography:${BUILD_VERSION}
