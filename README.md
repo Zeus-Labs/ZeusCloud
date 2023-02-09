@@ -25,7 +25,7 @@ Discover, prioritize, and remediate your risks in the cloud.
 - Continuously monitor your environments for misconfigurations and attack paths.
 - Customize security and compliance controls to fit your needs. 
 - Contextually prioritize and remediate security findings
-- Meet compliance standardse PCI DSS, CIS, and more!
+- Meet compliance standards PCI DSS, CIS, and more!
 ---
 
 <!-- omit in toc -->
