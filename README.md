@@ -8,6 +8,7 @@
 <div align="center">
 
 [![Prs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=shields)](http://makeapullrequest.com)
+[![Join Slack](https://img.shields.io/badge/slack%20community-join-blue)](https://join.slack.com/t/ironleapcommunity/shared_invite/zt-1oxm8asmq-4oyM4fdqarSHMoMstGH6Lw)
 [![License](https://img.shields.io/badge/license-Apache2.0-brightgreen)](/LICENSE)
 
 </div>
@@ -56,7 +57,7 @@ We had to take action.
 - We noticed traditional cloud security tools are opaque, confusing, time consuming to set up, and expensive as you scale your cloud environment
 - Cybersecurity vendors don't provide much actionable information to security, engineering, and devops teams by inundating them with non-contextual alerts
 - IronCloud is easy to set up, transparent, and configurable, so you can prioritize the most important risks 
-- Best of all, you can use IronCloud for free!
+- Best of all, you can use **IronCloud for free**!
 
 ## Future Roadmap
 - Faster self-deployment for multiple AWS accounts
