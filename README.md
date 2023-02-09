@@ -7,9 +7,13 @@
 
 <div align="center">
 
+---
+
 [![Prs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=shields)](http://makeapullrequest.com)
 [![Join Slack](https://img.shields.io/badge/slack%20community-join-blue)](https://join.slack.com/t/ironleapcommunity/shared_invite/zt-1oxm8asmq-4oyM4fdqarSHMoMstGH6Lw)
 [![License](https://img.shields.io/badge/license-Apache2.0-brightgreen)](/LICENSE)
+
+---
 
 </div>
 
