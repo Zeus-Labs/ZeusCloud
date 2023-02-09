@@ -24,6 +24,7 @@ func (BucketNotPubliclyAccessible) Severity() types.Severity {
 func (BucketNotPubliclyAccessible) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.PubliclyExposed,
+		types.DataAccess,
 	}
 }
 

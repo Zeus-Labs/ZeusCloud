@@ -24,6 +24,7 @@ func (EnableServerSideEncryption) Severity() types.Severity {
 func (EnableServerSideEncryption) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.PoorEncryption,
+		types.DataAccess,
 	}
 }
 

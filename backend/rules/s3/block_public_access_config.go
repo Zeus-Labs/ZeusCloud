@@ -18,12 +18,14 @@ func (BlockPublicAccessConfig) Description() string {
 }
 
 func (BlockPublicAccessConfig) Severity() types.Severity {
-	return types.Critical
+	return types.High
 }
 
 func (BlockPublicAccessConfig) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.PubliclyExposed,
+		types.DataAccess,
+		types.IamMisconfiguration,
 	}
 }
 

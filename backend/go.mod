@@ -3,7 +3,6 @@ module github.com/IronLeap/IronCloud
 go 1.17
 
 require (
-	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.7
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.5
 	gorm.io/driver/postgres v1.4.6

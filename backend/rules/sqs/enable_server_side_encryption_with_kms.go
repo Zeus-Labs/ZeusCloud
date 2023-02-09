@@ -24,6 +24,7 @@ func (EnableServerSideEncryptionWithKMS) Severity() types.Severity {
 func (EnableServerSideEncryptionWithKMS) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.PoorEncryption,
+		types.DataAccess,
 	}
 }
 

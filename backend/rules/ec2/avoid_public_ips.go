@@ -18,7 +18,7 @@ func (AvoidPublicIPs) Description() string {
 }
 
 func (AvoidPublicIPs) Severity() types.Severity {
-	return types.Critical
+	return types.High
 }
 
 func (AvoidPublicIPs) RiskCategories() types.RiskCategoryList {

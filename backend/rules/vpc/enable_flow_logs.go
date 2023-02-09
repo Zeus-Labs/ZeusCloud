@@ -18,12 +18,12 @@ func (EnableFlowLogs) Description() string {
 }
 
 func (EnableFlowLogs) Severity() types.Severity {
-	return types.Critical
+	return types.Moderate
 }
 
 func (EnableFlowLogs) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.InsufficientLogging,
+		types.InsufficientMonitoring,
 	}
 }
 

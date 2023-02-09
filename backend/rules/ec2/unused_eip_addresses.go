@@ -22,7 +22,9 @@ func (UnusedEIPAddresses) Severity() types.Severity {
 }
 
 func (UnusedEIPAddresses) RiskCategories() types.RiskCategoryList {
-	return []types.RiskCategory{}
+	return []types.RiskCategory{
+		types.UnusedResource,
+	}
 }
 
 func (UnusedEIPAddresses) Execute(tx neo4j.Transaction) ([]types.Result, error) {

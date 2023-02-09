@@ -19,7 +19,7 @@ func (PasswordReusePrevention) Description() string {
 }
 
 func (PasswordReusePrevention) Severity() types.Severity {
-	return types.Moderate
+	return types.Low
 }
 
 func (PasswordReusePrevention) RiskCategories() types.RiskCategoryList {

@@ -1,4 +1,4 @@
-import {Banner} from '../../Banner';
+import {Banner} from '../Shared/Banner';
 import { useParams } from 'react-router-dom';
 import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import ComplianceTableOps from './ComplianceTableOps';

@@ -22,7 +22,9 @@ func (DeliveredToCloudwatch) Severity() types.Severity {
 }
 
 func (DeliveredToCloudwatch) RiskCategories() types.RiskCategoryList {
-	return []types.RiskCategory{}
+	return []types.RiskCategory{
+		types.InsufficientMonitoring,
+	}
 }
 
 func (DeliveredToCloudwatch) Execute(tx neo4j.Transaction) ([]types.Result, error) {

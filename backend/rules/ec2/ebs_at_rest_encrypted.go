@@ -18,12 +18,13 @@ func (EBSAtRestEncrypted) Description() string {
 }
 
 func (EBSAtRestEncrypted) Severity() types.Severity {
-	return types.Critical
+	return types.High
 }
 
 func (EBSAtRestEncrypted) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.PoorEncryption,
+		types.DataAccess,
 	}
 }
 

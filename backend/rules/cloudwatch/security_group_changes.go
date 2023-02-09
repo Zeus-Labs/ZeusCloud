@@ -18,12 +18,13 @@ func (SecurityGroupChanges) Description() string {
 }
 
 func (SecurityGroupChanges) Severity() types.Severity {
-	return types.Critical
+	return types.Low
 }
 
 func (SecurityGroupChanges) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.InsufficientLogging,
+		types.InsufficientMonitoring,
+		types.PubliclyExposed,
 	}
 }
 

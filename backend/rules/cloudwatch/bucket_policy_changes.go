@@ -18,12 +18,13 @@ func (BucketPolicyChanges) Description() string {
 }
 
 func (BucketPolicyChanges) Severity() types.Severity {
-	return types.Critical
+	return types.Low
 }
 
 func (BucketPolicyChanges) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.InsufficientLogging,
+		types.InsufficientMonitoring,
+		types.DataAccess,
 	}
 }
 

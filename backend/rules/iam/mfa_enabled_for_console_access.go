@@ -18,7 +18,7 @@ func (MfaEnabledForConsoleAccess) Description() string {
 }
 
 func (MfaEnabledForConsoleAccess) Severity() types.Severity {
-	return types.Critical
+	return types.High
 }
 
 func (MfaEnabledForConsoleAccess) RiskCategories() types.RiskCategoryList {

@@ -18,12 +18,13 @@ func (RouteTableChanges) Description() string {
 }
 
 func (RouteTableChanges) Severity() types.Severity {
-	return types.Critical
+	return types.Low
 }
 
 func (RouteTableChanges) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.InsufficientLogging,
+		types.InsufficientMonitoring,
+		types.PubliclyExposed,
 	}
 }
 

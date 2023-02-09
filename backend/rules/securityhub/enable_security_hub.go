@@ -18,7 +18,7 @@ func (EnableSecurityHub) Description() string {
 }
 
 func (EnableSecurityHub) Severity() types.Severity {
-	return types.High
+	return types.Moderate
 }
 
 func (EnableSecurityHub) RiskCategories() types.RiskCategoryList {

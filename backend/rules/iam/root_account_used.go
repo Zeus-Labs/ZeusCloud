@@ -18,11 +18,14 @@ func (RootAccountUsed) Description() string {
 }
 
 func (RootAccountUsed) Severity() types.Severity {
-	return types.Critical
+	return types.Moderate
 }
 
 func (RootAccountUsed) RiskCategories() types.RiskCategoryList {
-	return []types.RiskCategory{}
+	return []types.RiskCategory{
+		types.IamMisconfiguration,
+		types.InsufficientMonitoring,
+	}
 }
 
 func (RootAccountUsed) Execute(tx neo4j.Transaction) ([]types.Result, error) {

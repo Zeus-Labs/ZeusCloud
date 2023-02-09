@@ -18,7 +18,7 @@ func (RotationEnabledForCMK) Description() string {
 }
 
 func (RotationEnabledForCMK) Severity() types.Severity {
-	return types.Critical
+	return types.Moderate
 }
 
 func (RotationEnabledForCMK) RiskCategories() types.RiskCategoryList {

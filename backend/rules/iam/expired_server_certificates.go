@@ -19,12 +19,14 @@ func (ExpiredServerCertificates) Description() string {
 }
 
 func (ExpiredServerCertificates) Severity() types.Severity {
-	return types.High
+	return types.Low
 }
 
 func (ExpiredServerCertificates) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
+		types.IamMisconfiguration,
 		types.PoorEncryption,
+		types.UnusedResource,
 	}
 }
 

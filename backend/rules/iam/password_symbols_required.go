@@ -19,7 +19,7 @@ func (PasswordSymbolsRequired) Description() string {
 }
 
 func (PasswordSymbolsRequired) Severity() types.Severity {
-	return types.Low
+	return types.Moderate
 }
 
 func (PasswordSymbolsRequired) RiskCategories() types.RiskCategoryList {

@@ -19,7 +19,7 @@ func (AvoidInsecureCiphers) Description() string {
 }
 
 func (AvoidInsecureCiphers) Severity() types.Severity {
-	return types.High
+	return types.Critical
 }
 
 func (AvoidInsecureCiphers) RiskCategories() types.RiskCategoryList {

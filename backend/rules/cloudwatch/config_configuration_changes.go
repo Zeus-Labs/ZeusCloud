@@ -18,12 +18,12 @@ func (ConfigConfigurationChanges) Description() string {
 }
 
 func (ConfigConfigurationChanges) Severity() types.Severity {
-	return types.Critical
+	return types.Low
 }
 
 func (ConfigConfigurationChanges) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.InsufficientLogging,
+		types.InsufficientMonitoring,
 	}
 }
 

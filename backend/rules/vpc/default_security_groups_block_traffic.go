@@ -22,7 +22,9 @@ func (DefaultSecurityGroupsBlockTraffic) Severity() types.Severity {
 }
 
 func (DefaultSecurityGroupsBlockTraffic) RiskCategories() types.RiskCategoryList {
-	return []types.RiskCategory{}
+	return []types.RiskCategory{
+		types.PubliclyExposed,
+	}
 }
 
 func (DefaultSecurityGroupsBlockTraffic) Execute(tx neo4j.Transaction) ([]types.Result, error) {

@@ -18,12 +18,13 @@ func (NACLChanges) Description() string {
 }
 
 func (NACLChanges) Severity() types.Severity {
-	return types.Critical
+	return types.Low
 }
 
 func (NACLChanges) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.InsufficientLogging,
+		types.InsufficientMonitoring,
+		types.PubliclyExposed,
 	}
 }
 

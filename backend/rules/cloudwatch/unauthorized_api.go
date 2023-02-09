@@ -18,12 +18,12 @@ func (UnauthorizedAPI) Description() string {
 }
 
 func (UnauthorizedAPI) Severity() types.Severity {
-	return types.Critical
+	return types.Low
 }
 
 func (UnauthorizedAPI) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.InsufficientLogging,
+		types.InsufficientMonitoring,
 	}
 }
 

@@ -18,12 +18,12 @@ func (IAMPolicyChanges) Description() string {
 }
 
 func (IAMPolicyChanges) Severity() types.Severity {
-	return types.Critical
+	return types.Low
 }
 
 func (IAMPolicyChanges) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.InsufficientLogging,
+		types.InsufficientMonitoring,
 		types.IamMisconfiguration,
 	}
 }

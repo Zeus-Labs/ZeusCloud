@@ -18,7 +18,7 @@ func (InstanceAutoMinorVersionUpgrade) Description() string {
 }
 
 func (InstanceAutoMinorVersionUpgrade) Severity() types.Severity {
-	return types.High
+	return types.Moderate
 }
 
 func (InstanceAutoMinorVersionUpgrade) RiskCategories() types.RiskCategoryList {

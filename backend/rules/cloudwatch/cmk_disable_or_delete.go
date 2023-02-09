@@ -18,12 +18,12 @@ func (CMKDisableOrDelete) Description() string {
 }
 
 func (CMKDisableOrDelete) Severity() types.Severity {
-	return types.Critical
+	return types.Low
 }
 
 func (CMKDisableOrDelete) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.InsufficientLogging,
+		types.InsufficientMonitoring,
 		types.PoorEncryption,
 	}
 }

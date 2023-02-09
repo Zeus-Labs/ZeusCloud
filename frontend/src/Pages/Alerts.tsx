@@ -1,4 +1,4 @@
-import {Banner} from '../Banner';
+import {Banner} from '../Components/Shared/Banner';
 import {AlertsTableOps} from '../Components/Alerts/AlertsTableOps';
 
 const Alerts = () => {

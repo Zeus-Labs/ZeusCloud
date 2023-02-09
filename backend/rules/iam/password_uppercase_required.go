@@ -19,7 +19,7 @@ func (PasswordUppercaseRequired) Description() string {
 }
 
 func (PasswordUppercaseRequired) Severity() types.Severity {
-	return types.Low
+	return types.Moderate
 }
 
 func (PasswordUppercaseRequired) RiskCategories() types.RiskCategoryList {

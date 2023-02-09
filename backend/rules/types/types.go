@@ -33,12 +33,14 @@ const (
 type RiskCategory string
 
 const (
-	InsufficientLogging RiskCategory = "Insufficient Logging"
-	PubliclyExposed     RiskCategory = "Publicly Exposed"
-	PoorBackup          RiskCategory = "Poor Backup"
-	PoorEncryption      RiskCategory = "Poor Encryption"
-	IamMisconfiguration RiskCategory = "IAM Misconfiguration"
-	Patching            RiskCategory = "Patching"
+	InsufficientMonitoring RiskCategory = "Insufficient Monitoring"
+	PubliclyExposed        RiskCategory = "Publicly Exposed"
+	PoorEncryption         RiskCategory = "Poor Encryption"
+	IamMisconfiguration    RiskCategory = "IAM Misconfiguration"
+	Patching               RiskCategory = "Patching Issue"
+	UnusedResource         RiskCategory = "Unused Resource"
+	DataAccess             RiskCategory = "Data Access"
+	PoorBackup             RiskCategory = "Poor Backup"
 )
 
 type RiskCategoryList []RiskCategory

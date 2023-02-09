@@ -1,4 +1,4 @@
-import {Banner} from '../Banner';
+import {Banner} from '../Components/Shared/Banner';
 import Tabs from '../Components/Shared/Tabs';
 import { useState } from 'react';
 import { AddNewAccount } from '../Components/Settings/AddNewAccount'

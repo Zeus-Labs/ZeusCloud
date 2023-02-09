@@ -18,12 +18,12 @@ func (BucketAccessLogging) Description() string {
 }
 
 func (BucketAccessLogging) Severity() types.Severity {
-	return types.Critical
+	return types.Low
 }
 
 func (BucketAccessLogging) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.InsufficientLogging,
+		types.InsufficientMonitoring,
 	}
 }
 

@@ -18,12 +18,13 @@ func (EnforceInTransitEncryption) Description() string {
 }
 
 func (EnforceInTransitEncryption) Severity() types.Severity {
-	return types.Critical
+	return types.High
 }
 
 func (EnforceInTransitEncryption) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.PoorEncryption,
+		types.DataAccess,
 	}
 }
 

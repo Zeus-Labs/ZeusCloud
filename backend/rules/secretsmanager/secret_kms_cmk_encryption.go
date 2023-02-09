@@ -18,13 +18,12 @@ func (SecretKmsCmkEncryption) Description() string {
 }
 
 func (SecretKmsCmkEncryption) Severity() types.Severity {
-	return types.Low
+	return types.High
 }
 
 func (SecretKmsCmkEncryption) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.PoorEncryption,
-		types.IamMisconfiguration,
 	}
 }
 

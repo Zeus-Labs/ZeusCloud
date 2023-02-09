@@ -24,6 +24,8 @@ func (RestrictPubliclyReadable) Severity() types.Severity {
 func (RestrictPubliclyReadable) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.PubliclyExposed,
+		types.DataAccess,
+		types.IamMisconfiguration,
 	}
 }
 

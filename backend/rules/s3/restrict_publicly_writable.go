@@ -18,12 +18,14 @@ func (RestrictPubliclyWritable) Description() string {
 }
 
 func (RestrictPubliclyWritable) Severity() types.Severity {
-	return types.Critical
+	return types.High
 }
 
 func (RestrictPubliclyWritable) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.PubliclyExposed,
+		types.DataAccess,
+		types.IamMisconfiguration,
 	}
 }
 

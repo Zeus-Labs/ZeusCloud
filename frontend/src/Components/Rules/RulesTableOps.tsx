@@ -235,7 +235,7 @@ const RulesTableOps = () => {
                         title={"Risk"} 
                         selectedFilterValue={riskFilter} 
                         setFilter={setRiskFilter}
-                        filterOptions={["All", "Network Misconfiguration", "Publicly Exposed", "Poor Encryption", "IAM Misconfiguration", "Poor Backup", "Insufficient Logging"]}
+                        filterOptions={["All", "Insufficient Monitoring", "Publicly Exposed", "Poor Encryption", "Data Access", "Unused Resource", "IAM Misconfiguration", "Patching Issue", "Poor Backup"]}
                     />
                 </div>
 

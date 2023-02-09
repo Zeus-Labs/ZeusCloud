@@ -18,12 +18,13 @@ func (InstanceAtRestEncrypted) Description() string {
 }
 
 func (InstanceAtRestEncrypted) Severity() types.Severity {
-	return types.Critical
+	return types.High
 }
 
 func (InstanceAtRestEncrypted) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.PoorEncryption,
+		types.DataAccess,
 	}
 }
 

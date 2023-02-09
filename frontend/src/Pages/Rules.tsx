@@ -1,4 +1,4 @@
-import { Banner } from '../Banner';
+import { Banner } from '../Components/Shared/Banner';
 import {RulesTableOps} from '../Components/Rules/RulesTableOps';
 
 

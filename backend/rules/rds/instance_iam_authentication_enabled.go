@@ -24,6 +24,7 @@ func (InstanceIAMAuthenticationEnabled) Severity() types.Severity {
 func (InstanceIAMAuthenticationEnabled) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.IamMisconfiguration,
+		types.DataAccess,
 	}
 }
 
