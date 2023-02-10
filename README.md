@@ -52,7 +52,7 @@ A cloud-hosted version is available on special request - email founders@ironleap
 ## Features
 
 PLACE DEMO HERE
-![IronCloud_AdobeExpress (1)](https://user-images.githubusercontent.com/15602986/217979190-91cf6c22-04a0-4f83-bf4f-bca7fdbb3c3e.gif)
+![IronCloud_AdobeExpress (1) width="50" height="60"](https://user-images.githubusercontent.com/15602986/217979190-91cf6c22-04a0-4f83-bf4f-bca7fdbb3c3e.gif)
 
 * **Identify Misconfigurations** - Discover the highest risk-of-exploit misconfigurations in your environments.
 * **Fast Prioritization** - Filter, sort, and fast search to zoom in on your important risks.
