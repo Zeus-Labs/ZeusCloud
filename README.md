@@ -51,7 +51,8 @@ A cloud-hosted version is available on special request - email founders@ironleap
 
 ## Features
 
-PLACE DEMO HERE
+![IronCloud](https://user-images.githubusercontent.com/20483346/217993491-69bbb84b-ce5f-4432-9aac-8a362c01c1bd.gif)
+
 
 * **Identify Misconfigurations** - Discover the highest risk-of-exploit misconfigurations in your environments.
 * **Fast Prioritization** - Filter, sort, and fast search to zoom in on your important risks.
