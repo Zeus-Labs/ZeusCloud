@@ -22,7 +22,6 @@ func InitPostgres() *gorm.DB {
 	if os.Getenv("ENCRYPTION_KEY") == "" {
 		log.Fatal(fmt.Errorf("encryption key is required"))
 	}
-	log.Printf("%v", os.Getenv("ENCRYPTION_KEY"))
 	encryptionKey, err := base64.StdEncoding.DecodeString(os.Getenv("ENCRYPTION_KEY"))
 	if err != nil {
 		log.Fatal(err)

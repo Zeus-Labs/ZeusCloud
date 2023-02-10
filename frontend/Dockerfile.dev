@@ -2,7 +2,11 @@ FROM node:18.13-alpine
 
 WORKDIR /usr/src/app
 
+# Unfortunately the outputs of yarn install get overriden by the mount,
+# so you have to run yarn install from outside of Docker anyways...
+COPY package.json .
 RUN yarn install
+
 EXPOSE 3000
 ENTRYPOINT ["yarn", "run", "start"]
 

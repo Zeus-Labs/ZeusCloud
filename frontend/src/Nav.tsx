@@ -1,8 +1,4 @@
 import './Nav.css';
-import { Fragment } from 'react'
-import { Disclosure, Menu, Transition } from '@headlessui/react'
-import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { classNames } from './utils/utils'; 
 import { NavLink } from 'react-router-dom';
 
 const navigation = [
@@ -21,7 +17,7 @@ const Nav = () => {
             <div className="relative flex h-16 items-center justify-start">
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                 <div className="flex flex-shrink-0 items-center">
-                  <a className="text-xl text-white font-semibold">IronCloud</a>
+                  <a href='/alerts' className="text-xl text-white font-semibold">IronCloud</a>
                 </div>
                 <div className="hidden sm:ml-6 sm:block">
                   <div className="flex space-x-4">

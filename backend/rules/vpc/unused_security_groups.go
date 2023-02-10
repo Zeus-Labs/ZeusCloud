@@ -23,7 +23,7 @@ func (UnusedSecurityGroups) Severity() types.Severity {
 
 func (UnusedSecurityGroups) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.PubliclyExposed,
+		types.UnusedResource,
 	}
 }
 
