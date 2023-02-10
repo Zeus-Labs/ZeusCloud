@@ -11,16 +11,16 @@ import { AlertSlideover } from './AlertsSlideover';
 import { TextInput } from "../Shared/Input";
 import { extractServiceName } from "../../utils/utils";
 
-async function getActiveAlertsInfoData(setActiveAlertsInfo: (value: RuleAlertsResponse) => void) {
+async function getActiveAlertsInfoData(): Promise<RuleAlertsResponse> {
   
     try {
         const ruleAlertsEndpoint = process.env.REACT_APP_API_DOMAIN + "/api/getAllAlerts";
         const response = await axios.get(ruleAlertsEndpoint);
         
-        setActiveAlertsInfo({
+        return {
             rule_alerts_group: response.data.rule_alerts_group.filter((group: rulealerts_group) => group.rule_data.active),
             error: ''
-        });
+        };
     }
     catch (error) {
        
@@ -35,10 +35,10 @@ async function getActiveAlertsInfoData(setActiveAlertsInfo: (value: RuleAlertsRe
             message = "Error in retrieving alerts information."
         }
 
-        setActiveAlertsInfo({
+        return {
             rule_alerts_group: [],
-            error: ''
-        });
+            error: message,
+        };
     }
 }
 
@@ -127,25 +127,24 @@ const AlertsTableOps = () => {
 
     // State to track open/close state of every row.
     var initOpenTableState: { [rowId: string] : boolean; } = {};
-    const [openTableState, setTableOpenState] = useState(initOpenTableState);
+    const [openTableState, setOpenTableState] = useState(initOpenTableState);
 
     // For initial display of table.
     const [ready, setReady] = useState(false)
 
-    // Get all active alerts info data at initial set up.
+    // Get all active alerts info data at initial set up. Set all rows to be closed.
     useEffect(() => {
-        getActiveAlertsInfoData(setActiveAlertsInfo);
+        async function asyncWork() {
+            const receivedActiveAlertsInfo = await getActiveAlertsInfoData();
+            setActiveAlertsInfo(receivedActiveAlertsInfo)
+            receivedActiveAlertsInfo.rule_alerts_group.forEach(group => {
+                var ruleUid: string = group.rule_data.uid;
+                setOpenTableState(prevOpenStateInfo => ({...prevOpenStateInfo, 
+                    [ruleUid]: false}));
+            }); 
+        }
+        asyncWork()
     }, []);
-
-    // Initially set all the rows to false.
-    useEffect(() => {
-        activeAlertsInfo.rule_alerts_group.forEach(group => {
-            var ruleUid: string = group.rule_data.uid;
-            setTableOpenState(prevOpenStateInfo => ({...prevOpenStateInfo, 
-                [ruleUid]: false}));
-            }) 
-    }, []);
-
 
     // Create each alert table and surrounding components.
     useEffect(() => {
@@ -215,7 +214,7 @@ const AlertsTableOps = () => {
               } 
               
               const flipOpenRowStateFn = function() {
-                setTableOpenState(prevOpenStateInfo => ({...prevOpenStateInfo, 
+                setOpenTableState(prevOpenStateInfo => ({...prevOpenStateInfo, 
                     [rule_date_id]: !prevOpenStateInfo[rule_date_id]}));
               }
 
@@ -249,15 +248,21 @@ const AlertsTableOps = () => {
                         ignoreComponentExpansion: false,
                     },
                     {
-                        content: rulealerts_group.alert_instances.
-                            filter(alert_instance => mutedFilterPred(alert_instance.muted, innerAlertsFilter["muted"])).
-                            filter(alert_instance => statusFilterPred(alert_instance.status === "failed", innerAlertsFilter["status"])).
-                            filter(alert_instance => accountFilterPred(alert_instance.account_id, innerAlertsFilter["account"])).length,
+                        content: rulealerts_group.alert_instances.filter(
+                            alert_instance => mutedFilterPred(alert_instance.muted, innerAlertsFilter["muted"])
+                        ).filter(
+                            alert_instance => statusFilterPred(alert_instance.status === "failed", innerAlertsFilter["status"])
+                        ).filter(
+                            alert_instance => accountFilterPred(alert_instance.account_id, innerAlertsFilter["account"])
+                        ).length,
                         accessor_key: "alerts",
-                        value: rulealerts_group.alert_instances.
-                            filter(alert_instance => mutedFilterPred(alert_instance.muted, innerAlertsFilter["muted"])).
-                            filter(alert_instance => statusFilterPred(alert_instance.status === "failed", innerAlertsFilter["status"])).
-                            filter(alert_instance => accountFilterPred(alert_instance.account_id, innerAlertsFilter["account"])).length,
+                        value: rulealerts_group.alert_instances.filter(
+                            alert_instance => mutedFilterPred(alert_instance.muted, innerAlertsFilter["muted"])
+                        ).filter(
+                            alert_instance => statusFilterPred(alert_instance.status === "failed", innerAlertsFilter["status"])
+                        ).filter(
+                            alert_instance => accountFilterPred(alert_instance.account_id, innerAlertsFilter["account"])
+                        ).length,
                         ignoreComponentExpansion: false,
                     },
                   ],

@@ -90,6 +90,7 @@ We love contributions of all sizes. What would be most helpful first:
 
 Run containers in development mode:
 ```
+cd frontend && yarn && cd -
 docker-compose down && docker-compose -f docker-compose.dev.yaml --env-file .env.dev up --build
 ```
 

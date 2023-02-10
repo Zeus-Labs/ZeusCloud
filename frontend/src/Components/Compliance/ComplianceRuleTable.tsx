@@ -21,7 +21,7 @@ function computePassingAlerts(alert_instances: alert_instance[]): string {
 const ComplianceRuleTable = ({compliance_control}: ComplianceRuleTableProps) => {
     // State to track open/close state of every row.
     var initOpenTableState: { [rowId: string] : boolean; } = {};
-    const [openTableState, setTableOpenState] = useState(initOpenTableState);
+    const [openTableState, setOpenTableState] = useState(initOpenTableState);
 
     const tableColumnHeaders =  
     [
@@ -58,7 +58,7 @@ const ComplianceRuleTable = ({compliance_control}: ComplianceRuleTableProps) => 
           openStateBool = openTableState[rule_date_id]
         }
         const flipOpenRowStateFn = function() {
-            setTableOpenState(prevOpenStateInfo => ({...prevOpenStateInfo, 
+            setOpenTableState(prevOpenStateInfo => ({...prevOpenStateInfo, 
                 [rule_date_id]: !prevOpenStateInfo[rule_date_id]}));
         }
 

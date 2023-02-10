@@ -35,8 +35,6 @@ export function extractServiceName(ruleId: string) {
       return 'VPC'; 
     case 'cloudtrail':
       return 'CloudTrail';
-    case 'iam': 
-      return 'IAM';
     case 'kms': 
       return 'KMS';
   }
