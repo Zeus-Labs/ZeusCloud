@@ -167,7 +167,7 @@ const AlertsTableOps = () => {
             
             return (
                 <tr key={activeAlertInfo.rule_data.uid+"_alerts"}>
-                    <td key={activeAlertInfo.rule_data.uid+"_alerts_td"} colSpan={4} className="p-0 bg-gray-50">
+                    <td key={activeAlertInfo.rule_data.uid+"_alerts_td"} colSpan={5} className="p-0 bg-gray-50">
                         <div key={activeAlertInfo.rule_data.uid+"_alerts_div"}>
                             {GeneratedAlertsTable({
                                 ruleAlertsGroup: activeAlertInfo,
