@@ -35,6 +35,38 @@ export class AdminStack extends cdk.Stack {
         ],
       })
     );
+    user1.attachInlinePolicy(new iam.Policy(this, 'user1AssumePolicy', {
+        statements: [
+          new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: ['sts:AssumeRole'],
+            resources: [intermediateRole1.roleArn],
+          })
+        ],
+      })
+    );
+    intermediateRole1.attachInlinePolicy(new iam.Policy(this, 'intermediateRole1AssumePolicy', {
+        statements: [
+          new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: ['sts:AssumeRole'],
+            resources: [intermediateRole2.roleArn],
+          })
+        ],
+      })
+    );
+    intermediateRole2.attachInlinePolicy(new iam.Policy(this, 'intermediateRole2AssumePolicy', {
+        statements: [
+          new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: ['sts:AssumeRole'],
+            resources: [adminRole.roleArn],
+          })
+        ],
+      })
+    );
+
+
 
     // User is part of two groups, 1 of which is admin
     const groupAdmin = new iam.Group(this, 'groupAdmin', {
