@@ -16,6 +16,8 @@ import { CloudtrailStack } from '../lib/cloudtrail-stack';
 import { CloudWatchStack } from '../lib/cloudwatch-stack';
 import { KmsStack } from '../lib/kms-stack';
 import { VpcStack } from '../lib/vpc-stack';
+import { PrivilegeEscalationStack } from '../lib/privilege-escalation-stack';
+import { AdminStack } from '../lib/admin-stack';
 
 const app = new cdk.App();
 new IamStack(app, 'IamStack', {
@@ -64,5 +66,11 @@ new KmsStack(app, 'KmsStack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 })
 new VpcStack(app, 'VpcStack', {
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+})
+new PrivilegeEscalationStack(app, 'PrivilegeEscalationStack', {
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+})
+new AdminStack(app, 'AdminStack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 })
