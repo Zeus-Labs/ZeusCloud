@@ -51,7 +51,7 @@ services:
       retries: 10
 
   cartography:
-    image: ironleap/ironcloud-cartography:${PULL_VERSION}
+    image: zeuscloudhq/zeuscloud-cartography:${PULL_VERSION}
     entrypoint: ["gunicorn", "--bind=0.0.0.0:6000", "cartography.wsgi:app"]
     environment:
       - CARTOGRAPHY_NEO4J_URI=${NEO4J_URI}
@@ -66,7 +66,7 @@ services:
 
   frontend:
     # Don't pass environment variables. Pass args through docker-compose.build.yaml
-    image: ironleap/ironcloud-frontend:${PULL_VERSION}
+    image: zeuscloudhq/zeuscloud-frontend:${PULL_VERSION}
     networks:
       - app_network
     depends_on:
@@ -75,7 +75,7 @@ services:
       - 3000:3000
 
   backend:
-    image: ironleap/ironcloud-backend:${PULL_VERSION}
+    image: zeuscloudhq/zeuscloud-backend:${PULL_VERSION}
     environment:
       - WEBSITE_DOMAIN=${WEBSITE_DOMAIN}
       - NEO4J_URI=${NEO4J_URI}
