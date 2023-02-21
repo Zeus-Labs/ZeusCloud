@@ -2,6 +2,7 @@ package rules
 
 import (
 	"fmt"
+	"github.com/Zeus-Labs/ZeusCloud/rules/attackpath"
 	"time"
 
 	"github.com/Zeus-Labs/ZeusCloud/models"
@@ -24,7 +25,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-var RulesToExecute = []types.Rule{
+var MisconfigurationRulesToExecute = []types.Rule{
 	cloudtrail.LogFileValidationEnabled{},
 	cloudtrail.TrailsAtRestEncrypted{},
 	cloudtrail.DeliveredToCloudwatch{},
@@ -106,6 +107,15 @@ var RulesToExecute = []types.Rule{
 	vpc.EnableFlowLogs{},
 }
 
+var AttackPathsRulesToExecute = []types.Rule{
+	attackpath.PubliclyExposedVmAdmin{},
+	attackpath.PubliclyExposedVmPrivEsc{},
+	attackpath.PubliclyExposedVmHigh{},
+	attackpath.PubliclyExposedServerlessAdmin{},
+	attackpath.PubliclyExposedServerlessPrivEsc{},
+	attackpath.PubliclyExposedServerlessHigh{},
+}
+
 func IsRuleActive(postgresDb *gorm.DB, r types.Rule) (bool, error) {
 	tx := postgresDb.Limit(1).Where("uid = ? AND active = false", r.UID()).Find(&models.RuleData{})
 	if tx.Error != nil {
@@ -136,13 +146,14 @@ func ExecuteRule(driver neo4j.Driver, r types.Rule) ([]types.Result, error) {
 }
 
 // UpsertRuleData inserts / replaces rule data struct
-func UpsertRuleData(postgresDb *gorm.DB, r types.Rule) (models.RuleData, error) {
+func UpsertRuleData(postgresDb *gorm.DB, r types.Rule, ruleCategory string) (models.RuleData, error) {
 	rd := models.RuleData{
 		UID:            r.UID(),
 		Description:    r.Description(),
 		Active:         true,
 		LastRun:        time.Now(),
 		Severity:       string(r.Severity()),
+		RuleCategory:   ruleCategory,
 		RiskCategories: r.RiskCategories().AsStringArray(),
 	}
 	tx := postgresDb.Clauses(clause.OnConflict{
