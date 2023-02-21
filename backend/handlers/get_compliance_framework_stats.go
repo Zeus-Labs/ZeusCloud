@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/IronLeap/IronCloud/models"
 	"log"
 	"math"
 	"net/http"
 
-	"github.com/IronLeap/IronCloud/compliance"
+	"github.com/Zeus-Labs/ZeusCloud/models"
+
+	"github.com/Zeus-Labs/ZeusCloud/compliance"
 	"gorm.io/gorm"
 )
 
@@ -38,7 +39,7 @@ func GetComplianceFrameworkStats(postgresDb *gorm.DB) func(w http.ResponseWriter
 			for _, controlSpec := range groupSpec.ComplianceControlSpecs {
 				// Get rules for every single compliance control. If it has no alerts
 				// or all alerts are passing it works well.
-				for _, ruleId := range controlSpec.IronCloudRules {
+				for _, ruleId := range controlSpec.ZeusCloudRules {
 
 					// Get alerts for every rule id.
 					var ruleResultLst []models.RuleResult

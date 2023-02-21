@@ -1,4 +1,4 @@
-module github.com/IronLeap/IronCloud
+module github.com/Zeus-Labs/ZeusCloud
 
 go 1.17
 

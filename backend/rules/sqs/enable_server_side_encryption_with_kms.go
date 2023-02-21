@@ -3,7 +3,7 @@ package sqs
 import (
 	"fmt"
 
-	"github.com/IronLeap/IronCloud/rules/types"
+	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 

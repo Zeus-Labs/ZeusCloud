@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/IronLeap/IronCloud/control"
-	"github.com/IronLeap/IronCloud/models"
+	"github.com/Zeus-Labs/ZeusCloud/control"
+	"github.com/Zeus-Labs/ZeusCloud/models"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -45,7 +45,7 @@ func AddAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.
 			return
 		}
 		if len(accountDetailsLst) > 0 {
-			http.Error(w, "Sorry! IronCloud only supports 1 account currently.", 400)
+			http.Error(w, "Sorry! ZeusCloud only supports 1 account currently.", 400)
 			return
 		}
 
