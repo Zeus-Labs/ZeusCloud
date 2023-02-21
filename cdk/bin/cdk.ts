@@ -16,6 +16,7 @@ import { CloudtrailStack } from '../lib/cloudtrail-stack';
 import { CloudWatchStack } from '../lib/cloudwatch-stack';
 import { KmsStack } from '../lib/kms-stack';
 import { VpcStack } from '../lib/vpc-stack';
+import { Elbv2WithLambdaStack } from '../lib/elbv2-with-lambda';
 
 const app = new cdk.App();
 new IamStack(app, 'IamStack', {
@@ -64,5 +65,8 @@ new KmsStack(app, 'KmsStack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 })
 new VpcStack(app, 'VpcStack', {
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+})
+new Elbv2WithLambdaStack(app, 'Elbv2WithLambdaStack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 })

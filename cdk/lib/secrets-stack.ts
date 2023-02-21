@@ -1,7 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as kms from 'aws-cdk-lib/aws-kms';
-import { openStdin } from 'process';
 import path = require('path/posix');
 
 // SecretsStack sets up secrets manager secrets.
