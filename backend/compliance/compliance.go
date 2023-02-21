@@ -1,6 +1,6 @@
 package compliance
 
-import "github.com/IronLeap/IronCloud/rules/types"
+import "github.com/Zeus-Labs/ZeusCloud/rules/types"
 
 type ComplianceFrameworkSpec struct {
 	FrameworkName               string
@@ -14,7 +14,7 @@ type ComplianceControlGroupSpec struct {
 
 type ComplianceControlSpec struct {
 	ControlName    string
-	IronCloudRules []types.Rule
+	ZeusCloudRules []types.Rule
 	Comment        string
 }
 

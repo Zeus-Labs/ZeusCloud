@@ -26,7 +26,7 @@ const ComplianceRuleTable = ({compliance_control}: ComplianceRuleTableProps) => 
     const tableColumnHeaders =  
     [
         {
-            header: "IronCloud Rule",
+            header: "ZeusCloud Rule",
             accessor_key: "rule_control",
             allowSorting: false,
         },

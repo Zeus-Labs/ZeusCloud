@@ -173,7 +173,7 @@ const RemoveAccount = ({ account_name, setAccountDetailsList }: RemoveAccountPro
                         Remove Account
                     </Dialog.Title>
                     <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                        Are you sure you want to remove the account connection from IronCloud?
+                        Are you sure you want to remove the account connection from ZeusCloud?
                     </p>
                 </ModalBodyComponent>
                 <ModalFooterComponent>

@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/IronLeap/IronCloud/models"
+	"github.com/Zeus-Labs/ZeusCloud/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

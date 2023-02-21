@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/IronLeap/IronCloud/models"
-	"github.com/IronLeap/IronCloud/rules"
+	"github.com/Zeus-Labs/ZeusCloud/models"
+	"github.com/Zeus-Labs/ZeusCloud/rules"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"gorm.io/gorm"
 )

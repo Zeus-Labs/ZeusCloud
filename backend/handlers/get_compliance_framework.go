@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/IronLeap/IronCloud/compliance"
-	"github.com/IronLeap/IronCloud/models"
+	"github.com/Zeus-Labs/ZeusCloud/compliance"
+	"github.com/Zeus-Labs/ZeusCloud/models"
 	"gorm.io/gorm"
 )
 
@@ -90,7 +90,7 @@ func GetComplianceFramework(postgresDb *gorm.DB) func(w http.ResponseWriter, r *
 					ControlName:     controlSpec.ControlName,
 					Comment:         controlSpec.Comment,
 					RuleAlertsGroup: make([]RuleAlert, 0)}
-				for _, ruleId := range controlSpec.IronCloudRules {
+				for _, ruleId := range controlSpec.ZeusCloudRules {
 					mappedRuleData, ok := ruleIdToRuleData[ruleId.UID()]
 					if !ok {
 						log.Printf("issue matching rules and alerts")

@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">IronCloud: Cloud Security</h1>
+  <h1 align="center">ZeusCloud: Cloud Security</h1>
   <p align="center">
     <em>Secure your cloud.</em>
   </p>
@@ -18,7 +18,7 @@
 </div>
 
 <!-- omit in toc -->
-## IronCloud is an open-source cloud security platform. 
+## ZeusCloud is an open-source cloud security platform. 
 
 Discover, prioritize, and remediate your risks in the cloud. 
 
@@ -33,7 +33,7 @@ Discover, prioritize, and remediate your risks in the cloud.
 
 - [Quick start](#quick-start)
 - [Features](#features)
-- [Why IronCloud?](#why-ironcloud)
+- [Why ZeusCloud?](#why-zeuscloud)
 - [Future Roadmap](#future-roadmap)
 - [Contributing](#contributing)
 - [Development](#development)
@@ -42,16 +42,16 @@ Discover, prioritize, and remediate your risks in the cloud.
 
 ## Quick start
 
-1. Clone repo: `git clone --recurse-submodules git@github.com:IronLeap/IronCloud.git`
+1. Clone repo: `git clone --recurse-submodules git@github.com:Zeus-Labs/ZeusCloud.git`
 2. Generate an encryption key: `openssl rand -base64 32`.
 3. Run: `ENCRYPTION_KEY=[from previous step] docker-compose up`.
 4. Visit http://localhost:3000
 
-A cloud-hosted version is available on special request - email founders@ironleap.io to get access!
+A cloud-hosted version is available on special request - email founders@zeuscloud.io to get access!
 
 ## Features
 
-![IronCloud](https://user-images.githubusercontent.com/20483346/217993491-69bbb84b-ce5f-4432-9aac-8a362c01c1bd.gif)
+![ZeusCloud](https://user-images.githubusercontent.com/20483346/217993491-69bbb84b-ce5f-4432-9aac-8a362c01c1bd.gif)
 
 
 * **Identify Misconfigurations** - Discover the highest risk-of-exploit misconfigurations in your environments.
@@ -63,15 +63,15 @@ A cloud-hosted version is available on special request - email founders@ironleap
 * **Compliance** - Ensure your cloud posture is compliant with PCI DSS, CIS benchmarks and more!
 
 
-## Why IronCloud?
+## Why ZeusCloud?
 Cloud usage continues to grow. Companies are shifting more of their workloads from on-prem to the cloud and both adding and expanding new and existing workloads in the cloud. Cloud providers keep increasing their offerings and their complexity. Companies are having trouble keeping track of their security risks as their cloud environment scales and grows more complex. Several high profile attacks have occurred in recent times. Capital One had an S3 bucket breached, Amazon had an unprotected Prime Video server breached, Microsoft had an Azure DevOps server breached, Puma was the victim of ransomware, etc.
 
 We had to take action.
 
 - We noticed traditional cloud security tools are opaque, confusing, time consuming to set up, and expensive as you scale your cloud environment
 - Cybersecurity vendors don't provide much actionable information to security, engineering, and devops teams by inundating them with non-contextual alerts
-- IronCloud is easy to set up, transparent, and configurable, so you can prioritize the most important risks 
-- Best of all, you can use **IronCloud for free**!
+- ZeusCloud is easy to set up, transparent, and configurable, so you can prioritize the most important risks 
+- Best of all, you can use **ZeusCloud for free**!
 
 ## Future Roadmap
 - Multi-step attack paths based on IAM lateral movements
@@ -83,7 +83,7 @@ We had to take action.
 We love contributions of all sizes. What would be most helpful first: 
 
 - Please give us feedback in our [Slack](https://join.slack.com/t/ironleapcommunity/shared_invite/zt-1oxm8asmq-4oyM4fdqarSHMoMstGH6Lw).
-- Open a PR (see our instructions below on developing IronCloud locally)
+- Open a PR (see our instructions below on developing ZeusCloud locally)
 - Submit a feature request or bug report through Github Issues.
 
 
@@ -110,12 +110,12 @@ docker-compose -f docker-compose.dev.yaml --env-file .env.dev up --no-deps --bui
 
 ## Security
 
-Please do not run IronCloud exposed to the public internet. Use the latest versions of IronCloud to get all security related patches. Report any security vulnerabilities to founders@ironleap.io. 
+Please do not run ZeusCloud exposed to the public internet. Use the latest versions of ZeusCloud to get all security related patches. Report any security vulnerabilities to founders@zeuscloud.io. 
 
 ## Open-source vs. paid
 
-This repo is freely available under the [Apache 2.0 license](https://github.com/IronLeap/IronCloud/blob/main/LICENSE).
+This repo is freely available under the [Apache 2.0 license](https://github.com/Zeus-Labs/ZeusCloud/blob/main/LICENSE).
 
-A cloud-hosted solution with features like user management and advanced attack path analysis is available with an enterprise license. Contact us at founders@ironleap.io for more information.
+A cloud-hosted solution with features like user management and advanced attack path analysis is available with an enterprise license. Contact us at founders@zeuscloud.io for more information.
 
-Special thanks to the amazing [Cartography](https://github.com/lyft/cartography) project, which IronCloud uses for its asset inventory. Credit to PostHog and Airbyte for inspiration around public-facing materials - like this README!
+Special thanks to the amazing [Cartography](https://github.com/lyft/cartography) project, which ZeusCloud uses for its asset inventory. Credit to PostHog and Airbyte for inspiration around public-facing materials - like this README!
