@@ -19,6 +19,7 @@ import { VpcStack } from '../lib/vpc-stack';
 import { Elbv2WithLambdaStack } from '../lib/elbv2-with-lambda';
 import { PrivilegeEscalationStack } from '../lib/privilege-escalation-stack';
 import { AdminStack } from '../lib/admin-stack';
+import { HighPrivilegeStack } from '../lib/high-privilege-stack';
 
 const app = new cdk.App();
 new IamStack(app, 'IamStack', {
@@ -73,6 +74,9 @@ new PrivilegeEscalationStack(app, 'PrivilegeEscalationStack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 })
 new AdminStack(app, 'AdminStack', {
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+})
+new HighPrivilegeStack(app, 'HighPrivilegeStack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 })
 new Elbv2WithLambdaStack(app, 'Elbv2WithLambdaStack', {
