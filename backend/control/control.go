@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"log"
 	"net/http"
 	"os"
@@ -34,7 +35,8 @@ type CartographyJobRequest struct {
 // 1) The ExecuteRules boolean is true
 // 2) The cartography job is not running.
 // When these conditions are true, it also marks ExecuteRules false.
-func RuleExecutionLoop(postgresDb *gorm.DB, driver neo4j.Driver, ruleDataList []models.RuleData) {
+func RuleExecutionLoop(postgresDb *gorm.DB, driver neo4j.Driver, ruleDataList []models.RuleData,
+	rulesToExecute []types.Rule) {
 
 	for {
 		time.Sleep(time.Second * 20)
@@ -68,7 +70,7 @@ func RuleExecutionLoop(postgresDb *gorm.DB, driver neo4j.Driver, ruleDataList []
 		ExecuteRulesMutex.Lock()
 		ExecuteRules = false
 		ExecuteRulesMutex.Unlock()
-		for idx, r := range rules.RulesToExecute {
+		for idx, r := range rulesToExecute {
 			log.Printf("Rule ID and description: %v %v", r.UID(), r.Description())
 
 			// Skip if rule is inactive

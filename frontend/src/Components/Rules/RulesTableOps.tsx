@@ -13,7 +13,9 @@ import { extractServiceName } from "../../utils/utils";
 async function getRulesInfoData(setRulesInfo: React.Dispatch<React.SetStateAction<RuleInfoData>>) {    
     try {
         const rulesEndpoint = process.env.REACT_APP_API_DOMAIN + "/api/getRules";
-        const response = await axios.get(rulesEndpoint);
+        const response = await axios.get(rulesEndpoint, 
+            { params: { rulecategory: 'misconfiguration' } 
+        });
         
         var ruleInfoList = new Array<rule_info>();
         response.data.map((currElement: rule_info, index: number) => {

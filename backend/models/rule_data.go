@@ -12,5 +12,6 @@ type RuleData struct {
 	Active         bool           `json:"active"`
 	LastRun        time.Time      `json:"last_run"`
 	Severity       string         `json:"severity"`
+	RuleCategory   string         `json:"rule_category"`
 	RiskCategories pq.StringArray `json:"risk_categories" gorm:"type:text[]"`
 }
