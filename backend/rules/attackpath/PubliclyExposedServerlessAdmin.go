@@ -22,6 +22,7 @@ func (PubliclyExposedServerlessAdmin) Severity() types.Severity {
 func (PubliclyExposedServerlessAdmin) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.PubliclyExposed,
+		types.IamMisconfiguration,
 	}
 }
 

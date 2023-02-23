@@ -8,7 +8,7 @@ const ComplianceReport = () => {
 
     const { frameworkId } = useParams();
     var report: string = "" ; 
-    if(frameworkId != undefined) {
+    if(frameworkId !== undefined) {
       if(frameworkId === 'pci_dss_3_2_1') {
         report = 'PCI DSS v3.2.1';
       } else if(frameworkId === 'cis_1_2_0') {
@@ -27,9 +27,6 @@ const ComplianceReport = () => {
     return (
       <div className="min-h-full">
         <Banner bannerHeader='Compliance' bannerDescription='Shows controls for compliance standards.' />
-        
-        
-
         <div className="px-4 sm:px-6 lg:px-8 py-5 sm:py-7 lg:py-9">
           <div className="mx-auto w-11/12">
 
@@ -54,7 +51,6 @@ const ComplianceReport = () => {
             
           </div>
         </div>
-
       </div>
     );
   }

@@ -24,6 +24,7 @@ func (PubliclyExposedVmAdmin) Severity() types.Severity {
 func (PubliclyExposedVmAdmin) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.PubliclyExposed,
+		types.IamMisconfiguration,
 	}
 }
 
