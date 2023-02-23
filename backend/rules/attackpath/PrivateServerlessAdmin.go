@@ -6,27 +6,27 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-type PubliclyExposedServerlessPrivEsc struct{}
+type PrivateServerlessAdmin struct{}
 
-func (PubliclyExposedServerlessPrivEsc) UID() string {
-	return "attackpath/publicly_exposed_serverless_priv_escalation"
+func (PrivateServerlessAdmin) UID() string {
+	return "attackpath/private_serverless_admin_permissions"
 }
 
-func (PubliclyExposedServerlessPrivEsc) Description() string {
-	return "Publicly exposed serverless function with potential privilege escalations."
+func (PrivateServerlessAdmin) Description() string {
+	return "Private serverless function with effective admin permissions."
 }
 
-func (PubliclyExposedServerlessPrivEsc) Severity() types.Severity {
+func (PrivateServerlessAdmin) Severity() types.Severity {
 	return types.Critical
 }
 
-func (PubliclyExposedServerlessPrivEsc) RiskCategories() types.RiskCategoryList {
+func (PrivateServerlessAdmin) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.PubliclyExposed,
 	}
 }
 
-func (PubliclyExposedServerlessPrivEsc) Execute(tx neo4j.Transaction) ([]types.Result, error) {
+func (PrivateServerlessAdmin) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 	records, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(lambda:AWSLambda)
 		OPTIONAL MATCH
@@ -39,33 +39,23 @@ func (PubliclyExposedServerlessPrivEsc) Execute(tx neo4j.Transaction) ([]types.R
 		WHERE listener.port >= perm.fromport AND listener.port <= perm.toport
 		WITH a, lambda, collect(distinct elbv2.id) as public_elbv2_ids
 		OPTIONAL MATCH
-			(lambda)-[:STS_ASSUME_ROLE_ALLOW*1..4]->(role:AWSRole)-[privEscalation:PRIVILEGE_ESCALATION]->(escRole)
-		WITH a, lambda, public_elbv2_ids, collect(privEscalation.relationship_reason) as relationship_reasons
-		WITH a, lambda, public_elbv2_ids, relationship_reasons,
-		size(public_elbv2_ids) > 0 as publicly_exposed,
-		(size(relationship_reasons) > 0) as is_privilege_escalation
+			(lambda)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_admin: True})
+		WITH a, lambda, public_elbv2_ids, collect(role.arn) as admin_roles, collect(role.admin_reason) as admin_reasons
+		WITH a, lambda, public_elbv2_ids, admin_roles, admin_reasons,
+		size(public_elbv2_ids) = 0 as private,
+		(size(admin_roles) > 0) as is_admin
 		RETURN lambda.id as resource_id,
 		'AWSLambda' as resource_type,
 		a.id as account_id,
 		CASE 
-			WHEN publicly_exposed AND is_privilege_escalation THEN 'failed'
+			WHEN private AND is_admin THEN 'failed'
 			ELSE 'passed'
 		END as status,
 		CASE 
-			WHEN publicly_exposed THEN (
-				'The function is publicly exposed. ' +
-				CASE 
-					WHEN size(public_elbv2_ids) > 0 THEN 'The function is publicly exposed through these ELBv2 load balancers: ' + substring(apoc.text.join(public_elbv2_ids, ', '), 0, 1000) + '.'
-					ELSE 'The function is not publicly exposed through any ELBv2 load balancers.'
-				END
+			WHEN is_admin THEN (
+				'The function is effectively an admin in the account because of: ' + admin_reasons[0] + '.'
 			)
-			ELSE 'The function is neither directly publicly exposed, nor indirectly public exposed through an ELBv2 load balancer.'
-		END + ' ' +
-		CASE 
-			WHEN is_privilege_escalation THEN (
-				'The function has risky privilege escalation in the account because of: ' + relationship_reasons[0] + '.'
-			)
-			ELSE 'The function was not detected with a risky privilege escalation in the account.'
+			ELSE 'The function was not detected as effectively an admin in the account.'
 		END as context`,
 		nil,
 	)
