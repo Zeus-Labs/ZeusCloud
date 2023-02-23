@@ -38,7 +38,7 @@ func (PubliclyExposedVmAdmin) Execute(tx neo4j.Transaction) ([]types.Result, err
 			(:IpRange{id: '0.0.0.0/0'})-[:MEMBER_OF_IP_RULE]->
 			(:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
 			(instance_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP|NETWORK_INTERFACE*..2]-(e)
-		WITH a, e, collect(instance_group.id) as instance_group_ids
+		WITH a, e, collect(distinct instance_group.id) as instance_group_ids
 		OPTIONAL MATCH
 			(:IpRange{range:'0.0.0.0/0'})-[:MEMBER_OF_IP_RULE]->
 			(perm:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->

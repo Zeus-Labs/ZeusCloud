@@ -16,10 +16,15 @@ import { CloudtrailStack } from '../lib/cloudtrail-stack';
 import { CloudWatchStack } from '../lib/cloudwatch-stack';
 import { KmsStack } from '../lib/kms-stack';
 import { VpcStack } from '../lib/vpc-stack';
-import { Elbv2WithLambdaStack } from '../lib/elbv2-with-lambda';
+import { PublicLambdaWithAdminStack } from '../lib/public-lambda-with-admin-stack';
+import { PublicLambdaWithHighPrivilegeStack } from '../lib/public-lambda-with-high-privilege-stack'
+import { PublicLambdaWithPrivilegeEscalationStack } from '../lib/public-lambda-with-privilege-escalation-stack'
 import { PrivilegeEscalationStack } from '../lib/privilege-escalation-stack';
 import { AdminStack } from '../lib/admin-stack';
 import { HighPrivilegeStack } from '../lib/high-privilege-stack';
+import { PublicEc2WithAdminStack } from '../lib/public-ec2-with-admin-stack';
+import { PublicEc2WithHighPrivilegeStack } from '../lib/public-ec2-with-high-privilege-stack';
+import { PublicEc2WithPrivilegeEscalationStack } from '../lib/public-ec2-with-privilege-escalation-stack';
 
 const app = new cdk.App();
 new IamStack(app, 'IamStack', {
@@ -79,7 +84,22 @@ new AdminStack(app, 'AdminStack', {
 new HighPrivilegeStack(app, 'HighPrivilegeStack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 })
-new Elbv2WithLambdaStack(app, 'Elbv2WithLambdaStack', {
+new PublicLambdaWithAdminStack(app, 'PublicLambdaWithAdminStack', {
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+})
+new PublicLambdaWithHighPrivilegeStack(app, 'PublicLambdaWithHighPrivilegeStack', {
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+})
+new PublicLambdaWithPrivilegeEscalationStack(app, 'PublicLambdaWithPrivilegeEscalationStack', {
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+})
+new PublicEc2WithAdminStack(app, 'PublicEc2WithAdminStack', {
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+})
+new PublicEc2WithHighPrivilegeStack(app, 'PublicEc2WithHighPrivilegeStack', {
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+})
+new PublicEc2WithPrivilegeEscalationStack(app, 'PublicEc2WithPrivilegeEscalationStack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 })
 
