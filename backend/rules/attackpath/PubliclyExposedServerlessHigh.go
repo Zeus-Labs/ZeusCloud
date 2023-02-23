@@ -2,6 +2,7 @@ package attackpath
 
 import (
 	"fmt"
+
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -40,7 +41,6 @@ func (PubliclyExposedServerlessHigh) Execute(tx neo4j.Transaction) ([]types.Resu
 		WITH a, lambda, collect(distinct elbv2.id) as public_elbv2_ids
 		OPTIONAL MATCH
 			(lambda)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_high: True})
-		WHERE role.is_admin IS NULL
 		WITH a, lambda, public_elbv2_ids, collect(role.arn) as high_roles, collect(role.high_reason) as high_reasons
 		WITH a, lambda, public_elbv2_ids, high_roles, high_reasons,
 		size(public_elbv2_ids) > 0 as publicly_exposed,

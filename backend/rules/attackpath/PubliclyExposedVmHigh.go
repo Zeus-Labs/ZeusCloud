@@ -50,7 +50,6 @@ func (PubliclyExposedVmHigh) Execute(tx neo4j.Transaction) ([]types.Result, erro
 		WITH a, e, instance_group_ids, collect(distinct elbv2.id) as public_elbv2_ids
 		OPTIONAL MATCH
 			(e)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_high: True})
-		WHERE role.is_admin IS NULL
 		WITH a, e, instance_group_ids, public_elbv2_ids, collect(role.arn) as high_roles, collect(role.high_reason) as high_reasons
 		WITH a, e, instance_group_ids, public_elbv2_ids, high_roles, high_reasons,
 		(e.publicipaddress IS NOT NULL AND size(instance_group_ids) > 0) OR size(public_elbv2_ids) > 0 as publicly_exposed,
