@@ -6,27 +6,27 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-type PubliclyExposedServerlessAdmin struct{}
+type PrivateServerlessAdmin struct{}
 
-func (PubliclyExposedServerlessAdmin) UID() string {
-	return "attackpath/publicly_exposed_serverless_admin_permissions"
+func (PrivateServerlessAdmin) UID() string {
+	return "attackpath/private_serverless_admin_permissions"
 }
 
-func (PubliclyExposedServerlessAdmin) Description() string {
-	return "Publicly exposed serverless function with effective admin permissions."
+func (PrivateServerlessAdmin) Description() string {
+	return "Private serverless function with effective admin permissions."
 }
 
-func (PubliclyExposedServerlessAdmin) Severity() types.Severity {
+func (PrivateServerlessAdmin) Severity() types.Severity {
 	return types.Critical
 }
 
-func (PubliclyExposedServerlessAdmin) RiskCategories() types.RiskCategoryList {
+func (PrivateServerlessAdmin) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.PubliclyExposed,
 	}
 }
 
-func (PubliclyExposedServerlessAdmin) Execute(tx neo4j.Transaction) ([]types.Result, error) {
+func (PrivateServerlessAdmin) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 	records, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(lambda:AWSLambda)
 		OPTIONAL MATCH
@@ -42,25 +42,15 @@ func (PubliclyExposedServerlessAdmin) Execute(tx neo4j.Transaction) ([]types.Res
 			(lambda)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_admin: True})
 		WITH a, lambda, public_elbv2_ids, collect(role.arn) as admin_roles, collect(role.admin_reason) as admin_reasons
 		WITH a, lambda, public_elbv2_ids, admin_roles, admin_reasons,
-		size(public_elbv2_ids) > 0 as publicly_exposed,
+		size(public_elbv2_ids) = 0 as private,
 		(size(admin_roles) > 0) as is_admin
 		RETURN lambda.id as resource_id,
 		'AWSLambda' as resource_type,
 		a.id as account_id,
 		CASE 
-			WHEN publicly_exposed AND is_admin THEN 'failed'
+			WHEN private AND is_admin THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
-			WHEN publicly_exposed THEN (
-				'The function is publicly exposed. ' +
-				CASE 
-					WHEN size(public_elbv2_ids) > 0 THEN 'The function is publicly exposed through these ELBv2 load balancers: ' + substring(apoc.text.join(public_elbv2_ids, ', '), 0, 1000) + '.'
-					ELSE 'The function is not publicly exposed through any ELBv2 load balancers.'
-				END
-			)
-			ELSE 'The function is neither directly publicly exposed, nor indirectly public exposed through an ELBv2 load balancer.'
-		END + ' ' +
 		CASE 
 			WHEN is_admin THEN (
 				'The function is effectively an admin in the account because of: ' + admin_reasons[0] + '.'

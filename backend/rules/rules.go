@@ -114,6 +114,7 @@ var AttackPathsRulesToExecute = []types.Rule{
 	attackpath.PubliclyExposedServerlessAdmin{},
 	attackpath.PubliclyExposedServerlessPrivEsc{},
 	attackpath.PubliclyExposedServerlessHigh{},
+	attackpath.PrivateServerlessAdmin{},
 }
 
 func IsRuleActive(postgresDb *gorm.DB, r types.Rule) (bool, error) {
