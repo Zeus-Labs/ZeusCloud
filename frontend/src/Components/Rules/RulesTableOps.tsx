@@ -336,7 +336,7 @@ const RulesTableOps = ({ruleCategory}: RulesTableOpsProps) => {
                         title={"Severity"} 
                         selectedFilterValue={severityFilter} 
                         setFilter={setSeverityFilter}
-                        filterOptions={["All", "Critical", "High", "Medium", "Low"]}
+                        filterOptions={["All", "Critical", "High", "Moderate", "Low"]}
                     />
                 </div>
             </div>
