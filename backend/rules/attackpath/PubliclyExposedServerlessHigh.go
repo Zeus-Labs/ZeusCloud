@@ -8,11 +8,11 @@ import (
 type PubliclyExposedServerlessHigh struct{}
 
 func (PubliclyExposedServerlessHigh) UID() string {
-	return "attackpath/publicly_exposed_vm_high_permissions"
+	return "attackpath/publicly_exposed_serverless_high_permissions"
 }
 
 func (PubliclyExposedServerlessHigh) Description() string {
-	return "Publicly exposed VM instance with high permissions."
+	return "Publicly exposed serverless function with high permissions."
 }
 
 func (PubliclyExposedServerlessHigh) Severity() types.Severity {
