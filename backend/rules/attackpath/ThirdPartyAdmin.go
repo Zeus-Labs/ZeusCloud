@@ -10,7 +10,7 @@ import (
 type ThirdPartyAdmin struct{}
 
 func (ThirdPartyAdmin) UID() string {
-	return "attackpath/third_party_high_permissions"
+	return "attackpath/third_party_admin_permissions"
 }
 
 func (ThirdPartyAdmin) Description() string {
