@@ -34,6 +34,16 @@ type AlertInstance struct {
 
 func GetAllAlerts(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ruleCategory := r.URL.Query().Get("rulecategory")
+
+		// Check if rule category is valid.
+		var ruleCategoryMap = map[string]bool{"attackpath": true, "all": true, "misconfiguration": true}
+		if _, ok := ruleCategoryMap[ruleCategory]; !ok {
+			log.Println("Invalid rule category provided")
+			http.Error(w, "Invalid rule category provided provided", 500)
+			return
+		}
+
 		var ruleResultLst []models.RuleResult
 		tx := postgresDb.Find(&ruleResultLst)
 		if tx.Error != nil {
@@ -65,7 +75,11 @@ func GetAllAlerts(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Reque
 
 		// Mape rule id to rule data.
 		var ruleDataLst []models.RuleData
-		tx = postgresDb.Find(&ruleDataLst)
+		if ruleCategory == "all" {
+			tx = postgresDb.Find(&ruleDataLst)
+		} else {
+			tx = postgresDb.Where("rule_category = ?", ruleCategory).Find(&ruleDataLst)
+		}
 		if tx.Error != nil {
 			log.Printf("failed to retrieve rule data's: %v", tx.Error)
 			http.Error(w, "failed get rules", 500)
@@ -75,7 +89,6 @@ func GetAllAlerts(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Reque
 		ruleIdToRuleData := make(map[string]models.RuleData)
 		for _, ruleData := range ruleDataLst {
 			_, ok := ruleIdToRuleData[ruleData.UID]
-
 			if !ok {
 				ruleIdToRuleData[ruleData.UID] = ruleData
 			}

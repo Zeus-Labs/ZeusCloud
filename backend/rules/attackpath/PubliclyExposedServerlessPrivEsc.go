@@ -17,12 +17,13 @@ func (PubliclyExposedServerlessPrivEsc) Description() string {
 }
 
 func (PubliclyExposedServerlessPrivEsc) Severity() types.Severity {
-	return types.Critical
+	return types.Moderate
 }
 
 func (PubliclyExposedServerlessPrivEsc) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.PubliclyExposed,
+		types.IamMisconfiguration,
 	}
 }
 

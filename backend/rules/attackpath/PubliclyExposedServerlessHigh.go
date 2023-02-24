@@ -18,12 +18,13 @@ func (PubliclyExposedServerlessHigh) Description() string {
 }
 
 func (PubliclyExposedServerlessHigh) Severity() types.Severity {
-	return types.Critical
+	return types.High
 }
 
 func (PubliclyExposedServerlessHigh) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.PubliclyExposed,
+		types.IamMisconfiguration,
 	}
 }
 

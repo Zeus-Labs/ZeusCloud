@@ -11,11 +11,12 @@ import { AlertSlideover } from './AlertsSlideover';
 import { TextInput } from "../Shared/Input";
 import { extractServiceName } from "../../utils/utils";
 
-async function getActiveAlertsInfoData(): Promise<RuleAlertsResponse> {
-  
+async function getActiveAlertsInfoData(ruleCategory: string): Promise<RuleAlertsResponse> {
     try {
         const ruleAlertsEndpoint = process.env.REACT_APP_API_DOMAIN + "/api/getAllAlerts";
-        const response = await axios.get(ruleAlertsEndpoint);
+        const response = await axios.get(ruleAlertsEndpoint,
+            { params: { rulecategory: ruleCategory } }
+        );
         
         return {
             rule_alerts_group: response.data.rule_alerts_group.filter((group: rulealerts_group) => group.rule_data.active),
@@ -42,7 +43,15 @@ async function getActiveAlertsInfoData(): Promise<RuleAlertsResponse> {
     }
 }
 
-const AlertsTableOps = () => {
+
+type AlertsTableOpsProps = {
+    ruleCategory: string, 
+};
+
+const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
+    if (ruleCategory !== "misconfiguration" && ruleCategory !== "attackpath") {
+        throw new Error("Invalid rule category");
+    }
     let initRuleAlertsGroupList: rulealerts_group[] = [];
     var initRulesAlertsInfo: RuleAlertsResponse = {
         rule_alerts_group: initRuleAlertsGroupList, 
@@ -135,7 +144,7 @@ const AlertsTableOps = () => {
     // Get all active alerts info data at initial set up. Set all rows to be closed.
     useEffect(() => {
         async function asyncWork() {
-            const receivedActiveAlertsInfo = await getActiveAlertsInfoData();
+            const receivedActiveAlertsInfo = await getActiveAlertsInfoData(ruleCategory);
             setActiveAlertsInfo(receivedActiveAlertsInfo)
             receivedActiveAlertsInfo.rule_alerts_group.forEach(group => {
                 var ruleUid: string = group.rule_data.uid;
@@ -144,7 +153,7 @@ const AlertsTableOps = () => {
             }); 
         }
         asyncWork()
-    }, []);
+    }, [ruleCategory]);
 
     // Create each alert table and surrounding components.
     useEffect(() => {
@@ -205,77 +214,122 @@ const AlertsTableOps = () => {
             return filterAccountStr === account;
         }
 
-        var allTableRows = activeAlertsInfo.rule_alerts_group.map((rulealerts_group, idx) =>
-            {
-              var openStateBool: boolean = false;
-              var rule_date_id: string = rulealerts_group.rule_data.uid;
-              if(rule_date_id in openTableState) {
-                openStateBool = openTableState[rulealerts_group.rule_data.uid]
-              } 
-              
-              const flipOpenRowStateFn = function() {
-                setOpenTableState(prevOpenStateInfo => ({...prevOpenStateInfo, 
-                    [rule_date_id]: !prevOpenStateInfo[rule_date_id]}));
-              }
+        var allTableRows = activeAlertsInfo.rule_alerts_group.map((rulealerts_group, idx) => {
+            var openStateBool: boolean = false;
+            var rule_date_id: string = rulealerts_group.rule_data.uid;
+            if(rule_date_id in openTableState) {
+            openStateBool = openTableState[rulealerts_group.rule_data.uid]
+            } 
+            
+            const flipOpenRowStateFn = function() {
+            setOpenTableState(prevOpenStateInfo => ({...prevOpenStateInfo, 
+                [rule_date_id]: !prevOpenStateInfo[rule_date_id]}));
+            }
 
-              const serviceName = extractServiceName(rule_date_id);
-
-              return {
-                  columns: [
-                    {
-                        content: rulealerts_group.rule_data.description,
-                        accessor_key: "description",
-                        value: rulealerts_group.rule_data.description,
-                        ignoreComponentExpansion: false,
-                    },
-                    {
-                        content: rulealerts_group.rule_data.severity,
-                        accessor_key: "severity",
-                        value: rulealerts_group.rule_data.severity,
-                        ignoreComponentExpansion: false,
-                    },
-                    {
-                        content: <Risks key={rulealerts_group.rule_data.uid} 
-                            values={rulealerts_group.rule_data.risk_categories} />,
-                        accessor_key: "risk_categories",
-                        value: rulealerts_group.rule_data.risk_categories,
-                        ignoreComponentExpansion: false,
-                    },
-                    {
-                        content: serviceName,
-                        accessor_key: "service",
-                        value: serviceName,
-                        ignoreComponentExpansion: false,
-                    },
-                    {
-                        content: rulealerts_group.alert_instances.filter(
-                            alert_instance => mutedFilterPred(alert_instance.muted, innerAlertsFilter["muted"])
-                        ).filter(
-                            alert_instance => statusFilterPred(alert_instance.status === "failed", innerAlertsFilter["status"])
-                        ).filter(
-                            alert_instance => accountFilterPred(alert_instance.account_id, innerAlertsFilter["account"])
-                        ).length,
-                        accessor_key: "alerts",
-                        value: rulealerts_group.alert_instances.filter(
-                            alert_instance => mutedFilterPred(alert_instance.muted, innerAlertsFilter["muted"])
-                        ).filter(
-                            alert_instance => statusFilterPred(alert_instance.status === "failed", innerAlertsFilter["status"])
-                        ).filter(
-                            alert_instance => accountFilterPred(alert_instance.account_id, innerAlertsFilter["account"])
-                        ).length,
-                        ignoreComponentExpansion: false,
-                    },
-                  ],
-                  rowId: rulealerts_group.rule_data.uid,
-                  nestedComponent: nestedAlertComponents[idx],
-                  openRowState: openStateBool, 
-                  setOpenRowStateFn: flipOpenRowStateFn,
-              }
-          }
-        );
+            if (ruleCategory === "misconfiguration") {
+                const serviceName = extractServiceName(rule_date_id);
+                return {
+                    columns: [
+                        {
+                            content: rulealerts_group.rule_data.description,
+                            accessor_key: "description",
+                            value: rulealerts_group.rule_data.description,
+                            ignoreComponentExpansion: false,
+                        },
+                        {
+                            content: rulealerts_group.rule_data.severity,
+                            accessor_key: "severity",
+                            value: rulealerts_group.rule_data.severity,
+                            ignoreComponentExpansion: false,
+                        },
+                        {
+                            content: <Risks key={rulealerts_group.rule_data.uid} 
+                                values={rulealerts_group.rule_data.risk_categories} />,
+                            accessor_key: "risk_categories",
+                            value: rulealerts_group.rule_data.risk_categories,
+                            ignoreComponentExpansion: false,
+                        },
+                        {
+                            content: serviceName,
+                            accessor_key: "service",
+                            value: serviceName,
+                            ignoreComponentExpansion: false,
+                        },
+                        {
+                            content: rulealerts_group.alert_instances.filter(
+                                alert_instance => mutedFilterPred(alert_instance.muted, innerAlertsFilter["muted"])
+                            ).filter(
+                                alert_instance => statusFilterPred(alert_instance.status === "failed", innerAlertsFilter["status"])
+                            ).filter(
+                                alert_instance => accountFilterPred(alert_instance.account_id, innerAlertsFilter["account"])
+                            ).length,
+                            accessor_key: "alerts",
+                            value: rulealerts_group.alert_instances.filter(
+                                alert_instance => mutedFilterPred(alert_instance.muted, innerAlertsFilter["muted"])
+                            ).filter(
+                                alert_instance => statusFilterPred(alert_instance.status === "failed", innerAlertsFilter["status"])
+                            ).filter(
+                                alert_instance => accountFilterPred(alert_instance.account_id, innerAlertsFilter["account"])
+                            ).length,
+                            ignoreComponentExpansion: false,
+                        },
+                    ],
+                    rowId: rulealerts_group.rule_data.uid,
+                    nestedComponent: nestedAlertComponents[idx],
+                    openRowState: openStateBool, 
+                    setOpenRowStateFn: flipOpenRowStateFn,
+                }
+            } else {
+                return {
+                    columns: [
+                        {
+                            content: rulealerts_group.rule_data.description,
+                            accessor_key: "description",
+                            value: rulealerts_group.rule_data.description,
+                            ignoreComponentExpansion: false,
+                        },
+                        {
+                            content: rulealerts_group.rule_data.severity,
+                            accessor_key: "severity",
+                            value: rulealerts_group.rule_data.severity,
+                            ignoreComponentExpansion: false,
+                        },
+                        {
+                            content: <Risks key={rulealerts_group.rule_data.uid} 
+                                values={rulealerts_group.rule_data.risk_categories} />,
+                            accessor_key: "risk_categories",
+                            value: rulealerts_group.rule_data.risk_categories,
+                            ignoreComponentExpansion: false,
+                        },
+                        {
+                            content: rulealerts_group.alert_instances.filter(
+                                alert_instance => mutedFilterPred(alert_instance.muted, innerAlertsFilter["muted"])
+                            ).filter(
+                                alert_instance => statusFilterPred(alert_instance.status === "failed", innerAlertsFilter["status"])
+                            ).filter(
+                                alert_instance => accountFilterPred(alert_instance.account_id, innerAlertsFilter["account"])
+                            ).length,
+                            accessor_key: "alerts",
+                            value: rulealerts_group.alert_instances.filter(
+                                alert_instance => mutedFilterPred(alert_instance.muted, innerAlertsFilter["muted"])
+                            ).filter(
+                                alert_instance => statusFilterPred(alert_instance.status === "failed", innerAlertsFilter["status"])
+                            ).filter(
+                                alert_instance => accountFilterPred(alert_instance.account_id, innerAlertsFilter["account"])
+                            ).length,
+                            ignoreComponentExpansion: false,
+                        },
+                    ],
+                    rowId: rulealerts_group.rule_data.uid,
+                    nestedComponent: nestedAlertComponents[idx],
+                    openRowState: openStateBool, 
+                    setOpenRowStateFn: flipOpenRowStateFn,
+                }
+            }
+        });
 
         setAllRows(allTableRows);
-    }, [openTableState, activeAlertsInfo, nestedAlertComponents, innerAlertsFilter]);
+    }, [openTableState, activeAlertsInfo, nestedAlertComponents, innerAlertsFilter, ruleCategory]);
 
     // Filter the displayed table rows.
     useEffect(() => {
@@ -300,7 +354,7 @@ const AlertsTableOps = () => {
         });
     }, [allRows, searchFilter, severityFilter, riskFilter, sortState]);
 
-    const tableColumnHeaders =  
+    const tableColumnHeaders = ruleCategory === "misconfiguration" ?
     [
         {
             header: "Name",
@@ -345,13 +399,54 @@ const AlertsTableOps = () => {
                 },
             }
         }
+    ] :
+    [
+        {
+            header: "Name",
+            accessor_key: "description",
+            allowSorting: false,
+        },
+        {
+            header: "Severity",
+            accessor_key: "severity",
+            allowSorting: true,
+            sortColumnHeader: {
+                sortStateValue: sortState["severity"],
+                setSortStateFn: (updatedSeverity: string) => {
+                    setSortState({
+                        "alerts": "None",
+                        "severity": updatedSeverity,
+                    })
+                },
+            }
+        },
+        {
+            header: "Risks",
+            accessor_key: "risk_categories",
+            allowSorting: false,
+        },
+        {
+            header: "Alerts",
+            accessor_key: "alerts",
+            allowSorting: true,
+            sortColumnHeader: {
+                sortStateValue: sortState["alerts"],
+                setSortStateFn: (updatedAlerts: string) => {
+                    setSortState({
+                        "severity": "None",
+                        "alerts": updatedAlerts,
+                    })
+                },
+            }
+        }
     ];
 
     useEffect(() => {
         setTimeout(() => setReady(true), 100)
     }, []);
 
-    const tableHeaderCSS = [{
+    const tableHeaderCSS = ruleCategory === "misconfiguration" ?
+    [{
         "headerClassName": "w-1/2 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900 sm:pl-6",
         "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
         "chevronClassName": "h-5 w-5",
@@ -375,6 +470,26 @@ const AlertsTableOps = () => {
         "headerClassName": "w-1/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
         "spanClassName": "ml-2 flex-none rounded bg-gray-200 text-gray-900 group-hover:bg-gray-300",
         "chevronClassName": "h-5 w-5",
+    }] :
+    [{
+        "headerClassName": "w-1/2 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900 sm:pl-6",
+        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+        "chevronClassName": "h-5 w-5",
+    },
+    {
+        "headerClassName": "w-1/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+        "spanClassName": "ml-2 flex-none rounded bg-gray-200 text-gray-900 group-hover:bg-gray-300",
+        "chevronClassName": "h-5 w-5",
+    },
+    {
+        "headerClassName": "w-3/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+        "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+    },
+    {
+        "headerClassName": "w-1/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+        "spanClassName": "ml-2 flex-none rounded bg-gray-200 text-gray-900 group-hover:bg-gray-300",
+        "chevronClassName": "h-5 w-5",
     }];
 
 
@@ -390,7 +505,7 @@ const AlertsTableOps = () => {
 
     // These divs are used to build the table and filters.
     return (
-    <div className="flex flex-col mx-auto w-11/12">
+    <div className="pt-8 sm:pt-10">
         {/* This div is used to build the filters. */}
         <div className="flex flex-row grid grid-cols-6 gap-4">
                     <div key={"RuleInput"}>
@@ -457,7 +572,6 @@ const AlertsTableOps = () => {
                             filterOptions={["Failed", "All"]}
                         />
                     </div>
-                    
             </div>
 
         {/* These div is for the structure around the table. */}

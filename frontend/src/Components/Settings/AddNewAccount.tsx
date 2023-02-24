@@ -21,7 +21,7 @@ async function addAccountDetails({accountName, awsAccessKeyId, awsSecretAccessKe
             aws_secret_access_key: awsSecretAccessKey,
             default_region: defaultRegion,
         }
-        const _ = await axios.post(addAccountDetailsEndpoint, accountDetails);
+        await axios.post(addAccountDetailsEndpoint, accountDetails);
     } catch (error) {
         if (axios.isAxiosError(error)) {
             if (error.response && error.response.data) {

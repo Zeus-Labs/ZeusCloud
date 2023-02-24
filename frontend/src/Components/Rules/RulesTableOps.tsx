@@ -10,15 +10,15 @@ import { TextInput } from "../Shared/Input";
 import { risksFilterFn, severityFilterFn, searchFilterFn, severitySortTypeFn } from "../Shared/TableOpsUtils";
 import { extractServiceName } from "../../utils/utils";
 
-async function getRulesInfoData(setRulesInfo: React.Dispatch<React.SetStateAction<RuleInfoData>>) {    
+async function getRulesInfoData(setRulesInfo: React.Dispatch<React.SetStateAction<RuleInfoData>>, ruleCategory: string) {    
     try {
         const rulesEndpoint = process.env.REACT_APP_API_DOMAIN + "/api/getRules";
         const response = await axios.get(rulesEndpoint, 
-            { params: { rulecategory: 'misconfiguration' } 
-        });
+            { params: { rulecategory: ruleCategory } }
+        );
         
         var ruleInfoList = new Array<rule_info>();
-        response.data.map((currElement: rule_info, index: number) => {
+        response.data.forEach((currElement: rule_info) => {
             ruleInfoList.push({
                 uid: currElement.uid,
                 description: currElement.description,
@@ -26,7 +26,6 @@ async function getRulesInfoData(setRulesInfo: React.Dispatch<React.SetStateActio
                 risk_categories: currElement.risk_categories,
                 active: currElement.active
             });
-            return;
         });
         setRulesInfo({
             data: ruleInfoList,
@@ -53,8 +52,16 @@ async function getRulesInfoData(setRulesInfo: React.Dispatch<React.SetStateActio
     }
 }
 
+type RulesTableOpsProps = {
+    ruleCategory: string, 
+};
+
 // These divs are used to build the table and filters.
-const RulesTableOps = () => {
+const RulesTableOps = ({ruleCategory}: RulesTableOpsProps) => {
+    if (ruleCategory !== "misconfiguration" && ruleCategory !== "attackpath") {
+        throw new Error("Invalid rule category");
+    }
+
     let initRulesInfoList: rule_info[] = [];
     var initRulesInfo: RuleInfoData = {
         data: initRulesInfoList, 
@@ -86,55 +93,84 @@ const RulesTableOps = () => {
 
     // Pull initial rules information. Only runs the very first render.
     useEffect(() => {
-        getRulesInfoData(setRulesInfo);
-    }, []);
+        getRulesInfoData(setRulesInfo, ruleCategory);
+    }, [ruleCategory]);
 
     // Set all table rows.
     useEffect(() => {
         var allTableRows = rulesInfo.data.map((dataTableRow, idx) => {
-
-            const serviceName = extractServiceName(dataTableRow.uid);
-            {
-              return {
-                  columns: [
-                      {
-                          content: dataTableRow.description,
-                          accessor_key: "description",
-                          value: dataTableRow.description,
-                          ignoreComponentExpansion: false,
-                      },
-                      {
-                          content: dataTableRow.severity,
-                          accessor_key: "severity",
-                          value: dataTableRow.severity,
-                          ignoreComponentExpansion: false,
-                      },
-                      {
-                          content: <Risks values={dataTableRow.risk_categories} />,
-                          accessor_key: "risk_categories",
-                          value: dataTableRow.risk_categories,
-                          ignoreComponentExpansion: false,
-                      },
-                      {
-                        content: serviceName,
-                        accessor_key: "service",
-                        value: serviceName,
-                        ignoreComponentExpansion: false,
-                    },
-                      {
-                          content: <RuleToggle value={dataTableRow.active} original={dataTableRow} />,
-                          accessor_key: "active",
-                          value: dataTableRow.active,
-                          ignoreComponentExpansion: true,
-                      },
-                  ],
-                  rowId: dataTableRow.uid,
-              }
+            if (ruleCategory === "misconfiguration") {
+                const serviceName = extractServiceName(dataTableRow.uid);
+                return {
+                    columns: [
+                        {
+                            content: dataTableRow.description,
+                            accessor_key: "description",
+                            value: dataTableRow.description,
+                            ignoreComponentExpansion: false,
+                        },
+                        {
+                            content: dataTableRow.severity,
+                            accessor_key: "severity",
+                            value: dataTableRow.severity,
+                            ignoreComponentExpansion: false,
+                        },
+                        {
+                            content: <Risks values={dataTableRow.risk_categories} />,
+                            accessor_key: "risk_categories",
+                            value: dataTableRow.risk_categories,
+                            ignoreComponentExpansion: false,
+                        },
+                        {
+                            content: serviceName,
+                            accessor_key: "service",
+                            value: serviceName,
+                            ignoreComponentExpansion: false,
+                        },
+                        {
+                            content: <RuleToggle value={dataTableRow.active} original={dataTableRow} />,
+                            accessor_key: "active",
+                            value: dataTableRow.active,
+                            ignoreComponentExpansion: true,
+                        },
+                    ],
+                    rowId: dataTableRow.uid,
+                }
+            } else {
+                return {
+                    columns: [
+                        {
+                            content: dataTableRow.description,
+                            accessor_key: "description",
+                            value: dataTableRow.description,
+                            ignoreComponentExpansion: false,
+                        },
+                        {
+                            content: dataTableRow.severity,
+                            accessor_key: "severity",
+                            value: dataTableRow.severity,
+                            ignoreComponentExpansion: false,
+                        },
+                        {
+                            content: <Risks values={dataTableRow.risk_categories} />,
+                            accessor_key: "risk_categories",
+                            value: dataTableRow.risk_categories,
+                            ignoreComponentExpansion: false,
+                        },
+                        {
+                            content: <RuleToggle value={dataTableRow.active} original={dataTableRow} />,
+                            accessor_key: "active",
+                            value: dataTableRow.active,
+                            ignoreComponentExpansion: true,
+                        },
+                    ],
+                    rowId: dataTableRow.uid,
+                }
             }
         }
     );
         setAllRows(allTableRows);
-    }, [rulesInfo.data]);
+    }, [rulesInfo.data, ruleCategory]);
 
     useEffect(() => {
         setDisplayedTableRows(function (_) {
@@ -160,7 +196,9 @@ const RulesTableOps = () => {
         setTimeout(() => setReady(true), 100)
     }, []);
 
-    const tableHeaderCSS = [{
+
+    const tableHeaderCSS = ruleCategory === "misconfiguration" ? 
+    [{
         "headerClassName": "w-1/2 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900 sm:pl-6",
         "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
         "chevronClassName": "h-5 w-5",
@@ -184,9 +222,30 @@ const RulesTableOps = () => {
         "headerClassName": "w-1/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
         "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
         "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
-    }];
+    }] :
+    [{
+        "headerClassName": "w-1/2 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900 sm:pl-6",
+        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+        "chevronClassName": "h-5 w-5",
+    },
+    {
+        "headerClassName": "w-1/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+        "spanClassName": "ml-2 flex-none rounded bg-gray-200 text-gray-900 group-hover:bg-gray-300",
+        "chevronClassName": "h-5 w-5",
+    },
+    {
+        "headerClassName": "w-3/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+        "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+    },
+    {
+        "headerClassName": "w-1/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+        "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+    }]
+    ;
 
-    const tableColumnHeaders =  
+    const tableColumnHeaders = ruleCategory === "misconfiguration" ?  
     [
         {
             header: "Name",
@@ -222,10 +281,41 @@ const RulesTableOps = () => {
             accessor_key: "active",
             allowSorting: false,
         }
+    ] :
+    [
+        {
+            header: "Name",
+            accessor_key: "description",
+            allowSorting: false,
+        },
+        {
+            header: "Severity",
+            accessor_key: "severity",
+            allowSorting: true,
+            sortColumnHeader: {
+                sortStateValue: sortState["severity"],
+                setSortStateFn: (updatedSeverity: string) => {
+                    setSortState({
+                        ...sortState,
+                        "severity": updatedSeverity,
+                    })
+                },
+            },
+        },
+        {
+            header: "Risks",
+            accessor_key: "risk_categories",
+            allowSorting: false,
+        },
+        {
+            header: "Active",
+            accessor_key: "active",
+            allowSorting: false,
+        }
     ];
 
     return (
-        <div className="flex flex-col mx-auto w-11/12">
+        <div className="pt-8 sm:pt-10">
             <div className="flex flex-row grid grid-cols-6 gap-4">
                 <div key={"RuleInput"}>
                     <TextInput
@@ -246,13 +336,9 @@ const RulesTableOps = () => {
                         title={"Severity"} 
                         selectedFilterValue={severityFilter} 
                         setFilter={setSeverityFilter}
-                        filterOptions={["All", "Critical", "High", "Medium", "Low"]}
+                        filterOptions={["All", "Critical", "High", "Moderate", "Low"]}
                     />
                 </div>
-
-               
-
-                
             </div>
 
             {/* These div is for the structure around the table. */}

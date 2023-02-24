@@ -27,7 +27,7 @@ func GetRules(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) 
 		if ruleCategory == "all" {
 			tx = postgresDb.Find(&ruleDataLst)
 		} else {
-			tx = postgresDb.Find(&ruleDataLst).Where("rule_category = ?", ruleCategory)
+			tx = postgresDb.Where("rule_category = ?", ruleCategory).Find(&ruleDataLst)
 		}
 
 		if tx.Error != nil {
