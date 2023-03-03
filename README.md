@@ -1,5 +1,9 @@
 <p align="center">
-  <h1 align="center">ZeusCloud: Cloud Security</h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/20483346/222834439-0cbf26d7-eaa6-462c-9438-e3a91a02c7d2.png" height="100">
+    <img alt="logo" src="https://user-images.githubusercontent.com/20483346/222834423-7fc33c17-c599-43c5-827d-ea4183a8b6f2.png" height="100">
+  </picture>
+  <h1 align="center">Open-source Cloud Security</h1>
   <p align="center">
     <em>Secure your cloud.</em>
   </p>
