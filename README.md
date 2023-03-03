@@ -31,7 +31,7 @@ Discover, prioritize, and remediate your risks in the cloud.
 <!-- omit in toc -->
 ## Table of Contents
 
-- [Quick start](#quick-start)
+- [Quick Start](#quick-start)
 - [Features](#features)
 - [Why ZeusCloud?](#why-zeuscloud)
 - [Future Roadmap](#future-roadmap)
@@ -40,12 +40,11 @@ Discover, prioritize, and remediate your risks in the cloud.
 - [Security](#security)
 - [Open-source vs. paid](#open-source-vs-paid)
 
-## Quick start
+## Quick Start
 
 1. Clone repo: `git clone --recurse-submodules git@github.com:Zeus-Labs/ZeusCloud.git`
-2. Generate an encryption key: `openssl rand -base64 32`.
-3. Run: `ENCRYPTION_KEY=[from previous step] docker-compose up`.
-4. Visit http://localhost:3000
+2. Run: `cd ZeusCloud && make quick-deploy`
+3. Visit http://localhost:3000
 
 A cloud-hosted version is available on special request - email founders@zeuscloud.io to get access!
 
