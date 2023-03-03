@@ -85,6 +85,8 @@ import { PubliclyExposedServerlessAdminPermissions } from "./AttackPathComponent
 import { PubliclyExposedServerlessHighPermissions } from "./AttackPathComponents/PubliclyExposedServerlessHighPermissions";
 import { PubliclyExposedServerlessPrivilegeEscalation } from "./AttackPathComponents/PubliclyExposedServerlessPrivilegeEscalation";
 import { PubliclyExposedVmPrivilegeEscalation } from "./AttackPathComponents/PubliclyExposedVmPrivilegeEscalation";
+import { PrivateServerlessAdminPermissions } from "./AttackPathComponents/PrivateServerlessAdminPermissions";
+
 
 export const Remediate = ({rule_data} : RemediateProps) => {
    const ruleId: string = rule_data.uid;

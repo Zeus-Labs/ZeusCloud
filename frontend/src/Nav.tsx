@@ -11,7 +11,7 @@ const navigation = [
 const Nav = () => {
 
   return (
-    <nav className="bg-gray-800">
+    <nav className="bg-neutral-800">
         <>
           <div className="max-w-8xl mx-auto px-2 sm:px-6 lg:px-8">
             <div className="relative flex h-16 items-center justify-start">
@@ -26,8 +26,8 @@ const Nav = () => {
                         key={item.name}
                         to={item.href}
                         className={({ isActive }) => isActive
-                              ? "bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium"
-                              : "text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                              ? "bg-neutral-900 text-white px-3 py-2 rounded-md text-sm font-medium"
+                              : "text-neutral-300 hover:bg-neutral-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                         }
                         aria-current={item.current ? 'page' : undefined}
                       >
