@@ -1,5 +1,10 @@
 version: "3.7"
 services:
+  proxy: 
+    build: 
+      context: ./zeus-proxy
+      dockerfile: ./Dockerfile
+    image: zeuscloudhq/zeuscloud-proxy:${BUILD_VERSION}
   frontend:
     build:
       context: ./frontend

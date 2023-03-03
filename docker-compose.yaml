@@ -71,8 +71,6 @@ services:
       - app_network
     depends_on:
       - backend
-    ports:
-      - 3000:3000
 
   backend:
     image: zeuscloudhq/zeuscloud-backend:${PULL_VERSION}
@@ -92,8 +90,16 @@ services:
       - postgres
       - neo4j
       - cartography
+  
+  proxy:
+    image: zeuscloudhq/zeuscloud-proxy:${PULL_VERSION}
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - app_network
     ports:
-      - 8080:8080
+      - 80:80
 
 networks:
   app_network:

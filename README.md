@@ -47,7 +47,7 @@ Discover, prioritize, and remediate your risks in the cloud.
 
 1. Clone repo: `git clone --recurse-submodules git@github.com:Zeus-Labs/ZeusCloud.git`
 2. Run: `cd ZeusCloud && make quick-deploy`
-3. Visit http://localhost:3000
+3. Visit http://localhost:80
 
 A cloud-hosted version is available on special request - email founders@zeuscloud.io to get access!
 
@@ -109,6 +109,8 @@ To develop on backend, run
 ```
 docker-compose -f docker-compose.dev.yaml --env-file .env.dev up --no-deps --build backend
 ```
+
+To access the UI, go to: http://localhost:80.
 
 ## Security
 
