@@ -18,7 +18,7 @@ services:
       retries: 10
 
   neo4j:
-    image: neo4j:4.4
+    image: neo4j:4.4.14-community
     restart: unless-stopped
     volumes:
       - neo4j_conf:/conf
