@@ -77,6 +77,14 @@ import { SecurityGroupRestrictTraffic } from "./OtherComponents/SecurityGroupRes
 import { CloudtrailLogFileValidation } from "./MonitoringRemediationComponents/CloudtrailLogFileValidation";
 import { S3MfaDelete } from "./OtherComponents/S3MfaDelete";
 import { VpcExcessiveSecurityGroup } from "./OtherComponents/VpcExcessiveSecurityGroup";
+import { ThirdPartyAdminPermissions } from "./AttackPathComponents/ThirdPartyAdminPermissions";
+import { ThirdPartyHighPermissions } from "./AttackPathComponents/ThirdPartyHighPermissions";
+import { PubliclyExposedVmAdminPermissions } from "./AttackPathComponents/PubliclyExposedVmAdminPermissions";
+import { PubliclyExposedVmHighPermissions } from "./AttackPathComponents/PubliclyExposedVmHighPermissions";
+import { PubliclyExposedServerlessAdminPermissions } from "./AttackPathComponents/PubliclyExposedServerlessAdminPermissions";
+import { PubliclyExposedServerlessHighPermissions } from "./AttackPathComponents/PubliclyExposedServerlessHighPermissions";
+import { PubliclyExposedServerlessPrivilegeEscalation } from "./AttackPathComponents/PubliclyExposedServerlessPrivilegeEscalation";
+import { PubliclyExposedVmPrivilegeEscalation } from "./AttackPathComponents/PubliclyExposedVmPrivilegeEscalation";
 
 export const Remediate = ({rule_data} : RemediateProps) => {
    const ruleId: string = rule_data.uid;
@@ -241,6 +249,25 @@ export const Remediate = ({rule_data} : RemediateProps) => {
          return <S3MfaDelete/>
       case "vpc/excessive_security_groups": 
          return <VpcExcessiveSecurityGroup/>
+      case "attackpath/third_party_admin_permissions": 
+         return <ThirdPartyAdminPermissions/>
+      case "attackpath/third_party_high_permissions": 
+         return <ThirdPartyHighPermissions/>
+      case "attackpath/publicly_exposed_vm_admin_permissions": 
+         return <PubliclyExposedVmAdminPermissions/>
+      case "attackpath/publicly_exposed_vm_high_permissions":
+         return <PubliclyExposedVmHighPermissions/>
+      case "attackpath/publicly_exposed_serverless_admin_permissions": 
+         return <PubliclyExposedServerlessAdminPermissions/>
+      case "attackpath/publicly_exposed_serverless_high_permissions":
+         return <PubliclyExposedServerlessHighPermissions/>
+      case "attackpath/publicly_exposed_serverless_priv_escalation":
+         return <PubliclyExposedServerlessPrivilegeEscalation/>
+      case "attackpath/publicly_exposed_vm_priv_escalation":
+         return <PubliclyExposedVmPrivilegeEscalation/>
+      case "attackpath/private_serverless_admin_permissions": 
+         return <PrivateServerlessAdminPermissions/>
+
    }
    return (<></>)
 
