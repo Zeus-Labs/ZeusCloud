@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"log"
 	"net/http"
-	"os"
+
+	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 
 	"github.com/Zeus-Labs/ZeusCloud/models"
 	"github.com/Zeus-Labs/ZeusCloud/rules"
@@ -14,23 +14,6 @@ import (
 	"github.com/Zeus-Labs/ZeusCloud/handlers"
 	"github.com/Zeus-Labs/ZeusCloud/middleware"
 )
-
-func corsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(response http.ResponseWriter, r *http.Request) {
-		// Allow requests coming from browser.
-		response.Header().Set("Access-Control-Allow-Origin", os.Getenv("WEBSITE_DOMAIN"))
-		response.Header().Set("Access-Control-Allow-Credentials", "true")
-		response.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
-
-		if r.Method == "OPTIONS" {
-			// we add content-type + other headers used by SuperTokens
-			response.Header().Set("Access-Control-Allow-Methods", "*")
-			response.Write([]byte(""))
-		} else {
-			next.ServeHTTP(response, r)
-		}
-	})
-}
 
 func main() {
 	// Connect with Postgres database
@@ -91,6 +74,5 @@ func main() {
 	dLog := log.Default()
 	lm := middleware.LoggingMiddleware(dLog)
 	loggedMux := lm(mux)
-	corsMiddlewareLoggedMux := corsMiddleware(loggedMux)
-	http.ListenAndServe(":8080", corsMiddlewareLoggedMux)
+	http.ListenAndServe(":8080", loggedMux)
 }

@@ -111,6 +111,18 @@ services:
       - cartography
     ports:
       - 8080:8080
+  
+  proxy:
+    build:
+      context: ./zeus-proxy
+      dockerfile: ./Dockerfile
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - app_network
+    ports:
+      - 80:80
 
 networks:
   app_network:
