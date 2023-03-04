@@ -21,7 +21,7 @@
 </div>
 
 <!-- omit in toc -->
-## ZeusCloud is an open-source cloud security platform. 
+## ZeusCloud is an open source cloud security platform. 
 
 Discover, prioritize, and remediate your risks in the cloud. 
 
@@ -41,7 +41,7 @@ Discover, prioritize, and remediate your risks in the cloud.
 - [Contributing](#contributing)
 - [Development](#development)
 - [Security](#security)
-- [Open-source vs. paid](#open-source-vs-paid)
+- [Open source vs. paid](#open-source-vs-paid)
 
 ## Quick Start
 
@@ -116,7 +116,7 @@ To access the UI, go to: http://localhost:80.
 
 Please do not run ZeusCloud exposed to the public internet. Use the latest versions of ZeusCloud to get all security related patches. Report any security vulnerabilities to founders@zeuscloud.io. 
 
-## Open-source vs. paid
+## Open source vs. paid
 
 This repo is freely available under the [Apache 2.0 license](https://github.com/Zeus-Labs/ZeusCloud/blob/main/LICENSE).
 
