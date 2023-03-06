@@ -44,6 +44,19 @@ export const risksFilterFn = (allRows: Array<TableRow>, filterValue: string): Ar
     });
 }
 
+// Filter out any rows where number of alerts is 0.
+export const zeroAlertFilter = (allRows: Array<TableRow>): Array<TableRow> => {
+    return allRows.filter(row => {
+        for (var col of row.columns) {
+            if (col.accessor_key === "alerts" && typeof(col.value) === "number") {
+                if(col.value > 0) {
+                    return true;
+                }
+            }
+        }
+    });
+}
+
 export const severityFilterFn = (allRows: Array<TableRow>, filterValue: string): Array<TableRow> => {
     if (filterValue === "" || filterValue === "All") {
         return allRows;

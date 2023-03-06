@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Risks  } from '../Shared/Risks';
 import { SelectFilterDropdown } from '../Shared/Select';
 import { alertNumberSortTypeFn, severitySortTypeFn, severityFilterFn, 
-    searchFilterFn, risksFilterFn} from "../Shared/TableOpsUtils";
+    searchFilterFn, risksFilterFn, zeroAlertFilter} from "../Shared/TableOpsUtils";
 import { RuleAlertsResponse, rulealerts_group, AlertId, SlidoverStateData, alert_instance } from './AlertsTypes';
 import { GeneratedAlertsTable } from './GeneratedAlertsTable';
 import { AlertSlideover } from './AlertsSlideover';
@@ -340,16 +340,20 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
             var filteredRiskRows = risksFilterFn(filteredSeverityRows, riskFilter);
             var filteredSearchRows = searchFilterFn(filteredRiskRows, searchFilter);
 
+            // Filter out any rows with 0 alerts.
+            var filteredZeroAlertRows = zeroAlertFilter(filteredSearchRows)
+
+
             if(sortState["severity"] === "None" && sortState["alerts"] === "None") {
-                return filteredSearchRows;
+                return filteredZeroAlertRows;
             } else if(sortState["alerts"] === "Dec") {
-                return filteredSearchRows.sort((rowA, rowB) => -1*alertNumberSortTypeFn(rowA, rowB));
+                return filteredZeroAlertRows.sort((rowA, rowB) => -1*alertNumberSortTypeFn(rowA, rowB));
             } else if(sortState["alerts"] === "Inc") {
-                return filteredSearchRows.sort((rowA, rowB) => alertNumberSortTypeFn(rowA, rowB));
+                return filteredZeroAlertRows.sort((rowA, rowB) => alertNumberSortTypeFn(rowA, rowB));
             } else if (sortState["severity"] === "Dec") {
-                return filteredSearchRows.sort((rowA, rowB) => -1*severitySortTypeFn(rowA, rowB));
+                return filteredZeroAlertRows.sort((rowA, rowB) => -1*severitySortTypeFn(rowA, rowB));
             } else {
-                return filteredSearchRows.sort((rowA, rowB) => severitySortTypeFn(rowA, rowB));
+                return filteredZeroAlertRows.sort((rowA, rowB) => severitySortTypeFn(rowA, rowB));
             }
         });
     }, [allRows, searchFilter, severityFilter, riskFilter, sortState]);
