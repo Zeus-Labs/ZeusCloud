@@ -78,6 +78,8 @@ services:
     build:
       context: ./frontend
       dockerfile: ./Dockerfile.dev
+    # If you add any environment variable here, you must add a row to
+    # frontend/.env
     environment: 
       - REACT_APP_API_DOMAIN=${REACT_APP_API_DOMAIN}
     volumes:

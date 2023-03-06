@@ -12,7 +12,8 @@ import { extractServiceName } from "../../utils/utils";
 
 async function getRulesInfoData(setRulesInfo: React.Dispatch<React.SetStateAction<RuleInfoData>>, ruleCategory: string) {    
     try {
-        const rulesEndpoint = process.env.REACT_APP_API_DOMAIN + "/api/getRules";
+        // @ts-ignore
+        const rulesEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/getRules";
         const response = await axios.get(rulesEndpoint, 
             { params: { rulecategory: ruleCategory } }
         );

@@ -65,8 +65,11 @@ services:
       - neo4j
 
   frontend:
-    # Don't pass environment variables. Pass args through docker-compose.build.yaml
     image: zeuscloudhq/zeuscloud-frontend:${PULL_VERSION}
+    # If you add any environment variable here, you must add a row to
+    # frontend/.env
+    environment:
+      - REACT_APP_API_DOMAIN=${REACT_APP_API_DOMAIN}
     networks:
       - app_network
     depends_on:
