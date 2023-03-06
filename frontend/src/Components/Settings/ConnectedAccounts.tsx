@@ -17,42 +17,32 @@ interface account_details {
 
 
 async function getAccountDetails(setAccountDetailsList: React.Dispatch<React.SetStateAction<account_details[]>>) {
-    let message = '';
-    try {
-        const getAccountDetailsEndpoint = process.env.REACT_APP_API_DOMAIN + "/api/getAccountDetails";
-        const response = await axios.get(getAccountDetailsEndpoint);   
-        const isScanRunningEndpoint = process.env.REACT_APP_API_DOMAIN + "/api/isScanRunning";
-        const responseRunning = await axios.get(isScanRunningEndpoint);
-     
-        var accountDetailsList = new Array<account_details>();
-        response.data.map((curElement: account_details) => {
-            accountDetailsList.push({
-                account_name: curElement.account_name,
-                aws_access_key_id: curElement.aws_access_key_id,
-                aws_secret_access_key: curElement.aws_secret_access_key,
-                default_region: curElement.default_region,
-                is_scan_running: responseRunning.data.status === "RUNNING",
-            });
+    // @ts-ignore
+    const getAccountDetailsEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/getAccountDetails";
+    const response = await axios.get(getAccountDetailsEndpoint);   
+    // @ts-ignore
+    const isScanRunningEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/isScanRunning";
+    const responseRunning = await axios.get(isScanRunningEndpoint);
+    
+    var accountDetailsList = new Array<account_details>();
+    response.data.forEach((curElement: account_details) => {
+        accountDetailsList.push({
+            account_name: curElement.account_name,
+            aws_access_key_id: curElement.aws_access_key_id,
+            aws_secret_access_key: curElement.aws_secret_access_key,
+            default_region: curElement.default_region,
+            is_scan_running: responseRunning.data.status === "RUNNING",
         });
-        setAccountDetailsList(accountDetailsList);
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            if (error.response && error.response.data) {
-                return message = "Encountered an error getting account details: " + error.response.data
-            } 
-        }
-        if (message.length === 0) {
-            return message = "Encountered an error in getting account details"
-        }
-    }
-    return message;
+    });
+    setAccountDetailsList(accountDetailsList);
 }
 
 async function rescan(): Promise<string> {
     let message = '';
     try {
-        const rescanEndpoint = process.env.REACT_APP_API_DOMAIN + "/api/rescan";
-        const _ = await axios.post(rescanEndpoint);
+        // @ts-ignore
+        const rescanEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/rescan";
+        await axios.post(rescanEndpoint);
     } catch (error) {
         if (axios.isAxiosError(error)) {
             if (error.response && error.response.data) {
@@ -138,11 +128,12 @@ interface AccountDetailsDeletion {
 async function deleteAccountDetails({ accountName }: AccountDetailsDeletion): Promise<string> {
     let message = '';
     try {
-        const deleteAccountDetailsEndpoint = process.env.REACT_APP_API_DOMAIN + "/api/deleteAccountDetails";
+        // @ts-ignore
+        const deleteAccountDetailsEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/deleteAccountDetails";
         var accountDetails = {
             account_name: accountName,
         }
-        const _ = await axios.post(deleteAccountDetailsEndpoint, accountDetails);
+        await axios.post(deleteAccountDetailsEndpoint, accountDetails);
     } catch (error) {
         if (axios.isAxiosError(error)) {
             if (error.response && error.response.data) {

@@ -14,7 +14,8 @@ interface AccountDetailsSubmission {
 async function addAccountDetails({accountName, awsAccessKeyId, awsSecretAccessKey, defaultRegion}: AccountDetailsSubmission): Promise<string> {
     let message = '';
     try {
-        const addAccountDetailsEndpoint = process.env.REACT_APP_API_DOMAIN + "/api/addAccountDetails";
+        // @ts-ignore
+        const addAccountDetailsEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/addAccountDetails";
         var accountDetails = {
             account_name: accountName,
             aws_access_key_id: awsAccessKeyId,

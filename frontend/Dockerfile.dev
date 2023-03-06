@@ -8,6 +8,7 @@ COPY package.json .
 RUN yarn install
 
 EXPOSE 3000
+# This currently relies on volume mount of frontend directory
 ENTRYPOINT ["yarn", "run", "start"]
 
 

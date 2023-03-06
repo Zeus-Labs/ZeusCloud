@@ -13,7 +13,8 @@ import { extractServiceName } from "../../utils/utils";
 
 async function getActiveAlertsInfoData(ruleCategory: string): Promise<RuleAlertsResponse> {
     try {
-        const ruleAlertsEndpoint = process.env.REACT_APP_API_DOMAIN + "/api/getAllAlerts";
+        // @ts-ignore
+        const ruleAlertsEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/getAllAlerts";
         const response = await axios.get(ruleAlertsEndpoint,
             { params: { rulecategory: ruleCategory } }
         );

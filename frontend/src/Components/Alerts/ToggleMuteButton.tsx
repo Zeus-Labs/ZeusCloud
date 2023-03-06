@@ -7,26 +7,13 @@ import { SpeakerXMarkIcon, SpeakerWaveIcon } from '@heroicons/react/24/solid';
 // updateAlertMuteState will call the backend server to update alerts to appropriate 
 // muted state.
 async function updateAlertMuteState({alertId, newMutedValue}: UpdateAlertMuteStateData) {
-  try {
-      const toggleUpdateEndpoint = process.env.REACT_APP_API_DOMAIN + "/api/toggleAlertMuted";
-      var togglePostUpdate = {
-        alert_id: alertId,
-        new_muted_value: newMutedValue,
+    // @ts-ignore
+    const toggleUpdateEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/toggleAlertMuted";
+    var togglePostUpdate = {
+      alert_id: alertId,
+      new_muted_value: newMutedValue,
     }
-    const _ = await axios.post(toggleUpdateEndpoint, togglePostUpdate);
-      
-    } catch (error) {
-        let message = '';
-        if (axios.isAxiosError(error)) {
-            if (error.response && error.response.data) {
-                message = "Error: " + error.response.data
-            } else {
-                message = "Oops! Encountered an error..."
-            }
-        } else {
-            message = "Error in retrieving rules information."
-        }
-    }
+    await axios.post(toggleUpdateEndpoint, togglePostUpdate);      
 }
 
 type ToggleMuteButtonProps = {
