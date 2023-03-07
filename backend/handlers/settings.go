@@ -14,17 +14,13 @@ import (
 func GetAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var accountDetailsLst []models.AccountDetails
-		tx := postgresDb.Find(&accountDetailsLst)
+		tx := postgresDb.Select("account_name", "default_region").Find(&accountDetailsLst)
 		if tx.Error != nil {
 			log.Printf("failed to retrieve account details: %v", tx.Error)
 			http.Error(w, "failed get account details", 500)
 			return
 		}
-		// Scrub sensitive credentials
-		for i := 0; i < len(accountDetailsLst); i++ {
-			accountDetailsLst[i].AwsAccessKeyId = ""
-			accountDetailsLst[i].AwsSecretAccessKey = ""
-		}
+		log.Printf("%v", accountDetailsLst)
 		retDataBytes, err := json.Marshal(accountDetailsLst)
 		if err != nil {
 			log.Printf("failed to marshal account details: %v", err)
