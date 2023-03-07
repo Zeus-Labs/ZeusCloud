@@ -3,58 +3,76 @@ package main
 import (
 	"log"
 	"net/http"
-
-	"github.com/Zeus-Labs/ZeusCloud/rules/types"
-
-	"github.com/Zeus-Labs/ZeusCloud/models"
-	"github.com/Zeus-Labs/ZeusCloud/rules"
+	"os"
 
 	"github.com/Zeus-Labs/ZeusCloud/control"
+	"github.com/Zeus-Labs/ZeusCloud/models"
+	"github.com/Zeus-Labs/ZeusCloud/rules"
+	"github.com/Zeus-Labs/ZeusCloud/rules/types"
+
 	"github.com/Zeus-Labs/ZeusCloud/db"
 	"github.com/Zeus-Labs/ZeusCloud/handlers"
 	"github.com/Zeus-Labs/ZeusCloud/middleware"
 )
 
+const (
+	demoEnvModeStr = "Demo"
+)
+
+func demoMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if os.Getenv("MODE") == demoEnvModeStr {
+			if r.Method == "POST" || r.Method == "PUT" {
+				http.Error(w, "Demo Mode Not Allowed", http.StatusForbidden)
+				return
+			}
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	// Connect with Postgres database
 	postgresDb := db.InitPostgres()
 	log.Println("Set up postgres db")
-
-	var ruleDataList []models.RuleData
-	for _, r := range rules.AttackPathsRulesToExecute {
-		rd, err := rules.UpsertRuleData(postgresDb, r, "attackpath")
-		if err != nil {
-			log.Printf("Unexpected error upserting rule_data %v", err)
-			continue
+	log.Printf("Mode: %v", os.Getenv("MODE"))
+	if os.Getenv("MODE") != demoEnvModeStr {
+		var ruleDataList []models.RuleData
+		for _, r := range rules.AttackPathsRulesToExecute {
+			rd, err := rules.UpsertRuleData(postgresDb, r, "attackpath")
+			if err != nil {
+				log.Printf("Unexpected error upserting rule_data %v", err)
+				continue
+			}
+			ruleDataList = append(ruleDataList, rd)
 		}
-		ruleDataList = append(ruleDataList, rd)
-	}
 
-	for _, r := range rules.MisconfigurationRulesToExecute {
-		rd, err := rules.UpsertRuleData(postgresDb, r, "misconfiguration")
-		if err != nil {
-			log.Printf("Unexpected error upserting rule_data %v", err)
-			continue
+		for _, r := range rules.MisconfigurationRulesToExecute {
+			rd, err := rules.UpsertRuleData(postgresDb, r, "misconfiguration")
+			if err != nil {
+				log.Printf("Unexpected error upserting rule_data %v", err)
+				continue
+			}
+			ruleDataList = append(ruleDataList, rd)
 		}
-		ruleDataList = append(ruleDataList, rd)
+		log.Println("Finished inserting postgres rules.")
+
+		// Connect to neo4j database
+		driver := db.InitNeo4j()
+		defer driver.Close()
+		log.Println("Set up neo4j driver")
+
+		// TODO: Check RulesToExecute have unique names
+
+		// Kick of rule execution loop and try to trigger a scan successfully.
+		rulesToExecute := append(append([]types.Rule{}, rules.AttackPathsRulesToExecute...), rules.MisconfigurationRulesToExecute...)
+		go control.RuleExecutionLoop(postgresDb, driver, ruleDataList, rulesToExecute)
+		if err := control.TriggerScan(postgresDb); err != nil {
+			log.Printf("Tried triggering scan but failed: %v", err)
+		}
+
+		log.Println("Completed triggering scan.")
 	}
-	log.Println("Finished inserting postgres rules.")
-
-	// Connect to neo4j database
-	driver := db.InitNeo4j()
-	defer driver.Close()
-	log.Println("Set up neo4j driver")
-
-	// TODO: Check RulesToExecute have unique names
-
-	// Kick of rule execution loop and try to trigger a scan successfully.
-	rulesToExecute := append(append([]types.Rule{}, rules.AttackPathsRulesToExecute...), rules.MisconfigurationRulesToExecute...)
-	go control.RuleExecutionLoop(postgresDb, driver, ruleDataList, rulesToExecute)
-	if err := control.TriggerScan(postgresDb); err != nil {
-		log.Printf("Tried triggering scan but failed: %v", err)
-	}
-
-	log.Println("Completed triggering scan.")
 
 	// Set up routing
 	mux := http.NewServeMux()
@@ -74,5 +92,6 @@ func main() {
 	dLog := log.Default()
 	lm := middleware.LoggingMiddleware(dLog)
 	loggedMux := lm(mux)
-	http.ListenAndServe(":8080", loggedMux)
+	demoCorsLoggedMux := demoMiddleware(loggedMux)
+	http.ListenAndServe(":8080", demoCorsLoggedMux)
 }
