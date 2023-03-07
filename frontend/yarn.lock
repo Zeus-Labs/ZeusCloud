@@ -1218,31 +1218,31 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
-"@floating-ui/core@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@floating-ui/core/-/core-1.2.0.tgz#ae7ae7923d41f3d84cb2fd88740a89436610bbec"
-  integrity sha512-GHUXPEhMEmTpnpIfesFA2KAoMJPb1SPQw964tToQwt+BbGXdhqTCWT1rOb0VURGylsxsYxiGMnseJ3IlclVpVA==
-
-"@floating-ui/dom@^1.1.1":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@floating-ui/dom/-/dom-1.2.0.tgz#a60212069cc58961c478037c30eba4b191c75316"
-  integrity sha512-QXzg57o1cjLz3cGETzKXjI3kx1xyS49DW9l7kV2jw2c8Yftd434t2hllX0sVGn2Q8MtcW/4pNm8bfE1/4n6mng==
-  dependencies:
-    "@floating-ui/core" "^1.2.0"
-
-"@floating-ui/react-dom@^1.1.0":
+"@floating-ui/core@^1.2.2":
   version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@floating-ui/react-dom/-/react-dom-1.2.2.tgz#ed256992fd44fcfcddc96da68b4b92f123d61871"
-  integrity sha512-DbmFBLwFrZhtXgCI2ra7wXYT8L2BN4/4AMQKyu05qzsVji51tXOfF36VE2gpMB6nhJGHa85PdEg75FB4+vnLFQ==
-  dependencies:
-    "@floating-ui/dom" "^1.1.1"
+  resolved "https://registry.yarnpkg.com/@floating-ui/core/-/core-1.2.2.tgz#66f62cf1b7de2ed23a09c101808536e68caffaec"
+  integrity sha512-FaO9KVLFnxknZaGWGmNtjD2CVFuc0u4yeGEofoyXO2wgRA7fLtkngT6UB0vtWQWuhH3iMTZZ/Y89CMeyGfn8pA==
 
-"@floating-ui/react@^0.15.1":
-  version "0.15.1"
-  resolved "https://registry.yarnpkg.com/@floating-ui/react/-/react-0.15.1.tgz#1eec9d369653627aeec5be325714db1ccdf983a6"
-  integrity sha512-fbzUt+JM9o7z/uTBIvTvxUOGXAx8JlCFNpcWen7IjQqqOISkZq1IT7u8wwR+u2emE8wAZoRuoUvny7UMcCGXbw==
+"@floating-ui/dom@^1.2.1":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@floating-ui/dom/-/dom-1.2.3.tgz#8dc6fbf799fbb5c29f705b54bdd51f3ab0ee03a2"
+  integrity sha512-lK9cZUrHSJLMVAdCvDqs6Ug8gr0wmqksYiaoj/bxj2gweRQkSuhg2/V6Jswz2KiQ0RAULbqw1oQDJIMpQ5GfGA==
   dependencies:
-    "@floating-ui/react-dom" "^1.1.0"
+    "@floating-ui/core" "^1.2.2"
+
+"@floating-ui/react-dom@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@floating-ui/react-dom/-/react-dom-1.3.0.tgz#4d35d416eb19811c2b0e9271100a6aa18c1579b3"
+  integrity sha512-htwHm67Ji5E/pROEAr7f8IKFShuiCKHwUC/UY4vC3I5jiSvGFAYnSYiZO5MlGmads+QqvUkR9ANHEguGrDv72g==
+  dependencies:
+    "@floating-ui/dom" "^1.2.1"
+
+"@floating-ui/react@^0.19.0":
+  version "0.19.2"
+  resolved "https://registry.yarnpkg.com/@floating-ui/react/-/react-0.19.2.tgz#c6e4d2097ed0dca665a7c042ddf9cdecc95e9412"
+  integrity sha512-JyNk4A0Ezirq8FlXECvRtQOX/iBe5Ize0W/pLkrZjfHW9GUV7Xnq6zm6fyZuQzaHHqEnVizmvlA96e1/CkZv+w==
+  dependencies:
+    "@floating-ui/react-dom" "^1.3.0"
     aria-hidden "^1.1.3"
     tabbable "^6.0.1"
 
@@ -1582,12 +1582,12 @@
   resolved "https://registry.yarnpkg.com/@leichtgewicht/ip-codec/-/ip-codec-2.0.4.tgz#b2ac626d6cb9c8718ab459166d4bb405b8ffa78b"
   integrity sha512-Hcv+nVC0kZnQ3tD9GVu5xSMR4VVYOteQIr/hwFPVEvPdlXqgGEuRjiheChHgdM+JyqdgNcmzZOX/tnl0JOiI7A==
 
-"@material-tailwind/react@^1.2.4":
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/@material-tailwind/react/-/react-1.2.5.tgz#4d77c06922ef4e201cb5b150974abdfa10d5c07a"
-  integrity sha512-ZlMYOO+zlw9UBCgBnLXeGcRPWrQ5cFTmhatrzoy7ovb1pZl7m83Bwfedi8NPMZRtzkQn/XsL6OPcct3qsfDRHQ==
+"@material-tailwind/react@^1.4.2":
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/@material-tailwind/react/-/react-1.4.2.tgz#e068f3e6c547537b597e57b0d5c3da3ddb642994"
+  integrity sha512-XJ1Ie8xXMV2qZEtm0LgnJNK+8Lh1Si8TvOf0jKWGI2rHleD8U/Zype6k1AyRhBHHUwc6B19w8uR1fCIFvumURQ==
   dependencies:
-    "@floating-ui/react" "^0.15.1"
+    "@floating-ui/react" "^0.19.0"
     classnames "^2.3.2"
     deepmerge "^4.2.2"
     framer-motion "^6.5.1"
@@ -1595,7 +1595,6 @@
     prop-types "^15.8.1"
     react "^18.2.0"
     react-dom "^18.2.0"
-    react-merge-refs "1.1.0"
     tailwind-merge "^1.8.1"
 
 "@motionone/animation@^10.12.0":
@@ -8354,11 +8353,6 @@ react-markdown@8.0.5:
     unified "^10.0.0"
     unist-util-visit "^4.0.0"
     vfile "^5.0.0"
-
-react-merge-refs@1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/react-merge-refs/-/react-merge-refs-1.1.0.tgz#73d88b892c6c68cbb7a66e0800faa374f4c38b06"
-  integrity sha512-alTKsjEL0dKH/ru1Iyn7vliS2QRcBp9zZPGoWxUOvRGWPUYgjo+V01is7p04It6KhgrzhJGnIj9GgX8W4bZoCQ==
 
 react-refresh@^0.11.0:
   version "0.11.0"
