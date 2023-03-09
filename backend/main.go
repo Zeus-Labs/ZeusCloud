@@ -10,18 +10,15 @@ import (
 	"github.com/Zeus-Labs/ZeusCloud/rules"
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 
+	"github.com/Zeus-Labs/ZeusCloud/constants"
 	"github.com/Zeus-Labs/ZeusCloud/db"
 	"github.com/Zeus-Labs/ZeusCloud/handlers"
 	"github.com/Zeus-Labs/ZeusCloud/middleware"
 )
 
-const (
-	demoEnvModeStr = "Demo"
-)
-
 func demoMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if os.Getenv("MODE") == demoEnvModeStr {
+		if os.Getenv("MODE") == constants.DemoEnvModeStr {
 			if r.Method == "POST" || r.Method == "PUT" {
 				http.Error(w, "Demo Mode Not Allowed", http.StatusForbidden)
 				return
@@ -36,7 +33,7 @@ func main() {
 	postgresDb := db.InitPostgres()
 	log.Println("Set up postgres db")
 	log.Printf("Mode: %v", os.Getenv("MODE"))
-	if os.Getenv("MODE") != demoEnvModeStr {
+	if os.Getenv("MODE") != constants.DemoEnvModeStr {
 		var ruleDataList []models.RuleData
 		for _, r := range rules.AttackPathsRulesToExecute {
 			rd, err := rules.UpsertRuleData(postgresDb, r, "attackpath")

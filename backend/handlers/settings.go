@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/Zeus-Labs/ZeusCloud/constants"
 	"github.com/Zeus-Labs/ZeusCloud/control"
 	"github.com/Zeus-Labs/ZeusCloud/models"
 	"gorm.io/gorm"
@@ -105,14 +106,10 @@ func Rescan(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-const (
-	demoEnvModeStr = "Demo"
-)
-
 func GetAccountScanInfo() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var sr control.StatusResponse
-		if os.Getenv("MODE") != demoEnvModeStr {
+		if os.Getenv("MODE") != constants.DemoEnvModeStr {
 			sr, err := control.GetScanStatus()
 			if err != nil {
 				log.Printf("failed to determine if scan is running: %v", err)
