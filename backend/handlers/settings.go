@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/Zeus-Labs/ZeusCloud/control"
 	"github.com/Zeus-Labs/ZeusCloud/models"
@@ -104,19 +105,30 @@ func Rescan(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+const (
+	demoEnvModeStr = "Demo"
+)
+
 func GetAccountScanInfo() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sr, err := control.GetScanStatus()
-		if err != nil {
-			log.Printf("failed to determine if scan is running: %v", err)
-			http.Error(w, "failed to determine if scan is running", 500)
-			return
+		var sr control.StatusResponse
+		if os.Getenv("MODE") != demoEnvModeStr {
+			sr, err := control.GetScanStatus()
+			if err != nil {
+				log.Printf("failed to determine if scan is running: %v", err)
+				http.Error(w, "failed to determine if scan is running", 500)
+				return
+			}
+			control.ExecuteRulesMutex.Lock()
+			if sr.Status != "RUNNING" && control.ExecuteRules {
+				sr.Status = "RULES_RUNNING"
+			}
+			control.ExecuteRulesMutex.Unlock()
+		} else {
+			sr = control.StatusResponse{
+				Status: "READY",
+			}
 		}
-		control.ExecuteRulesMutex.Lock()
-		if sr.Status != "RUNNING" && control.ExecuteRules {
-			sr.Status = "RULES_RUNNING"
-		}
-		control.ExecuteRulesMutex.Unlock()
 		retDataBytes, err := json.Marshal(sr)
 		if err != nil {
 			log.Printf("failed to marshal status response: %v", err)
