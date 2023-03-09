@@ -49,13 +49,16 @@ Discover, prioritize, and remediate your risks in the cloud.
 2. Run: `cd ZeusCloud && make quick-deploy`
 3. Visit http://localhost:80
 
+Check out our [Get Started](https://docs.zeuscloud.io/introduction/get-started) guide for 
+more details.
+
 A cloud-hosted version is available on special request - email founders@zeuscloud.io to get access!
 
 ## Features
 
 ![ZeusCloud](https://user-images.githubusercontent.com/20483346/217993491-69bbb84b-ce5f-4432-9aac-8a362c01c1bd.gif)
 
-
+* **Discover Attack Paths** - Discover toxic risk combinations an attacker can use to penetrate your environment.
 * **Identify Misconfigurations** - Discover the highest risk-of-exploit misconfigurations in your environments.
 * **Fast Prioritization** - Filter, sort, and fast search to zoom in on your important risks.
 * **Helpful Context** - Understand the surrounding context behind why security rules have passed or failed.
@@ -76,8 +79,9 @@ We had to take action.
 - Best of all, you can use **ZeusCloud for free**!
 
 ## Future Roadmap
-- Multi-step attack paths based on IAM lateral movements
-- Integrations with vulnerability and secret scanners
+- Integrations with vulnerability scanners
+- Integrations with secret scanners
+- Identity and network access graph visualizations
 - Shift-left: Remediate risks earlier in the SDLC with context from your deployments
 - Support for Azure and GCP environments
 
