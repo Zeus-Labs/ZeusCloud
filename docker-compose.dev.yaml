@@ -82,6 +82,7 @@ services:
     # frontend/.env
     environment: 
       - REACT_APP_API_DOMAIN=${REACT_APP_API_DOMAIN}
+      - REACT_APP_ENVIRONMENT=${REACT_APP_ENVIRONMENT}
     volumes:
       - ./frontend:/usr/src/app
     networks:

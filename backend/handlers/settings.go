@@ -14,13 +14,12 @@ import (
 func GetAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var accountDetailsLst []models.AccountDetails
-		tx := postgresDb.Select("account_name", "default_region").Find(&accountDetailsLst)
+		tx := postgresDb.Select("account_name", "default_region", "last_scan_completed").Find(&accountDetailsLst)
 		if tx.Error != nil {
 			log.Printf("failed to retrieve account details: %v", tx.Error)
 			http.Error(w, "failed get account details", 500)
 			return
 		}
-		log.Printf("%v", accountDetailsLst)
 		retDataBytes, err := json.Marshal(accountDetailsLst)
 		if err != nil {
 			log.Printf("failed to marshal account details: %v", err)
@@ -51,6 +50,7 @@ func AddAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.
 			http.Error(w, "failed to decode json body", 400)
 			return
 		}
+		ad.LastScanCompleted = nil
 		tx := postgresDb.Clauses(clause.OnConflict{DoNothing: true}).Create(&ad)
 		if tx.Error != nil {
 			log.Printf("failed to add account details: %v", tx.Error)
@@ -104,7 +104,7 @@ func Rescan(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func IsScanRunning() func(w http.ResponseWriter, r *http.Request) {
+func GetAccountScanInfo() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sr, err := control.GetScanStatus()
 		if err != nil {
@@ -112,6 +112,11 @@ func IsScanRunning() func(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "failed to determine if scan is running", 500)
 			return
 		}
+		control.ExecuteRulesMutex.Lock()
+		if sr.Status != "RUNNING" && control.ExecuteRules {
+			sr.Status = "RULES_RUNNING"
+		}
+		control.ExecuteRulesMutex.Unlock()
 		retDataBytes, err := json.Marshal(sr)
 		if err != nil {
 			log.Printf("failed to marshal status response: %v", err)
