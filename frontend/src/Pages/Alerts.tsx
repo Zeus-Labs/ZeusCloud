@@ -4,7 +4,8 @@ import {AlertsTableOps} from '../Components/Alerts/AlertsTableOps';
 import { useState } from 'react';
 
 const Alerts = () => {
-    const [current, setCurrent] = useState("Misconfigurations");
+    // @ts-ignore
+    const [current, setCurrent] = useState(window._env_.REACT_APP_ENVIRONMENT === "Demo" ? "Attack Paths" : "Misconfigurations");
     const tabs = [
         {
             name: "Misconfigurations",

@@ -86,7 +86,7 @@ func main() {
 	mux.HandleFunc("/api/deleteAccountDetails", handlers.DeleteAccountDetails(postgresDb))
 	mux.HandleFunc("/api/getAccountDetails", handlers.GetAccountDetails(postgresDb))
 	mux.HandleFunc("/api/rescan", handlers.Rescan(postgresDb))
-	mux.HandleFunc("/api/isScanRunning", handlers.IsScanRunning())
+	mux.HandleFunc("/api/getAccountScanInfo", handlers.GetAccountScanInfo())
 
 	log.Printf("serving on 8080...")
 	dLog := log.Default()

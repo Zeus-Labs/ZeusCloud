@@ -3,9 +3,13 @@ import Tabs from '../Components/Shared/Tabs';
 import { useState } from 'react';
 import { AddNewAccount } from '../Components/Settings/AddNewAccount'
 import { ConnectedAccounts } from '../Components/Settings/ConnectedAccounts'
+import {useLocation} from 'react-router-dom';
 
 const Settings = () => {
-    const [current, setCurrent] = useState("Add New Account");
+    const location = useLocation();
+    const [current, setCurrent] = useState(
+        location.state && location.state.name ? location.state.name : "Add New Account"
+    );
 
     const switchToConnectedAccounts = () => {
         setCurrent("Connected Accounts");

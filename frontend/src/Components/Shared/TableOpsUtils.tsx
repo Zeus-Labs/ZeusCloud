@@ -87,7 +87,6 @@ export const alertNumberSortTypeFn = (rowA: TableRow, rowB: TableRow): number =>
            break;
         }
     } 
-    console.log(a,b)
     if (a === b) {
         return 0;
     } else if (a > b) {

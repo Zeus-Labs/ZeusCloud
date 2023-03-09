@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"log"
 	"net/http"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 
 	"github.com/Zeus-Labs/ZeusCloud/models"
 	"github.com/Zeus-Labs/ZeusCloud/rules"
@@ -21,7 +22,8 @@ var ExecuteRules bool = false
 var ExecuteRulesMutex sync.Mutex
 
 type StatusResponse struct {
-	Status string `json:"status"`
+	Status      string  `json:"status"`
+	RunningTime float64 `json:"running_time,omitempty"`
 }
 
 type CartographyJobRequest struct {
@@ -35,6 +37,7 @@ type CartographyJobRequest struct {
 // 1) The ExecuteRules boolean is true
 // 2) The cartography job is not running.
 // When these conditions are true, it also marks ExecuteRules false.
+// And it sets the LastScanCompleted field - right now, for *all* accounts
 func RuleExecutionLoop(postgresDb *gorm.DB, driver neo4j.Driver, ruleDataList []models.RuleData,
 	rulesToExecute []types.Rule) {
 
@@ -67,9 +70,6 @@ func RuleExecutionLoop(postgresDb *gorm.DB, driver neo4j.Driver, ruleDataList []
 		}
 
 		// Execute rules
-		ExecuteRulesMutex.Lock()
-		ExecuteRules = false
-		ExecuteRulesMutex.Unlock()
 		for idx, r := range rulesToExecute {
 			log.Printf("Rule ID and description: %v %v", r.UID(), r.Description())
 
@@ -107,6 +107,14 @@ func RuleExecutionLoop(postgresDb *gorm.DB, driver neo4j.Driver, ruleDataList []
 				continue
 			}
 		}
+
+		// Set LastScanCompleted of every row in account_details
+		postgresDb.Model(&models.AccountDetails{}).Where("1 = 1").Update("last_scan_completed", time.Now())
+
+		// Reset ExecuteRules boolean
+		ExecuteRulesMutex.Lock()
+		ExecuteRules = false
+		ExecuteRulesMutex.Unlock()
 	}
 }
 
