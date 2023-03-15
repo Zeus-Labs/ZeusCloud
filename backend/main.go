@@ -29,10 +29,18 @@ func demoMiddleware(next http.Handler) http.Handler {
 }
 
 func main() {
+	log.Printf("Mode: %v", os.Getenv("MODE"))
+
 	// Connect with Postgres database
 	postgresDb := db.InitPostgres()
 	log.Println("Set up postgres db")
-	log.Printf("Mode: %v", os.Getenv("MODE"))
+
+	// Connect to neo4j database
+	// TODO: Make neo4j available in demo env
+	driver := db.InitNeo4j()
+	defer driver.Close()
+	log.Println("Set up neo4j driver")
+
 	if os.Getenv("MODE") != constants.DemoEnvModeStr {
 		var ruleDataList []models.RuleData
 		for _, r := range rules.AttackPathsRulesToExecute {
@@ -85,6 +93,7 @@ func main() {
 	mux.HandleFunc("/api/getAccountDetails", handlers.GetAccountDetails(postgresDb))
 	mux.HandleFunc("/api/rescan", handlers.Rescan(postgresDb))
 	mux.HandleFunc("/api/getAccountScanInfo", handlers.GetAccountScanInfo())
+	mux.HandleFunc("/api/getRuleGraph", handlers.GetRuleGraph(driver))
 
 	log.Printf("serving on 8080...")
 	dLog := log.Default()

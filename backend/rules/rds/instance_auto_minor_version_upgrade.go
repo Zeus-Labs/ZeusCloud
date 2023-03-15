@@ -84,3 +84,7 @@ func (InstanceAutoMinorVersionUpgrade) Execute(tx neo4j.Transaction) ([]types.Re
 	}
 	return results, nil
 }
+
+func (InstanceAutoMinorVersionUpgrade) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
+	return nil, nil
+}

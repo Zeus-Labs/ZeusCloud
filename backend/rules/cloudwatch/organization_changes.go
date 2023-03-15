@@ -97,3 +97,7 @@ func (OrganizationChanges) Execute(tx neo4j.Transaction) ([]types.Result, error)
 	}
 	return results, nil
 }
+
+func (OrganizationChanges) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
+	return nil, nil
+}

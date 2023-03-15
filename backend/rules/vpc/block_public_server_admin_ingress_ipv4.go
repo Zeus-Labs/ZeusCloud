@@ -90,3 +90,7 @@ func (BlockPublicServerAdminIngressIpv4) Execute(tx neo4j.Transaction) ([]types.
 	}
 	return results, nil
 }
+
+func (BlockPublicServerAdminIngressIpv4) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
+	return nil, nil
+}

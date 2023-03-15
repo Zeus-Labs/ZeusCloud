@@ -85,3 +85,7 @@ func (EnableServerSideEncryptionWithKMS) Execute(tx neo4j.Transaction) ([]types.
 	}
 	return results, nil
 }
+
+func (EnableServerSideEncryptionWithKMS) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
+	return nil, nil
+}

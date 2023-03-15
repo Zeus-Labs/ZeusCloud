@@ -113,3 +113,7 @@ func (PubliclyExposedServerlessHigh) Execute(tx neo4j.Transaction) ([]types.Resu
 	}
 	return results, nil
 }
+
+func (PubliclyExposedServerlessHigh) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
+	return nil, nil
+}

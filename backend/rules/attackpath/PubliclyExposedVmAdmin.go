@@ -2,6 +2,7 @@ package attackpath
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -126,6 +127,58 @@ func (PubliclyExposedVmAdmin) Execute(tx neo4j.Transaction) ([]types.Result, err
 			Status:       statusStr,
 			Context:      contextStr,
 		})
+	}
+	return results, nil
+}
+
+func (PubliclyExposedVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
+	var params = map[string]interface{}{"id": resourceId}
+	records, err := tx.Run(
+		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(e:EC2Instance{id: $InstanceId})
+		OPTIONAL MATCH
+			directPublicPath=
+			(:IpRange{id: '0.0.0.0/0'})-[:MEMBER_OF_IP_RULE]->
+			(:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
+			(instance_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP|NETWORK_INTERFACE*..2]-(e)
+		WITH a, e, collect(directPublicPath) as directPublicPaths
+		OPTIONAL MATCH
+			indirectPublicPath=
+			(:IpRange{range:'0.0.0.0/0'})-[:MEMBER_OF_IP_RULE]->
+			(perm:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
+			(elbv2_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP]-
+			(elbv2:LoadBalancerV2{scheme: 'internet-facing'})—[:ELBV2_LISTENER]->
+			(listener:ELBV2Listener),
+			(elbv2)-[:EXPOSE]->(e)
+		WHERE listener.port >= perm.fromport AND listener.port <= perm.toport
+		WITH a, e, directPublicPaths, collect(indirectPublicPath) as indirectPublicPaths
+		OPTIONAL MATCH
+			adminRolePath=
+			(e)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_admin: True})
+		WITH a, e, directPublicPaths, indirectPublicPaths, 
+		collect(adminRolePath) as adminRolePaths
+		WITH directPublicPaths + indirectPublicPaths + adminRolePaths AS paths
+		RETURN paths as paths`,
+		params)
+	// Change to some other kind of result.
+
+	var results []types.GraphResult
+	for records.Next() {
+		record := records.Record()
+		allPaths, _ := record.Get("paths")
+		valueAsLst, ok := allPaths.([]interface{})
+		if !ok {
+			return nil, fmt.Errorf("%v should be of type []interface{}", valueAsLst)
+		}
+		fmt.Printf("Type %v", reflect.TypeOf(valueAsLst))
+		//var valueAsGraphPathLst []types.GraphPath
+		//for idx, value := range valueAsLst {
+		//
+		//	valueAsGraphPathLst = append(valueAsGraphPathLst)
+		//}
+
+	}
+	if err != nil {
+		return nil, err
 	}
 	return results, nil
 }

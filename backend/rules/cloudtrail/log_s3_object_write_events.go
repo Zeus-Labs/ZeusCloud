@@ -107,3 +107,7 @@ func (LogS3ObjectWriteEvents) Execute(tx neo4j.Transaction) ([]types.Result, err
 	}
 	return results, nil
 }
+
+func (LogS3ObjectWriteEvents) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
+	return nil, nil
+}

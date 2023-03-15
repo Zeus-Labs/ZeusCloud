@@ -112,3 +112,7 @@ func (PubliclyExposedServerlessPrivEsc) Execute(tx neo4j.Transaction) ([]types.R
 	}
 	return results, nil
 }
+
+func (PubliclyExposedServerlessPrivEsc) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
+	return nil, nil
+}

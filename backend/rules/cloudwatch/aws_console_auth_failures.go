@@ -97,3 +97,7 @@ func (AWSConsoleAuthFailures) Execute(tx neo4j.Transaction) ([]types.Result, err
 	}
 	return results, nil
 }
+
+func (AWSConsoleAuthFailures) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
+	return nil, nil
+}
