@@ -35,14 +35,14 @@ func (RootAccountUsed) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 		WITH a, u, datetime().epochSeconds as currentTime, 90 * 24 * 60 * 60 as ninetyDays
 		RETURN u.arn as resource_id,
 		'AWSUser' as resource_type,
-		a.id as account_id,    
-		CASE 
+		a.id as account_id,
+		CASE
 			WHEN u.password_last_used is NOT NULL AND currentTime - u.password_last_used <= ninetyDays THEN 'failed'
 			WHEN u.access_key_1_last_used_date is NOT NULL AND currentTime - u.access_key_1_last_used_date <= ninetyDays THEN 'failed'
 			WHEN u.access_key_2_last_used_date is NOT NULL AND currentTime - u.access_key_2_last_used_date <= ninetyDays THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN u.password_last_used is NOT NULL AND currentTime - u.password_last_used <= ninetyDays THEN 'Root account\'s password was used in the last 90 days.'
 			WHEN u.access_key_1_last_used_date is NOT NULL AND currentTime - u.access_key_1_last_used_date <= ninetyDays THEN 'Root account\'s access key 1 was used in the last 90 days.'
 			WHEN u.access_key_2_last_used_date is NOT NULL AND currentTime - u.access_key_2_last_used_date <= ninetyDays THEN 'Root account\'s access key 2 was used in the last 90 days.'
@@ -92,6 +92,6 @@ func (RootAccountUsed) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 	return results, nil
 }
 
-func (RootAccountUsed) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (RootAccountUsed) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

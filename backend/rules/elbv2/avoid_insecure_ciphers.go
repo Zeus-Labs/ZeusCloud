@@ -34,7 +34,7 @@ func (AvoidInsecureCiphers) Execute(tx neo4j.Transaction) ([]types.Result, error
 		WHERE listener.protocol IN ['HTTPS', 'TLS'] AND listener.ssl_policy IS NOT NULL
 		WITH a, lbv2,
 		COLLECT(DISTINCT
-			CASE 
+			CASE
 				WHEN
 					listener.ssl_policy IN
 					[
@@ -56,11 +56,11 @@ func (AvoidInsecureCiphers) Execute(tx neo4j.Transaction) ([]types.Result, error
 		RETURN lbv2.id as resource_id,
 		'LoadBalancerV2' as resource_type,
 		a.id as account_id,
-		CASE 
+		CASE
 			WHEN size(insecure_policies) = 0 THEN 'passed'
 			ELSE 'failed'
 		END as status,
-		CASE 
+		CASE
 			WHEN size(insecure_policies) = 0 THEN 'The ELB has no policies with insecure SSL ciphers.'
 			ELSE 'The ELB has policies with insecure SSL ciphers: ' + substring(apoc.text.join(insecure_policies, ', '), 0, 1000) + '.'
 		END as context`,
@@ -108,6 +108,6 @@ func (AvoidInsecureCiphers) Execute(tx neo4j.Transaction) ([]types.Result, error
 	return results, nil
 }
 
-func (AvoidInsecureCiphers) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (AvoidInsecureCiphers) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

@@ -34,7 +34,7 @@ func (UserAttachedToGroup) Execute(tx neo4j.Transaction) ([]types.Result, error)
 		WITH a, u, sum(CASE WHEN g IS NULL THEN 0 ELSE 1 END) as num_groups
 		RETURN u.arn as resource_id,
 		'AWSUser' as resource_type,
-		a.id as account_id,    
+		a.id as account_id,
 		CASE
 			WHEN num_groups > 0 THEN 'passed'
 			ELSE 'failed'
@@ -87,6 +87,6 @@ func (UserAttachedToGroup) Execute(tx neo4j.Transaction) ([]types.Result, error)
 	return results, nil
 }
 
-func (UserAttachedToGroup) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (UserAttachedToGroup) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

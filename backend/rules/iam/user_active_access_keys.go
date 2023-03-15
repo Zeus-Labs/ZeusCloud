@@ -35,12 +35,12 @@ func (UserActiveAccessKeys) Execute(tx neo4j.Transaction) ([]types.Result, error
 		WITH a, u, collect(CASE WHEN k is NULL THEN NULL ELSE k.accesskeyid END) as active_key_ids
 		RETURN u.arn as resource_id,
 		'AWSUser' as resource_type,
-		a.id as account_id,    
-		CASE 
+		a.id as account_id,
+		CASE
 			WHEN size(active_key_ids) > 1 THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN size(active_key_ids) > 0 THEN 'The user has ' + toString(size(active_key_ids)) + ' active access key(s): ' + substring(apoc.text.join(active_key_ids, ', '), 0 ,1000) + '.'
 			ELSE 'The user has no active access keys.'
 		END as context`,
@@ -88,6 +88,6 @@ func (UserActiveAccessKeys) Execute(tx neo4j.Transaction) ([]types.Result, error
 	return results, nil
 }
 
-func (UserActiveAccessKeys) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (UserActiveAccessKeys) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

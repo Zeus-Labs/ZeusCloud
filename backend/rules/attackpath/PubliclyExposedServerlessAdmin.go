@@ -48,21 +48,21 @@ func (PubliclyExposedServerlessAdmin) Execute(tx neo4j.Transaction) ([]types.Res
 		RETURN lambda.id as resource_id,
 		'AWSLambda' as resource_type,
 		a.id as account_id,
-		CASE 
+		CASE
 			WHEN publicly_exposed AND is_admin THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN publicly_exposed THEN (
 				'The function is publicly exposed. ' +
-				CASE 
+				CASE
 					WHEN size(public_elbv2_ids) > 0 THEN 'The function is publicly exposed through these ELBv2 load balancers: ' + substring(apoc.text.join(public_elbv2_ids, ', '), 0, 1000) + '.'
 					ELSE 'The function is not publicly exposed through any ELBv2 load balancers.'
 				END
 			)
 			ELSE 'The function is neither directly publicly exposed, nor indirectly public exposed through an ELBv2 load balancer.'
 		END + ' ' +
-		CASE 
+		CASE
 			WHEN is_admin THEN (
 				'The function is effectively an admin in the account because of: ' + admin_reasons[0] + '.'
 			)
@@ -113,6 +113,37 @@ func (PubliclyExposedServerlessAdmin) Execute(tx neo4j.Transaction) ([]types.Res
 	return results, nil
 }
 
-func (PubliclyExposedServerlessAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (PubliclyExposedServerlessAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	var params = make(map[string]interface{})
+	params["InstanceId"] = resourceId
+	_, err := tx.Run(
+		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(lambda:AWSLambda{id: $InstanceId})
+		OPTIONAL MATCH
+			indirectPublicPath=
+			(:IpRange{range:'0.0.0.0/0'})-[:MEMBER_OF_IP_RULE]->
+			(perm:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
+			(elbv2_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP]-
+			(elbv2:LoadBalancerV2{scheme: 'internet-facing'})—[:ELBV2_LISTENER]->
+			(listener:ELBV2Listener),
+			(elbv2)-[:EXPOSE]->(lambda)
+		WHERE listener.port >= perm.fromport AND listener.port <= perm.toport
+		WITH lambda, collect(indirectPublicPath) as indirectPublicPaths
+		OPTIONAL MATCH
+			adminRolePath=
+			(lambda)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_admin: True})
+		WITH lambda, indirectPublicPaths, collect(adminRolePath) as adminRolePaths
+		WITH indirectPublicPaths + adminRolePaths AS paths
+		RETURN paths`,
+		params,
+	)
+	if err != nil {
+		return types.GraphPathResult{}, err
+	}
+
+	// graphPathResultList, err := ProcessGraphPathResult(records, "paths")
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	return types.GraphPathResult{}, nil
 }

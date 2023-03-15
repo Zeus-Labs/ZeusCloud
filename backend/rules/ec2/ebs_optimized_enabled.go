@@ -31,13 +31,13 @@ func (EBSOptimizedEnabled) Execute(tx neo4j.Transaction) ([]types.Result, error)
 		RETURN e.id as resource_id,
 		'EC2Instance' as resource_type,
 		a.id as account_id,
-		CASE 
-			WHEN e.ebsoptimized THEN 'passed' 
+		CASE
+			WHEN e.ebsoptimized THEN 'passed'
 			ELSE 'failed'
 		END as status,
-		CASE 
-			WHEN e.ebsoptimized THEN 'EBS optimization is enabled.' 
-			ELSE 'EBS optimization is not enabled.' 
+		CASE
+			WHEN e.ebsoptimized THEN 'EBS optimization is enabled.'
+			ELSE 'EBS optimization is not enabled.'
 		END as context`,
 		nil,
 	)
@@ -83,6 +83,6 @@ func (EBSOptimizedEnabled) Execute(tx neo4j.Transaction) ([]types.Result, error)
 	return results, nil
 }
 
-func (EBSOptimizedEnabled) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (EBSOptimizedEnabled) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

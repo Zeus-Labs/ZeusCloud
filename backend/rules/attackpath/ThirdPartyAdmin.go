@@ -38,13 +38,13 @@ func (ThirdPartyAdmin) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 		RETURN eAccount.id as resource_id,
 		'AWSAccount' as resource_type,
 		a.id as account_id,
-		CASE 
+		CASE
 			WHEN size(adminRoleArnList) > 0 THEN 'failed'
 			ELSE 'passed'
 		END as status,
 		CASE
 			WHEN size(adminRoleArnList) > 0 THEN (
-				'The external account ' + eAccount.id + ' can assume admin privileged role(s): ' + 
+				'The external account ' + eAccount.id + ' can assume admin privileged role(s): ' +
 				substring(apoc.text.join(adminRoleArnList, ', '), 0, 1000) + ' in account ' + a.id + '.'
 			)
 			ELSE 'The external account ' + eAccount.id + ' has access to account ' + a.id +
@@ -94,6 +94,38 @@ func (ThirdPartyAdmin) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 	return results, nil
 }
 
-func (ThirdPartyAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (ThirdPartyAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	var params = make(map[string]interface{})
+	params["ExternalAccountId"] = resourceId
+	// Return paths where the role is an admin and any relevant paths
+	// where we have seed admins.
+	_, err := tx.Run(
+		`MATCH
+		externalPath=
+		(a:AWSAccount{inscope: true})-[:RESOURCE]->
+		(role:AWSRole)-[r:TRUSTS_AWS_PRINCIPAL]->
+		(externalPrincipal:AWSPrincipal)<-[:RESOURCE]-(eAccount:AWSAccount{id: $ExternalAccountId})
+		WHERE externalPrincipal.arn ENDS WITH 'root' AND
+		(NOT eAccount.inscope OR NOT EXISTS(eAccount.inscope)) AND
+		role.is_admin
+		WITH a, role, collect(externalPath) as externalPaths
+		OPTIONAL MATCH
+			assumeRolePath=
+			(role)-[:STS_ASSUME_ROLE_ALLOW*1..4]->(seedAdminRole:AWSRole)
+			WHERE seedAdminRole.is_seed_admin
+		WITH a, role, externalPaths, collect(assumeRolePath) as assumeRolePaths
+		WITH externalPaths + assumeRolePaths as paths
+		RETURN paths`,
+		params,
+	)
+	if err != nil {
+		return types.GraphPathResult{}, err
+	}
+
+	// graphPathResultList, err := ProcessGraphPathResult(records, "paths")
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	return types.GraphPathResult{}, nil
 }

@@ -32,12 +32,12 @@ func (SecretKmsCmkEncryption) Execute(tx neo4j.Transaction) ([]types.Result, err
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(s:SecretsManagerSecret)
 		RETURN s.id as resource_id,
 		'SecretsManagerSecret' as resource_type,
-		a.id as account_id, 
-		CASE 
+		a.id as account_id,
+		CASE
 			WHEN s.kms_key_id is NULL THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN s.kms_key_id is NULL THEN 'The secret is not encrypted with KMS.'
 			ELSE 'The secret is encrypted with KMS key ' + s.kms_key_id + '.'
 		END as context`,
@@ -85,6 +85,6 @@ func (SecretKmsCmkEncryption) Execute(tx neo4j.Transaction) ([]types.Result, err
 	return results, nil
 }
 
-func (SecretKmsCmkEncryption) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (SecretKmsCmkEncryption) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

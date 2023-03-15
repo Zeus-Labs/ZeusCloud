@@ -35,12 +35,12 @@ func (UnusedSecurityGroups) Execute(tx neo4j.Transaction) ([]types.Result, error
 		WITH a, sg, count(ni) as num_ni
 		RETURN sg.id as resource_id,
 		'EC2SecurityGroup' as resource_type,
-		a.id as account_id, 
-		CASE 
+		a.id as account_id,
+		CASE
 			WHEN num_ni = 0 THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN num_ni = 0 THEN 'The security group is unused.'
 			ELSE 'The security group is being used. It is applied to ' + toString(num_ni) + ' network interfaces.'
 		END as context`,
@@ -88,6 +88,6 @@ func (UnusedSecurityGroups) Execute(tx neo4j.Transaction) ([]types.Result, error
 	return results, nil
 }
 
-func (UnusedSecurityGroups) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (UnusedSecurityGroups) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

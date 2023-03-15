@@ -35,20 +35,20 @@ func (LogS3ObjectReadEvents) Execute(tx neo4j.Transaction) ([]types.Result, erro
 		WHERE es.data_resources IS NOT NULL
 		AND es.read_write_type in ['All', 'ReadOnly']
 		WITH a, s, es,
-		CASE 
+		CASE
 		  WHEN es IS NULL or es.data_resources IS NULL THEN NULL
-		  ELSE apoc.convert.getJsonProperty(es, 'data_resources', '$[?(@.Type == "AWS::S3::Object")].Values[*]') 
+		  ELSE apoc.convert.getJsonProperty(es, 'data_resources', '$[?(@.Type == "AWS::S3::Object")].Values[*]')
 		END as bucket_selection_lst
 		UNWIND (
-		  CASE 
-			WHEN apoc.meta.type(bucket_selection_lst) = "LIST" 
+		  CASE
+			WHEN apoc.meta.type(bucket_selection_lst) = "LIST"
 			AND size(bucket_selection_lst) > 0
 			THEN bucket_selection_lst
-			ELSE [null] 
+			ELSE [null]
 		  END
 		) as bucket_selection
 		WITH a, s,
-		SUM(CASE 
+		SUM(CASE
 		  WHEN bucket_selection = 'arn:aws:s3:::' OR bucket_selection = 'arn:aws:s3' OR bucket_selection =~ 'arn:aws:s3:::' + s.id + '/.*'
 		  THEN 1
 		  ELSE 0
@@ -108,6 +108,6 @@ func (LogS3ObjectReadEvents) Execute(tx neo4j.Transaction) ([]types.Result, erro
 	return results, nil
 }
 
-func (LogS3ObjectReadEvents) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (LogS3ObjectReadEvents) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

@@ -37,7 +37,7 @@ func (EnableFlowLogs) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 		) as num_flow_log_enabled
 		RETURN v.id as resource_id,
 		'AWSVpc' as resource_type,
-		a.id as account_id, 
+		a.id as account_id,
 		CASE
 			WHEN num_flow_log_enabled > 0 THEN 'passed'
 			ELSE 'failed'
@@ -90,6 +90,6 @@ func (EnableFlowLogs) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 	return results, nil
 }
 
-func (EnableFlowLogs) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (EnableFlowLogs) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

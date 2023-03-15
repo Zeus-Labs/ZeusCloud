@@ -34,14 +34,14 @@ func (BlockPublicServerAdminIngressIpv4) Execute(tx neo4j.Transaction) ([]types.
 		WITH a, sg, rule, range
 		RETURN sg.id as resource_id,
 		'EC2SecurityGroup' as resource_type,
-		a.id as account_id, 
+		a.id as account_id,
 		CASE WHEN range.range = '0.0.0.0/0' AND
 		(
 			(rule.fromport is NULL OR rule.toport is NULL) OR
 			(rule.fromport <= 22 AND rule.toport >= 22) OR
 			(rule.fromport <= 3389 AND rule.toport >= 3389)
 		) THEN 'failed' ELSE 'passed' END as status,
-		CASE 
+		CASE
 			WHEN range.range = '0.0.0.0/0' AND (rule.fromport is NULL OR rule.toport is NULL) THEN 'The security group allows public ingress on many ports.'
 			WHEN range.range = '0.0.0.0/0' AND (rule.fromport <= 22 AND rule.toport >= 22) THEN 'The security group allows public ingress on port 22.'
 			WHEN range.range = '0.0.0.0/0' AND (rule.fromport <= 3389 AND rule.toport >= 3389) THEN 'The security group allows public ingress on port 3389.'
@@ -91,6 +91,6 @@ func (BlockPublicServerAdminIngressIpv4) Execute(tx neo4j.Transaction) ([]types.
 	return results, nil
 }
 
-func (BlockPublicServerAdminIngressIpv4) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (BlockPublicServerAdminIngressIpv4) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

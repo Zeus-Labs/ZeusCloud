@@ -52,11 +52,11 @@ func (PrivateVmAdmin) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 		RETURN e.id as resource_id,
 		'EC2Instance' as resource_type,
 		a.id as account_id,
-		CASE 
+		CASE
 			WHEN private AND is_admin THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN is_admin THEN (
 				'The instance is effectively an admin in the account because of: ' + admin_reasons[0] + '.'
 			)
@@ -107,6 +107,27 @@ func (PrivateVmAdmin) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 	return results, nil
 }
 
-func (PrivateVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (PrivateVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	var params = make(map[string]interface{})
+	params["InstanceId"] = resourceId
+	_, err := tx.Run(
+		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(e:EC2Instance{id: $InstanceId})
+		WITH e
+		OPTIONAL MATCH
+			adminRolePath=
+			(e)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_admin: True})
+		WITH e, collect(adminRolePath) as adminRolePaths
+		WITH adminRolePaths AS paths
+		RETURN paths`,
+		params)
+	if err != nil {
+		return types.GraphPathResult{}, err
+	}
+
+	// graphPathResultList, err := ProcessGraphPathResult(records, "paths")
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	return types.GraphPathResult{}, nil
 }

@@ -36,14 +36,14 @@ func (ExpiredServerCertificates) Execute(tx neo4j.Transaction) ([]types.Result, 
 		WITH a, sc, datetime().epochSeconds as currentTime
 		RETURN sc.id as resource_id,
 		'ServerCertificate' as resource_type,
-		a.id as account_id, 
-		CASE 
-			WHEN sc.expiration IS NOT NULL AND currentTime < sc.expiration THEN 'passed' 
+		a.id as account_id,
+		CASE
+			WHEN sc.expiration IS NOT NULL AND currentTime < sc.expiration THEN 'passed'
 			ELSE 'failed'
 		END as status,
-		CASE 
-			WHEN sc.expiration IS NOT NULL AND currentTime < sc.expiration THEN 'The certificate is still valid.' 
-			ELSE 'The certificate has expired.' 
+		CASE
+			WHEN sc.expiration IS NOT NULL AND currentTime < sc.expiration THEN 'The certificate is still valid.'
+			ELSE 'The certificate has expired.'
 		END as context`,
 		nil,
 	)
@@ -89,6 +89,6 @@ func (ExpiredServerCertificates) Execute(tx neo4j.Transaction) ([]types.Result, 
 	return results, nil
 }
 
-func (ExpiredServerCertificates) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (ExpiredServerCertificates) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

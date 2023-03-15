@@ -37,12 +37,12 @@ func (NoStarPolicies) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 		WITH a, p, SUM(CASE WHEN s IS NULL THEN 0 ELSE 1 END) as num_star_found
 		RETURN p.id as resource_id,
 		'AWSPolicy' as resource_type,
-		a.id as account_id,   
-		CASE 
+		a.id as account_id,
+		CASE
 			WHEN num_star_found > 0 THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN num_star_found > 0 THEN 'The policy has ' + toString(num_star_found) + ' statements allowing * action on * resource.'
 			ELSE 'The policy has no statements allowing * action on * resource.'
 		END as context`,
@@ -90,6 +90,6 @@ func (NoStarPolicies) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 	return results, nil
 }
 
-func (NoStarPolicies) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (NoStarPolicies) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

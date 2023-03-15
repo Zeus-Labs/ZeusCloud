@@ -33,8 +33,8 @@ func (SecretRotatesWithin90Days) Execute(tx neo4j.Transaction) ([]types.Result, 
 		WITH a, s, datetime().epochSeconds as currentTime, 90 * 24 * 60 * 60 as ninetyDays
 		RETURN s.id as resource_id,
 		'SecretsManagerSecret' as resource_type,
-		a.id as account_id, 
-		CASE WHEN 
+		a.id as account_id,
+		CASE WHEN
 		  s.rotation_rules_automatically_after_days is not NULL AND
 		  s.rotation_rules_automatically_after_days <= 90 AND
 		  (
@@ -42,9 +42,9 @@ func (SecretRotatesWithin90Days) Execute(tx neo4j.Transaction) ([]types.Result, 
 			  (s.last_rotated_date is not NULL AND currentTime - s.last_rotated_date <= ninetyDays)
 		  )
 		THEN 'passed' ELSE 'failed' END as status,
-		CASE 
+		CASE
 			WHEN s.rotation_rules_automatically_after_days is NULL THEN 'The secret is not configured to automatically rotate.'
-		  	WHEN s.rotation_rules_automatically_after_days > 90 THEN 'The secret is not configured to automatically rotate every ' + toString(s.rotation_rules_automatically_after_days) + ' days.' 
+		  	WHEN s.rotation_rules_automatically_after_days > 90 THEN 'The secret is not configured to automatically rotate every ' + toString(s.rotation_rules_automatically_after_days) + ' days.'
 		    WHEN s.last_rotated_date is NULL AND currentTime - s.created_date <= ninetyDays THEN 'The secret was created less than 90 days ago and is configured to automatically rotate within 90 days.'
 			WHEN s.last_rotated_date is not NULL AND currentTime - s.last_rotated_date <= ninetyDays THEN 'The secret is configured to automatically rotate within 90 days, and it has successfully rotated in the past 90 days.'
 			ELSE 'The secret is configured to automatically rotate within 90 days, but has not successfully rotated in the past 90 days.'
@@ -93,6 +93,6 @@ func (SecretRotatesWithin90Days) Execute(tx neo4j.Transaction) ([]types.Result, 
 	return results, nil
 }
 
-func (SecretRotatesWithin90Days) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (SecretRotatesWithin90Days) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

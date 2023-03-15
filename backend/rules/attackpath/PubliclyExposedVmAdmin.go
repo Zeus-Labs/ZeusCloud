@@ -2,8 +2,6 @@ package attackpath
 
 import (
 	"fmt"
-	"reflect"
-
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -59,29 +57,29 @@ func (PubliclyExposedVmAdmin) Execute(tx neo4j.Transaction) ([]types.Result, err
 		RETURN e.id as resource_id,
 		'EC2Instance' as resource_type,
 		a.id as account_id,
-		CASE 
+		CASE
 			WHEN publicly_exposed AND is_admin THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN publicly_exposed THEN (
 				'The instance is publicly exposed. ' +
-				CASE 
+				CASE
 					WHEN e.publicipaddress IS NOT NULL THEN 'The instance has a public IP address: ' + e.publicipaddress + '.'
 					ELSE 'The instance has no public IP address.'
 				END + ' ' +
-				CASE 
+				CASE
 					WHEN size(instance_group_ids) > 0 THEN 'The following security groups attached to the instance allow traffic from 0.0.0.0/0: ' + substring(apoc.text.join(instance_group_ids, ', '), 0, 1000) + '.'
 					ELSE 'No security group attached to the instance allows traffic from 0.0.0.0/0.'
 				END + ' ' +
-				CASE 
+				CASE
 					WHEN size(public_elbv2_ids) > 0 THEN 'The instance is publicly exposed through these ELBv2 load balancers: ' + substring(apoc.text.join(public_elbv2_ids, ', '), 0, 1000) + '.'
 					ELSE 'The instance is not publicly exposed through any ELBv2 load balancers.'
 				END
 			)
 			ELSE 'The instance is neither directly publicly exposed, nor indirectly public exposed through an ELBv2 load balancer.'
 		END + ' ' +
-		CASE 
+		CASE
 			WHEN is_admin THEN (
 				'The instance is effectively an admin in the account because of: ' + admin_reasons[0] + '.'
 			)
@@ -131,9 +129,10 @@ func (PubliclyExposedVmAdmin) Execute(tx neo4j.Transaction) ([]types.Result, err
 	return results, nil
 }
 
-func (PubliclyExposedVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	var params = map[string]interface{}{"id": resourceId}
-	records, err := tx.Run(
+func (PubliclyExposedVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	var params = make(map[string]interface{})
+	params["InstanceId"] = resourceId
+	_, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(e:EC2Instance{id: $InstanceId})
 		OPTIONAL MATCH
 			directPublicPath=
@@ -142,43 +141,33 @@ func (PubliclyExposedVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId 
 			(instance_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP|NETWORK_INTERFACE*..2]-(e)
 		WITH a, e, collect(directPublicPath) as directPublicPaths
 		OPTIONAL MATCH
-			indirectPublicPath=
+			indirectELBListenerPath=
 			(:IpRange{range:'0.0.0.0/0'})-[:MEMBER_OF_IP_RULE]->
 			(perm:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
 			(elbv2_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP]-
 			(elbv2:LoadBalancerV2{scheme: 'internet-facing'})—[:ELBV2_LISTENER]->
 			(listener:ELBV2Listener),
+			indirectELBExposurePath=
 			(elbv2)-[:EXPOSE]->(e)
 		WHERE listener.port >= perm.fromport AND listener.port <= perm.toport
-		WITH a, e, directPublicPaths, collect(indirectPublicPath) as indirectPublicPaths
+		WITH a, e, directPublicPaths, collect(indirectELBListenerPath) as indirectELBListenerPaths,
+		collect(indirectELBExposurePath) as indirectELBExposurePaths
 		OPTIONAL MATCH
 			adminRolePath=
 			(e)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_admin: True})
-		WITH a, e, directPublicPaths, indirectPublicPaths, 
+		WITH a, e, directPublicPaths, indirectELBListenerPaths, indirectELBExposurePaths,
 		collect(adminRolePath) as adminRolePaths
-		WITH directPublicPaths + indirectPublicPaths + adminRolePaths AS paths
-		RETURN paths as paths`,
+		WITH directPublicPaths + indirectELBListenerPaths + indirectELBExposurePaths + adminRolePaths AS paths
+		RETURN paths`,
 		params)
-	// Change to some other kind of result.
-
-	var results []types.GraphResult
-	for records.Next() {
-		record := records.Record()
-		allPaths, _ := record.Get("paths")
-		valueAsLst, ok := allPaths.([]interface{})
-		if !ok {
-			return nil, fmt.Errorf("%v should be of type []interface{}", valueAsLst)
-		}
-		fmt.Printf("Type %v", reflect.TypeOf(valueAsLst))
-		//var valueAsGraphPathLst []types.GraphPath
-		//for idx, value := range valueAsLst {
-		//
-		//	valueAsGraphPathLst = append(valueAsGraphPathLst)
-		//}
-
-	}
 	if err != nil {
-		return nil, err
+		return types.GraphPathResult{}, err
 	}
-	return results, nil
+
+	// graphPathResultList, err := ProcessGraphPathResult(records, "paths")
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	return types.GraphPathResult{}, nil
 }

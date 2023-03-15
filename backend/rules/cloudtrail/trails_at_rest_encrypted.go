@@ -33,11 +33,11 @@ func (TrailsAtRestEncrypted) Execute(tx neo4j.Transaction) ([]types.Result, erro
 		RETURN t.id as resource_id,
 		'CloudTrail' as resource_type,
 		a.id as account_id,
-		CASE 
+		CASE
 			WHEN t.kms_key_id IS NULL THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN t.kms_key_id IS NULL THEN 'The trail logs do not have at-rest encryption enabled.'
 			ELSE 'The trail logs have at-rest encryption enabled with KMS key ' + t.kms_key_id + '.'
 		END as context`,
@@ -85,6 +85,6 @@ func (TrailsAtRestEncrypted) Execute(tx neo4j.Transaction) ([]types.Result, erro
 	return results, nil
 }
 
-func (TrailsAtRestEncrypted) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (TrailsAtRestEncrypted) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

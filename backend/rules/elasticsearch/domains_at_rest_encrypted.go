@@ -33,11 +33,11 @@ func (DomainsAtRestEncrypted) Execute(tx neo4j.Transaction) ([]types.Result, err
 		RETURN d.id as resource_id,
 		'ESDomain' as resource_type,
 		a.id as account_id,
-		CASE 
+		CASE
 			WHEN d.encryption_at_rest_options_enabled THEN 'passed'
 			ELSE 'failed'
 		END as status,
-		CASE 
+		CASE
 			WHEN d.encryption_at_rest_options_enabled THEN 'The ES domain has encryption at rest enabled.'
 			ELSE 'The ES domain does not have encryption at rest enabled.'
 		END as context`,
@@ -85,6 +85,6 @@ func (DomainsAtRestEncrypted) Execute(tx neo4j.Transaction) ([]types.Result, err
 	return results, nil
 }
 
-func (DomainsAtRestEncrypted) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (DomainsAtRestEncrypted) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

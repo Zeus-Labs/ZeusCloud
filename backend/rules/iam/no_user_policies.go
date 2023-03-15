@@ -34,12 +34,12 @@ func (NoUserPolicies) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 		WITH a, u, sum(CASE WHEN p IS NULL THEN 0 ELSE 1 END) as num_user_policies
 		RETURN u.arn as resource_id,
 		'AWSUser' as resource_type,
-		a.id as account_id,   
-		CASE 
+		a.id as account_id,
+		CASE
 			WHEN num_user_policies > 0 THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN num_user_policies > 0 THEN toString(num_user_policies) + ' IAM policies are attached to the user.'
 			ELSE 'No IAM policies are connected the user.'
 		END as context`,
@@ -87,6 +87,6 @@ func (NoUserPolicies) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 	return results, nil
 }
 
-func (NoUserPolicies) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (NoUserPolicies) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

@@ -33,11 +33,11 @@ func (AvoidPublicIPs) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 		RETURN e.id as resource_id,
 		'EC2Instance' as resource_type,
 		a.id as account_id,
-		CASE 
+		CASE
 			WHEN e.publicipaddress IS NULL THEN 'passed'
 			ELSE 'failed'
 		END as status,
-		CASE 
+		CASE
 			WHEN e.publicipaddress IS NULL THEN 'The EC2 instance does not have a public IP address attached.'
 			ELSE 'The EC2 instance has public IP address ' + e.publicipaddress + ' attached.'
 		END as context`,
@@ -85,6 +85,6 @@ func (AvoidPublicIPs) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 	return results, nil
 }
 
-func (AvoidPublicIPs) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (AvoidPublicIPs) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

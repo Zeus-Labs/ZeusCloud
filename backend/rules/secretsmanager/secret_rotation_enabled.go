@@ -32,12 +32,12 @@ func (SecretRotationEnabled) Execute(tx neo4j.Transaction) ([]types.Result, erro
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(s:SecretsManagerSecret)
 		RETURN s.id as resource_id,
 		'SecretsManagerSecret' as resource_type,
-		a.id as account_id, 
-		CASE 
+		a.id as account_id,
+		CASE
 			WHEN s.rotation_enabled THEN 'passed'
 			ELSE 'failed'
 		END as status,
-		CASE 
+		CASE
 			WHEN s.rotation_enabled THEN 'Automatic rotation is turned on for the secret.'
 			ELSE 'Automatic rotation is not turned on for the secret.'
 		END as context`,
@@ -85,6 +85,6 @@ func (SecretRotationEnabled) Execute(tx neo4j.Transaction) ([]types.Result, erro
 	return results, nil
 }
 
-func (SecretRotationEnabled) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (SecretRotationEnabled) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

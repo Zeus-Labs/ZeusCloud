@@ -35,7 +35,7 @@ func (RotationEnabledForCMK) Execute(tx neo4j.Transaction) ([]types.Result, erro
 		AND k.keymanager = 'CUSTOMER'
 		RETURN k.id as resource_id,
 		'KMSKey' as resource_type,
-		a.id as account_id,    
+		a.id as account_id,
 		CASE
 			WHEN k.key_rotation_enabled THEN 'passed'
 			ELSE 'failed'
@@ -88,6 +88,6 @@ func (RotationEnabledForCMK) Execute(tx neo4j.Transaction) ([]types.Result, erro
 	return results, nil
 }
 
-func (RotationEnabledForCMK) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (RotationEnabledForCMK) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

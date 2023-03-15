@@ -33,7 +33,7 @@ func (ExcessiveSecurityGroups) Execute(tx neo4j.Transaction) ([]types.Result, er
 		WITH a, sg.region as region, count(*) as sgNum
 		RETURN a.id + '/' + region as resource_id,
 		'AWSRegion' as resource_type,
-		a.id as account_id, 
+		a.id as account_id,
 		CASE
 			WHEN sgNum >= 35 THEN 'failed'
 			ELSE 'passed'
@@ -86,6 +86,6 @@ func (ExcessiveSecurityGroups) Execute(tx neo4j.Transaction) ([]types.Result, er
 	return results, nil
 }
 
-func (ExcessiveSecurityGroups) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (ExcessiveSecurityGroups) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

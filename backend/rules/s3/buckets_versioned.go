@@ -33,11 +33,11 @@ func (BucketsVersioned) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 		RETURN s.id as resource_id,
 		'S3Bucket' as resource_type,
 		a.id as account_id,
-		CASE 
+		CASE
 			WHEN s.versioning_status = 'Enabled' THEN 'passed'
 			ELSE 'failed'
 		END as status,
-		CASE 
+		CASE
 			WHEN s.versioning_status = 'Enabled' THEN 'Versioning is enabled for the bucket.'
 			ELSE 'Versioning is not enabled for the bucket.'
 		END as context`,
@@ -85,6 +85,6 @@ func (BucketsVersioned) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 	return results, nil
 }
 
-func (BucketsVersioned) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (BucketsVersioned) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

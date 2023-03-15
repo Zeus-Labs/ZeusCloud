@@ -34,11 +34,11 @@ func (EBSAtRestEncrypted) Execute(tx neo4j.Transaction) ([]types.Result, error) 
 		RETURN v.id as resource_id,
 		'EBSVolume' as resource_type,
 		a.id as account_id,
-		CASE 
+		CASE
 			WHEN v.encrypted THEN 'passed'
 			ELSE 'failed'
 		END as status,
-		CASE 
+		CASE
 			WHEN v.encrypted THEN 'The volume is encrypted.'
 			ELSE 'The volume is not encrypted.'
 		END as context`,
@@ -86,6 +86,6 @@ func (EBSAtRestEncrypted) Execute(tx neo4j.Transaction) ([]types.Result, error) 
 	return results, nil
 }
 
-func (EBSAtRestEncrypted) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (EBSAtRestEncrypted) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

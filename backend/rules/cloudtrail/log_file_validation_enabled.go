@@ -33,13 +33,13 @@ func (LogFileValidationEnabled) Execute(tx neo4j.Transaction) ([]types.Result, e
 		RETURN t.id as resource_id,
 		'CloudTrail' as resource_type,
 		a.id as account_id,
-		CASE 
-			WHEN t.log_file_validation_enabled THEN 'passed' 
-			ELSE 'failed' 
+		CASE
+			WHEN t.log_file_validation_enabled THEN 'passed'
+			ELSE 'failed'
 		END as status,
-		CASE 
-			WHEN t.log_file_validation_enabled THEN 'The trail has log file validation enabled.' 
-			ELSE 'The trail does not have log file validation enabled.' 
+		CASE
+			WHEN t.log_file_validation_enabled THEN 'The trail has log file validation enabled.'
+			ELSE 'The trail does not have log file validation enabled.'
 		END as context`,
 		nil,
 	)
@@ -85,6 +85,6 @@ func (LogFileValidationEnabled) Execute(tx neo4j.Transaction) ([]types.Result, e
 	return results, nil
 }
 
-func (LogFileValidationEnabled) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (LogFileValidationEnabled) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

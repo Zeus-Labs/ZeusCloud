@@ -33,8 +33,8 @@ func (PasswordMinLength) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(app:AccountPasswordPolicy)
 		RETURN app.id as resource_id,
 		'AccountPasswordPolicy' as resource_type,
-		a.id as account_id,   
-		CASE 
+		a.id as account_id,
+		CASE
 			WHEN app.minimum_password_length >= 14 THEN 'passed'
 			ELSE 'failed'
 		END as status,
@@ -86,6 +86,6 @@ func (PasswordMinLength) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 	return results, nil
 }
 
-func (PasswordMinLength) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (PasswordMinLength) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

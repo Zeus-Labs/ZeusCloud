@@ -33,13 +33,13 @@ func (NoRootAccessKeys) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 		WHERE u.user = '<root_account>'
 		RETURN u.arn as resource_id,
 		'AWSUser' as resource_type,
-		a.id as account_id,   
-		CASE 
+		a.id as account_id,
+		CASE
 			WHEN u.access_key_1_active THEN 'failed'
 			WHEN u.access_key_2_active THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN u.access_key_1_active THEN 'Access key 1 is active for root account.'
 			WHEN u.access_key_2_active THEN 'Access key 2 is active for root account.'
 			ELSE 'No active access keys found for root account.'
@@ -88,6 +88,6 @@ func (NoRootAccessKeys) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 	return results, nil
 }
 
-func (NoRootAccessKeys) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (NoRootAccessKeys) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

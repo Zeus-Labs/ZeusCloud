@@ -34,14 +34,14 @@ func (EnabledAllRegions) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 		OPTIONAL MATCH (a)<-[:MONITORS]-(t:CloudTrail)
 		WHERE t.is_multi_region_trail AND t.is_logging
 		WITH a, sum(CASE WHEN t IS NULL THEN 0 ELSE 1 END) as num_qualified_trails
-		RETURN a.id as resource_id, 
+		RETURN a.id as resource_id,
 		'AWSAccount' as resource_type,
 		a.id as account_id,
-		CASE 
+		CASE
 			WHEN num_qualified_trails > 0 THEN 'passed'
 			ELSE 'failed'
 		END as status,
-		CASE 
+		CASE
 			WHEN num_qualified_trails > 0 THEN 'The account has ' + toString(num_qualified_trails) + ' multi-region trails currently logging API calls.'
 			ELSE 'The account has no multi-region trails currently logging API calls.'
 		END as context`,
@@ -89,6 +89,6 @@ func (EnabledAllRegions) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 	return results, nil
 }
 
-func (EnabledAllRegions) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (EnabledAllRegions) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

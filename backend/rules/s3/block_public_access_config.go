@@ -38,19 +38,19 @@ func (BlockPublicAccessConfig) Execute(tx neo4j.Transaction) ([]types.Result, er
 		RETURN s.id as resource_id,
 		'S3Bucket' as resource_type,
 		a.id as account_id,
-		CASE 
+		CASE
 			WHEN s.ignore_public_acls AND s.block_public_acls AND s.restrict_public_buckets THEN 'passed'
 			ELSE 'failed'
 		END as status,
-		CASE 
+		CASE
 			WHEN s.ignore_public_acls THEN 'All public ACLs on this bucket are ignored.'
 			ELSE 'Public ACLs on the bucket are not set to be ignored.'
 		END + ' ' +
-		CASE 
+		CASE
 			WHEN s.block_public_acls THEN 'Creation/modification of ACLs on the bucket that enable public access will be blocked.'
 			ELSE 'Creation/modification of ACLs on the bucket that enable public access will not be blocked.'
 		END + ' ' +
-		CASE 
+		CASE
 			WHEN s.restrict_public_buckets THEN 'All bucket policies enabling public access to this bucket are ignored.'
 			ELSE 'Bucket policies enabling public access to this bucket are not set to be ignored.'
 		END as context`,
@@ -98,6 +98,6 @@ func (BlockPublicAccessConfig) Execute(tx neo4j.Transaction) ([]types.Result, er
 	return results, nil
 }
 
-func (BlockPublicAccessConfig) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (BlockPublicAccessConfig) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

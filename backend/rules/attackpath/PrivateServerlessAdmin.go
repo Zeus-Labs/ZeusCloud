@@ -47,11 +47,11 @@ func (PrivateServerlessAdmin) Execute(tx neo4j.Transaction) ([]types.Result, err
 		RETURN lambda.id as resource_id,
 		'AWSLambda' as resource_type,
 		a.id as account_id,
-		CASE 
+		CASE
 			WHEN private AND is_admin THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN is_admin THEN (
 				'The function is effectively an admin in the account because of: ' + admin_reasons[0] + '.'
 			)
@@ -102,6 +102,29 @@ func (PrivateServerlessAdmin) Execute(tx neo4j.Transaction) ([]types.Result, err
 	return results, nil
 }
 
-func (PrivateServerlessAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (PrivateServerlessAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	var params = make(map[string]interface{})
+	params["InstanceId"] = resourceId
+	// We lambda isn't exposed, we want to pick up the relevant role to return.
+	_, err := tx.Run(
+		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(lambda:AWSLambda{id: $InstanceId})
+		WITH lambda
+		OPTIONAL MATCH
+			adminRolePath=
+			(lambda)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_admin: True})
+		WITH lambda, collect(adminRolePath) as adminRolePaths
+		WITH adminRolePaths AS paths
+		RETURN paths`,
+		params,
+	)
+	if err != nil {
+		return types.GraphPathResult{}, err
+	}
+
+	// graphPathResultList, err := ProcessGraphPathResult(records, "paths")
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	return types.GraphPathResult{}, nil
 }

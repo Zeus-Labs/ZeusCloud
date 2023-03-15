@@ -34,12 +34,12 @@ func (DefaultSecurityGroupsBlockTraffic) Execute(tx neo4j.Transaction) ([]types.
 		WITH a, sg, count((:IpRule)-[:MEMBER_OF_EC2_SECURITY_GROUP]->(sg)) as num_rules
 		RETURN sg.id as resource_id,
 		'EC2SecurityGroup' as resource_type,
-		a.id as account_id, 
-		CASE 
+		a.id as account_id,
+		CASE
 			WHEN num_rules > 0 THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN num_rules > 0 THEN 'The security group has ' + toString(num_rules) + ' IP rules, so it doesn\'t block all traffic.'
 			ELSE 'The security group blocks all inbound / outbound traffic.'
 		END as context`,
@@ -87,6 +87,6 @@ func (DefaultSecurityGroupsBlockTraffic) Execute(tx neo4j.Transaction) ([]types.
 	return results, nil
 }
 
-func (DefaultSecurityGroupsBlockTraffic) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (DefaultSecurityGroupsBlockTraffic) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

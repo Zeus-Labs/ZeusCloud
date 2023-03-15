@@ -31,14 +31,14 @@ func (AvoidAccessKeysAtSetup) Execute(tx neo4j.Transaction) ([]types.Result, err
 	records, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(u:CredentialReportUser)
 		WHERE u.user <> '<root_account>'
-		RETURN u.arn as resource_id, 
+		RETURN u.arn as resource_id,
 		'AWSUser' as resource_type,
 		a.id as account_id,
-		CASE 
-			WHEN u.password_enabled AND u.access_key_1_last_rotated - u.user_creation_time < 15 THEN 'failed' 
+		CASE
+			WHEN u.password_enabled AND u.access_key_1_last_rotated - u.user_creation_time < 15 THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN u.password_enabled IS NULL OR NOT u.password_enabled THEN 'IAM user does not have a password.'
 			WHEN u.access_key_1_last_rotated IS NULL THEN 'IAM user does not have an access key.'
 			WHEN u.password_enabled AND u.access_key_1_last_rotated - u.user_creation_time < 15 THEN 'IAM user has a password and an access key created during user setup.'
@@ -88,6 +88,6 @@ func (AvoidAccessKeysAtSetup) Execute(tx neo4j.Transaction) ([]types.Result, err
 	return results, nil
 }
 
-func (AvoidAccessKeysAtSetup) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (AvoidAccessKeysAtSetup) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

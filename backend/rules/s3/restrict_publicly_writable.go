@@ -46,17 +46,17 @@ func (RestrictPubliclyWritable) Execute(tx neo4j.Transaction) ([]types.Result, e
 		WITH a, s, SUM(CASE WHEN sa is not NULL THEN 1 ELSE 0 END) as num_public_grants
 		RETURN s.id as resource_id,
 		'S3Bucket' as resource_type,
-		a.id as account_id, 
-		CASE 
+		a.id as account_id,
+		CASE
 			WHEN (s.ignore_public_acls is NULL OR NOT s.ignore_public_acls) AND num_public_grants > 0 THEN 'failed'
 			WHEN (s.restrict_public_buckets is NULL OR NOT s.restrict_public_buckets) AND s.anonymous_access THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN (s.ignore_public_acls is NULL OR NOT s.ignore_public_acls) AND num_public_grants > 0 THEN 'The bucket has public write permissions through ACLs.'
 			ELSE 'The bucket does not have public write permissions through ACLs.'
 		END + ' ' +
-		CASE 
+		CASE
 			WHEN (s.restrict_public_buckets is NULL OR NOT s.restrict_public_buckets) AND s.anonymous_access THEN 'The bucket has public write permissions through its bucket policy.'
 			ELSE 'The bucket does not have public write permissions through its bucket policy.'
 		END as context`,
@@ -104,6 +104,6 @@ func (RestrictPubliclyWritable) Execute(tx neo4j.Transaction) ([]types.Result, e
 	return results, nil
 }
 
-func (RestrictPubliclyWritable) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (RestrictPubliclyWritable) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

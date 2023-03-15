@@ -38,7 +38,7 @@ func (AccessLoggingEnabled) Execute(tx neo4j.Transaction) ([]types.Result, error
 			WHEN s.logging_target_bucket IS NULL THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN s.logging_target_bucket IS NULL THEN 'The bucket has access logging disabled.'
 			ELSE 'The bucket has access logging enabled. Access logs can be found in bucket ' + s.logging_target_bucket + '.'
 		END as context`,
@@ -86,6 +86,6 @@ func (AccessLoggingEnabled) Execute(tx neo4j.Transaction) ([]types.Result, error
 	return results, nil
 }
 
-func (AccessLoggingEnabled) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (AccessLoggingEnabled) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

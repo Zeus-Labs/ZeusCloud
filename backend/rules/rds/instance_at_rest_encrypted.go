@@ -33,7 +33,7 @@ func (InstanceAtRestEncrypted) Execute(tx neo4j.Transaction) ([]types.Result, er
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(r:RDSInstance)
 		RETURN r.arn as resource_id,
 		'RDSInstance' as resource_type,
-		a.id as account_id,    
+		a.id as account_id,
 		CASE
 			WHEN r.storage_encrypted THEN 'passed'
 			ELSE 'failed'
@@ -86,6 +86,6 @@ func (InstanceAtRestEncrypted) Execute(tx neo4j.Transaction) ([]types.Result, er
 	return results, nil
 }
 
-func (InstanceAtRestEncrypted) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (InstanceAtRestEncrypted) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

@@ -34,13 +34,13 @@ func (SecretUnused90Days) Execute(tx neo4j.Transaction) ([]types.Result, error) 
 		WITH a, s, datetime().epochSeconds as currentTime, 90 * 24 * 60 * 60 as ninetyDays
 		RETURN s.id as resource_id,
 		'SecretsManagerSecret' as resource_type,
-		a.id as account_id, 
-		CASE 
+		a.id as account_id,
+		CASE
 			WHEN s.last_accessed_date is NULL AND currentTime - s.created_date <= ninetyDays THEN 'passed'
 			WHEN s.last_accessed_date is not NULL AND currentTime - s.last_accessed_date <= ninetyDays THEN 'passed'
 			ELSE 'failed'
 		END as status,
-		CASE 
+		CASE
 			WHEN s.last_accessed_date is NULL AND currentTime - s.created_date <= ninetyDays THEN 'The secret has not been used, but was created less than 90 days ago.'
 			WHEN s.last_accessed_date is not NULL AND currentTime - s.last_accessed_date <= ninetyDays THEN 'The secret has been used in the past 90 days.'
 			ELSE 'The secret is unused for the past 90 days.'
@@ -89,6 +89,6 @@ func (SecretUnused90Days) Execute(tx neo4j.Transaction) ([]types.Result, error) 
 	return results, nil
 }
 
-func (SecretUnused90Days) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (SecretUnused90Days) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

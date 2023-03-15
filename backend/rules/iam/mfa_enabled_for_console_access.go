@@ -33,12 +33,12 @@ func (MfaEnabledForConsoleAccess) Execute(tx neo4j.Transaction) ([]types.Result,
 		WHERE u.password_enabled
 		RETURN u.arn as resource_id,
 		'AWSUser' as resource_type,
-		a.id as account_id, 
-		CASE 
+		a.id as account_id,
+		CASE
 			WHEN u.mfa_active THEN 'passed'
 			ELSE 'failed'
 		END as status,
-		CASE 
+		CASE
 			WHEN u.mfa_active THEN 'The user has MFA enabled.'
 			ELSE 'The user doesn\'t have MFA enabled.'
 		END as context`,
@@ -86,6 +86,6 @@ func (MfaEnabledForConsoleAccess) Execute(tx neo4j.Transaction) ([]types.Result,
 	return results, nil
 }
 
-func (MfaEnabledForConsoleAccess) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (MfaEnabledForConsoleAccess) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

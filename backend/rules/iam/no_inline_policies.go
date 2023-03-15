@@ -37,13 +37,13 @@ func (NoInlinePolicies) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 		WITH a, principal, SUM(CASE WHEN policy IS NULL THEN 0 ELSE 1 END) as num_inline_policies
 		RETURN principal.arn as resource_id,
 		'AWSPrincipal' as resource_type,
-		a.id as account_id,  
-		CASE 
+		a.id as account_id,
+		CASE
 			WHEN num_inline_policies > 0 THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
-			WHEN num_inline_policies > 0 THEN 'The Principal has ' + toString(num_inline_policies) + ' inline policies.' 
+		CASE
+			WHEN num_inline_policies > 0 THEN 'The Principal has ' + toString(num_inline_policies) + ' inline policies.'
 			ELSE 'The Principal has no inline policies.'
 		END as context`,
 		nil,
@@ -90,6 +90,6 @@ func (NoInlinePolicies) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 	return results, nil
 }
 
-func (NoInlinePolicies) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (NoInlinePolicies) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

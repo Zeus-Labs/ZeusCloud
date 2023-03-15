@@ -47,11 +47,11 @@ func (NetworkGatewayChanges) Execute(tx neo4j.Transaction) ([]types.Result, erro
 		RETURN a.id as resource_id,
 		'AWSAccount' as resource_type,
 		a.id as account_id,
-		CASE WHEN 
+		CASE WHEN
 			num_valid = 0 THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE WHEN 
+		CASE WHEN
 			num_valid = 0 THEN 'There is no log metric filter and alarm monitoring an active, multi-region CloudTrail trail for network gateway changes.'
 			ELSE 'The metric filter ' + valid_mfs[0].filter_name + ' and alarm ' + valid_als[0].arn + ' monitor network gateway change events.'
 		END as context`,
@@ -99,6 +99,6 @@ func (NetworkGatewayChanges) Execute(tx neo4j.Transaction) ([]types.Result, erro
 	return results, nil
 }
 
-func (NetworkGatewayChanges) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (NetworkGatewayChanges) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

@@ -58,29 +58,29 @@ func (PubliclyExposedVmPrivEsc) Execute(tx neo4j.Transaction) ([]types.Result, e
 		RETURN e.id as resource_id,
 		'EC2Instance' as resource_type,
 		a.id as account_id,
-		CASE 
+		CASE
 			WHEN publicly_exposed AND is_privilege_escalation THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN publicly_exposed THEN (
 				'The instance is publicly exposed. ' +
-				CASE 
+				CASE
 					WHEN e.publicipaddress IS NOT NULL THEN 'The instance has a public IP address: ' + e.publicipaddress + '.'
 					ELSE 'The instance has no public IP address.'
 				END + ' ' +
-				CASE 
+				CASE
 					WHEN size(instance_group_ids) > 0 THEN 'The following security groups attached to the instance allow traffic from 0.0.0.0/0: ' + substring(apoc.text.join(instance_group_ids, ', '), 0, 1000) + '.'
 					ELSE 'No security group attached to the instance allows traffic from 0.0.0.0/0.'
 				END + ' ' +
-				CASE 
+				CASE
 					WHEN size(public_elbv2_ids) > 0 THEN 'The instance is publicly exposed through these ELBv2 load balancers: ' + substring(apoc.text.join(public_elbv2_ids, ', '), 0, 1000) + '.'
 					ELSE 'The instance is not publicly exposed through any ELBv2 load balancers.'
 				END
 			)
 			ELSE 'The instance is neither directly publicly exposed, nor indirectly public exposed through an ELBv2 load balancer.'
 		END + ' ' +
-		CASE 
+		CASE
 			WHEN is_privilege_escalation THEN (
 				'The instance has risky privilege esclataion in the account because of: ' + relationship_reasons[0] + '.'
 			)
@@ -130,6 +130,43 @@ func (PubliclyExposedVmPrivEsc) Execute(tx neo4j.Transaction) ([]types.Result, e
 	return results, nil
 }
 
-func (PubliclyExposedVmPrivEsc) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (PubliclyExposedVmPrivEsc) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	var params = make(map[string]interface{})
+	params["InstanceId"] = resourceId
+	_, err := tx.Run(
+		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(e:EC2Instance{id: $InstanceId})
+		OPTIONAL MATCH
+			directPublicPath=
+			(:IpRange{id: '0.0.0.0/0'})-[:MEMBER_OF_IP_RULE]->
+			(:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
+			(instance_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP|NETWORK_INTERFACE*..2]-(e)
+		WITH e, collect(directPublicPath) as directPublicPaths
+		OPTIONAL MATCH
+			indirectPublicPath=
+			(:IpRange{range:'0.0.0.0/0'})-[:MEMBER_OF_IP_RULE]->
+			(perm:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
+			(elbv2_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP]-
+			(elbv2:LoadBalancerV2{scheme: 'internet-facing'})—[:ELBV2_LISTENER]->
+			(listener:ELBV2Listener),
+			(elbv2)-[:EXPOSE]->(e)
+		WHERE listener.port >= perm.fromport AND listener.port <= perm.toport
+		WITH e, directPublicPaths, collect(indirectPublicPath) as indirectPublicPaths
+		OPTIONAL MATCH
+			privilegeEscalationPath=
+			(e)-[:STS_ASSUME_ROLE_ALLOW*1..4]->(role:AWSRole)-[privEscalation:PRIVILEGE_ESCALATION]->(escRole)
+		WITH e, directPublicPaths, indirectPublicPaths,
+		collect(privilegeEscalationPath) as privilegeEscalationPaths
+		WITH directPublicPaths + indirectPublicPaths + privilegeEscalationPaths AS paths
+		RETURN paths`,
+		params)
+	if err != nil {
+		return types.GraphPathResult{}, err
+	}
+
+	// graphPathResultList, err := ProcessGraphPathResult(records, "paths")
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	return types.GraphPathResult{}, nil
 }

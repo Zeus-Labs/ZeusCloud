@@ -36,12 +36,12 @@ func (EBSSnapshotEncrypted) Execute(tx neo4j.Transaction) ([]types.Result, error
 		'EBSSnapshot' as resource_type,
 		a.id as account_id,
 		CASE
-			WHEN s.encrypted THEN 'passed' 
+			WHEN s.encrypted THEN 'passed'
 			ELSE 'failed'
 		END as status,
 		CASE
-			WHEN s.encrypted THEN 'The EBS snapshot is encrypted.' 
-			ELSE 'The EBS snapshot is not encrypted.' 
+			WHEN s.encrypted THEN 'The EBS snapshot is encrypted.'
+			ELSE 'The EBS snapshot is not encrypted.'
 		END as context`,
 		nil,
 	)
@@ -87,6 +87,6 @@ func (EBSSnapshotEncrypted) Execute(tx neo4j.Transaction) ([]types.Result, error
 	return results, nil
 }
 
-func (EBSSnapshotEncrypted) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (EBSSnapshotEncrypted) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

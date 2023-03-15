@@ -43,13 +43,13 @@ func (BucketNotPubliclyAccessible) Execute(tx neo4j.Transaction) ([]types.Result
 		RETURN s.id as resource_id,
 		'S3Bucket' as resource_type,
 		a.id as account_id,
-		CASE 
+		CASE
 			WHEN (s.ignore_public_acls is NULL OR NOT s.ignore_public_acls) AND num_all_grants > 0 THEN 'failed'
 			WHEN (s.ignore_public_acls is NULL OR NOT s.ignore_public_acls) AND num_auth_grants > 0 THEN 'failed'
 			WHEN (s.restrict_public_buckets is NULL OR NOT s.restrict_public_buckets) AND s.anonymous_access THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN (s.ignore_public_acls is NULL OR NOT s.ignore_public_acls) AND num_all_grants > 0 THEN 'The S3 bucket grants AllUsers access in its ACL.'
 			WHEN (s.ignore_public_acls is NULL OR NOT s.ignore_public_acls) AND num_auth_grants > 0 THEN 'The S3 bucket grants AuthenticatedUsers access in its ACL.'
 			WHEN (s.restrict_public_buckets is NULL OR NOT s.restrict_public_buckets) AND s.anonymous_access THEN 'The S3 bucket has a policy granting public access.'
@@ -99,6 +99,6 @@ func (BucketNotPubliclyAccessible) Execute(tx neo4j.Transaction) ([]types.Result
 	return results, nil
 }
 
-func (BucketNotPubliclyAccessible) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (BucketNotPubliclyAccessible) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

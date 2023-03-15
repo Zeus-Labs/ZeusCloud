@@ -31,34 +31,34 @@ func (AccessKeysRotated90Days) Execute(tx neo4j.Transaction) ([]types.Result, er
 	records, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(u:CredentialReportUser)
 		WITH a, u, datetime().epochSeconds as currentTime, 90 * 24 * 60 * 60 as ninetyDays
-		RETURN u.arn as resource_id, 
+		RETURN u.arn as resource_id,
 		'AWSUser' as resource_type,
 		a.id as account_id,
-		CASE 
+		CASE
 			WHEN (
-				u.access_key_1_active AND 
+				u.access_key_1_active AND
 				currentTime - u.user_creation_time >= ninetyDays AND
 				(u.access_key_1_last_rotated IS NULL OR currentTime - u.access_key_1_last_rotated >= ninetyDays)
 			) THEN 'failed'
 			WHEN (
-				u.access_key_2_active AND 
+				u.access_key_2_active AND
 				currentTime - u.user_creation_time >= ninetyDays AND
 				(u.access_key_2_last_rotated IS NULL OR currentTime - u.access_key_2_last_rotated >= ninetyDays)
-			) THEN 'failed' 
-			ELSE 'passed' 
+			) THEN 'failed'
+			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN (
-				u.access_key_1_active AND 
+				u.access_key_1_active AND
 				currentTime - u.user_creation_time >= ninetyDays AND
 				(u.access_key_1_last_rotated IS NULL OR currentTime - u.access_key_1_last_rotated >= ninetyDays)
 			) THEN 'The user\'s access key 1 has not been rotated in over 90 days.'
 			WHEN (
-				u.access_key_2_active AND 
+				u.access_key_2_active AND
 				currentTime - u.user_creation_time >= ninetyDays AND
 				(u.access_key_2_last_rotated IS NULL OR currentTime - u.access_key_2_last_rotated >= ninetyDays)
 			) THEN 'The user\'s access key 2 has not been rotated in over 90 days.'
-			ELSE 'The user has no access keys due for rotation.' 
+			ELSE 'The user has no access keys due for rotation.'
 		END as context`,
 		nil,
 	)
@@ -104,6 +104,6 @@ func (AccessKeysRotated90Days) Execute(tx neo4j.Transaction) ([]types.Result, er
 	return results, nil
 }
 
-func (AccessKeysRotated90Days) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (AccessKeysRotated90Days) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

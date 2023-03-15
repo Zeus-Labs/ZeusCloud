@@ -33,11 +33,11 @@ func (BucketAccessLogging) Execute(tx neo4j.Transaction) ([]types.Result, error)
 		RETURN t.id as resource_id,
 		'CloudTrail' as resource_type,
 		a.id as account_id,
-		CASE 
+		CASE
 			WHEN s.logging_target_bucket IS NULL THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN s.logging_target_bucket IS NULL THEN 'The trail\'s S3 logging bucket ' + t.s3_bucket_name + ' has access logging disabled.'
 			ELSE 'The trail\'s S3 logging bucket ' + t.s3_bucket_name + ' has access logging enabled. Access logs can be found in bucket ' + s.logging_target_bucket + '.'
 		END as context`,
@@ -85,6 +85,6 @@ func (BucketAccessLogging) Execute(tx neo4j.Transaction) ([]types.Result, error)
 	return results, nil
 }
 
-func (BucketAccessLogging) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (BucketAccessLogging) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

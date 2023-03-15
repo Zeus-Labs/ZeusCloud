@@ -33,11 +33,11 @@ func (DetailedMonitoringEnabled) Execute(tx neo4j.Transaction) ([]types.Result, 
 		RETURN e.id as resource_id,
 		'EC2Instance' as resource_type,
 		a.id as account_id,
-		CASE 
+		CASE
 			WHEN e.monitoringstate = 'enabled' THEN 'passed'
 			ELSE 'failed'
 		END as status,
-		CASE 
+		CASE
 			WHEN e.monitoringstate = 'enabled' THEN 'Detailed monitoring is enabled for the instance.'
 			ELSE 'Detailed monitoring is not enabled for the instance.'
 		END as context`,
@@ -85,6 +85,6 @@ func (DetailedMonitoringEnabled) Execute(tx neo4j.Transaction) ([]types.Result, 
 	return results, nil
 }
 
-func (DetailedMonitoringEnabled) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (DetailedMonitoringEnabled) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

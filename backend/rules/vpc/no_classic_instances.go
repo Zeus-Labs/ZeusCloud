@@ -33,12 +33,12 @@ func (NoClassicInstances) Execute(tx neo4j.Transaction) ([]types.Result, error) 
 		WITH a, e, count((e)-[:NETWORK_INTERFACE]->(:NetworkInterface)) as num
 		RETURN e.id as resource_id,
 		'EC2Instance' as resource_type,
-		a.id as account_id, 
-		CASE 
+		a.id as account_id,
+		CASE
 			WHEN num > 0 THEN 'passed'
 			ELSE 'failed'
 		END as status,
-		CASE 
+		CASE
 			WHEN num > 0 THEN 'EC2 Classic is not being used.'
 			ELSE 'EC2 Classic is being used.'
 		END as context`,
@@ -86,6 +86,6 @@ func (NoClassicInstances) Execute(tx neo4j.Transaction) ([]types.Result, error) 
 	return results, nil
 }
 
-func (NoClassicInstances) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (NoClassicInstances) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

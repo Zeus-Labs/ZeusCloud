@@ -34,16 +34,16 @@ func (EnforceInTransitEncryption) Execute(tx neo4j.Transaction) ([]types.Result,
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(s:S3Bucket)
 		OPTIONAL MATCH (s)-[:POLICY_STATEMENT]->(p:S3PolicyStatement)
 		WITH a, s, p,
-		CASE WHEN 
-			p is not NULL THEN apoc.convert.getJsonProperty(p, 'principal', '$') 
+		CASE WHEN
+			p is not NULL THEN apoc.convert.getJsonProperty(p, 'principal', '$')
 			ELSE NULL
 		END as principal,
-		CASE WHEN 
-			p is not NULL THEN apoc.convert.getJsonProperty(p, 'condition', '$') 
+		CASE WHEN
+			p is not NULL THEN apoc.convert.getJsonProperty(p, 'condition', '$')
 			ELSE NULL
 		END as condition
-		WITH a, s, 
-		SUM(CASE WHEN 
+		WITH a, s,
+		SUM(CASE WHEN
 			p is not NULL AND
 			p.effect = 'Deny' AND
 			(
@@ -119,6 +119,6 @@ func (EnforceInTransitEncryption) Execute(tx neo4j.Transaction) ([]types.Result,
 	return results, nil
 }
 
-func (EnforceInTransitEncryption) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (EnforceInTransitEncryption) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

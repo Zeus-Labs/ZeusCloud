@@ -32,12 +32,12 @@ func (EnableSecurityHub) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 		WITH a, COUNT(h) as num_hubs
 		RETURN a.id as resource_id,
 		'AWSAccount' as resource_type,
-		a.id as account_id, 
-		CASE 
+		a.id as account_id,
+		CASE
 			WHEN num_hubs = 0 THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN num_hubs = 0 THEN 'SecurityHub is not enabled.'
 			ELSE 'SecurityHub is enabled.'
 		END as context`,
@@ -85,6 +85,6 @@ func (EnableSecurityHub) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 	return results, nil
 }
 
-func (EnableSecurityHub) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (EnableSecurityHub) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

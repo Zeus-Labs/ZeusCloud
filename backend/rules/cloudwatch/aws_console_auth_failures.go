@@ -46,11 +46,11 @@ func (AWSConsoleAuthFailures) Execute(tx neo4j.Transaction) ([]types.Result, err
 		RETURN a.id as resource_id,
 		'AWSAccount' as resource_type,
 		a.id as account_id,
-		CASE WHEN 
+		CASE WHEN
 			num_valid = 0 THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE WHEN 
+		CASE WHEN
 			num_valid = 0 THEN 'There is no log metric filter and alarm monitoring an active, multi-region CloudTrail trail for AWS Mangement Console authentication failures.'
 			ELSE 'The metric filter ' + valid_mfs[0].filter_name + ' and alarm ' + valid_als[0].arn + ' monitor AWS Mangement Console authentication failure events.'
 		END as context`,
@@ -98,6 +98,6 @@ func (AWSConsoleAuthFailures) Execute(tx neo4j.Transaction) ([]types.Result, err
 	return results, nil
 }
 
-func (AWSConsoleAuthFailures) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (AWSConsoleAuthFailures) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

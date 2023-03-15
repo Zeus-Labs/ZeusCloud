@@ -33,12 +33,12 @@ func (RootMfaEnabled) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 		WHERE u.user = '<root_account>'
 		RETURN u.arn as resource_id,
 		'AWSUser' as resource_type,
-		a.id as account_id,    
-		CASE 
+		a.id as account_id,
+		CASE
 			WHEN u.mfa_active THEN 'passed'
 			ELSE 'failed'
 		END as status,
-		CASE 
+		CASE
 			WHEN u.mfa_active THEN 'MFA is enabled for the root account.'
 			ELSE 'MFA is not enabled for the root account.'
 		END as context`,
@@ -86,6 +86,6 @@ func (RootMfaEnabled) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 	return results, nil
 }
 
-func (RootMfaEnabled) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (RootMfaEnabled) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

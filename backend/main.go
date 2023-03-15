@@ -95,6 +95,16 @@ func main() {
 	mux.HandleFunc("/api/getAccountScanInfo", handlers.GetAccountScanInfo())
 	mux.HandleFunc("/api/getRuleGraph", handlers.GetRuleGraph(driver))
 
+	//session := driver.NewSession(neo4j.SessionConfig{
+	//	AccessMode:   neo4j.AccessModeRead,
+	//	DatabaseName: "neo4j",
+	//})
+	//defer session.Close()
+
+	//results, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+	//	return attackpath.PubliclyExposedVmAdmin.ProduceRuleGraph()
+	//})
+
 	log.Printf("serving on 8080...")
 	dLog := log.Default()
 	lm := middleware.LoggingMiddleware(dLog)

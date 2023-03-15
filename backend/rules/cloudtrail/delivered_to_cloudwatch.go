@@ -34,16 +34,16 @@ func (DeliveredToCloudwatch) Execute(tx neo4j.Transaction) ([]types.Result, erro
 		RETURN t.id as resource_id,
 		'CloudTrail' as resource_type,
 		a.id as account_id,
-		CASE 
+		CASE
 			WHEN t.cloud_watch_logs_log_group_arn IS NULL THEN 'failed'
 			WHEN t.latest_cloud_watch_logs_delivery_time IS NULL THEN 'failed'
 			WHEN currentTime - t.latest_cloud_watch_logs_delivery_time > oneDay THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
+		CASE
 			WHEN t.cloud_watch_logs_log_group_arn IS NULL THEN 'The trail is not integrated with Cloudwatch log groups.'
 			WHEN t.latest_cloud_watch_logs_delivery_time IS NULL THEN 'The trail is integrated with Cloudwatch log group ' + t.cloud_watch_logs_log_group_arn + ', but has not delivered logs.'
-			WHEN currentTime - t.latest_cloud_watch_logs_delivery_time > oneDay THEN 'The trail is integrated with Cloudwatch log group ' + t.cloud_watch_logs_log_group_arn + ', but has not delivered logs in the past day.' 
+			WHEN currentTime - t.latest_cloud_watch_logs_delivery_time > oneDay THEN 'The trail is integrated with Cloudwatch log group ' + t.cloud_watch_logs_log_group_arn + ', but has not delivered logs in the past day.'
 			ELSE 'The trail is integrated with Cloudwatch log group ' + t.cloud_watch_logs_log_group_arn + ', and it has delivered logs in the past day.'
 		END as context`,
 		nil,
@@ -90,6 +90,6 @@ func (DeliveredToCloudwatch) Execute(tx neo4j.Transaction) ([]types.Result, erro
 	return results, nil
 }
 
-func (DeliveredToCloudwatch) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (DeliveredToCloudwatch) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }

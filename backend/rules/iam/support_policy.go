@@ -35,12 +35,12 @@ func (SupportPolicy) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 		WITH a, collect(CASE WHEN principal IS NULL THEN NULL ELSE principal.name END) as principal_names
 		RETURN a.id as resource_id,
 		'AWSAccount' as resource_type,
-		a.id as account_id,    
-		CASE 
+		a.id as account_id,
+		CASE
 			WHEN size(principal_names) > 0 THEN 'passed'
 			ELSE 'failed'
 		END as status,
-		CASE 
+		CASE
 			WHEN size(principal_names) > 0 THEN 'The IAM principal(s) ' + substring(apoc.text.join(principal_names, ', '), 0, 1000) + ' have the AWSSupportAccess policy.'
 			ELSE 'The account has no IAM principal with the AWSSupportAccess policy.'
 		END as context`,
@@ -88,6 +88,6 @@ func (SupportPolicy) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 	return results, nil
 }
 
-func (SupportPolicy) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) ([]types.GraphResult, error) {
-	return nil, nil
+func (SupportPolicy) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
 }
