@@ -7,7 +7,7 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j/db"
 )
 
-func ParseAsStringList(record *db.Record, key string) ([]string, error) {
+func ParseAsOptionalStringList(record *db.Record, key string) ([]string, error) {
 	value, _ := record.Get(key)
 	valueAsLst, ok := value.([]interface{})
 	if !ok {
@@ -24,19 +24,55 @@ func ParseAsStringList(record *db.Record, key string) ([]string, error) {
 	return valueAsStrLst, nil
 }
 
-func ParseAsTime(record *db.Record, key string) (time.Time, error) {
+func ParseAsOptionalTime(record *db.Record, key string) (*time.Time, error) {
 	value, _ := record.Get(key)
 	valueAsString, ok := value.(string)
 	if !ok {
-		return time.Time{}, fmt.Errorf("%v %v should be of type string", key, valueAsString)
+		return nil, fmt.Errorf("%v %v should be of type string", key, valueAsString)
 	}
-	return time.Parse("2006-01-02 15:04:05+00:00", valueAsString)
+	valueTime, err := time.Parse("2006-01-02 15:04:05+00:00", valueAsString)
+	if err != nil {
+		return nil, err
+	}
+	return &valueTime, nil
 }
 
-func ParseAsOptionalTime(record *db.Record, key string) *time.Time {
-	t, err := ParseAsTime(record, key)
-	if err != nil {
-		return nil
+func ParseAsOptionalTimeISO8601(record *db.Record, key string) (*time.Time, error) {
+	value, _ := record.Get(key)
+	valueAsString, ok := value.(string)
+	if !ok {
+		return nil, fmt.Errorf("%v %v should be of type string", key, valueAsString)
 	}
-	return &t
+	valueTime, err := time.Parse("2006-01-02T15:04:05.000-07:00", valueAsString)
+	if err != nil {
+		return nil, err
+	}
+	return &valueTime, nil
+}
+
+func ParseAsOptionalString(record *db.Record, key string) (*string, error) {
+	value, _ := record.Get("key")
+	valueStr, ok := value.(string)
+	if !ok {
+		return nil, fmt.Errorf("value %v should be of type string", valueStr)
+	}
+	return &valueStr, nil
+}
+
+func ParseAsOptionalBool(record *db.Record, key string) (*bool, error) {
+	value, _ := record.Get("key")
+	valueBool, ok := value.(bool)
+	if !ok {
+		return nil, fmt.Errorf("value %v should be of type bool", valueBool)
+	}
+	return &valueBool, nil
+}
+
+func ParseAsOptionalInt(record *db.Record, key string) (*int, error) {
+	value, _ := record.Get("key")
+	valueInt, ok := value.(int)
+	if !ok {
+		return nil, fmt.Errorf("value %v should be of type int", valueInt)
+	}
+	return &valueInt, nil
 }

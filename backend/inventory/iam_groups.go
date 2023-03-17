@@ -21,7 +21,7 @@ type IamGroup struct {
 func RetrieveIamGroups(tx neo4j.Transaction) ([]interface{}, error) {
 	records, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(g:AWSGroup)
-		OPTIONAL MATCH (g:AWSGroup)<-[:MEMBER_AWS_GROUP]-(u:AWSUser)
+		OPTIONAL MATCH (g)<-[:MEMBER_AWS_GROUP]-(u:AWSUser)
 		WITH a, g, collect(u.arn) as user_arns
 		OPTIONAL MATCH (g)-[:STS_ASSUME_ROLE_ALLOW]->(r:AWSRole)
 		WITH a, g, user_arns, collect(r.arn) as role_arns

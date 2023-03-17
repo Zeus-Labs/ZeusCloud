@@ -12,9 +12,19 @@ import (
 type AssetRetriever func(tx neo4j.Transaction) ([]interface{}, error)
 
 var assetCategoryMap = map[string]AssetRetriever{
-	"iamUser":  inventory.RetrieveIamUsers,
-	"iamGroup": inventory.RetrieveIamGroups,
-	"iamRole":  inventory.RetrieveIamRoles,
+	"iamUsers":               inventory.RetrieveIamUsers,
+	"iamGroups":              inventory.RetrieveIamGroups,
+	"iamRoles":               inventory.RetrieveIamRoles,
+	"iamPolicies":            inventory.RetrieveIamPolicies,            // TO TEST
+	"ec2Instances":           inventory.RetrieveEc2Instances,           // TO TEST
+	"lambdaFunctions":        inventory.RetrieveLambdaFunctions,        // TO TEST
+	"vpcs":                   inventory.RetrieveVpcs,                   // TO TEST
+	"securityGroups":         inventory.RetrieveSecurityGroups,         // TO TEST
+	"internetGateways":       inventory.RetrieveInternetGateways,       // TO TEST
+	"elasticLoadBalancersV2": inventory.RetrieveElasticLoadBalancersV2, // TO TEST
+	"rdsInstances":           inventory.RetrieveRdsInstances,           // TO TEST
+	"s3Buckets":              inventory.RetrieveS3Buckets,              // TO TEST
+	"kmsKeys":                inventory.RetrieveKmsKeys,                // TO TEST
 }
 
 func GetAssetInventory(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Request) {
