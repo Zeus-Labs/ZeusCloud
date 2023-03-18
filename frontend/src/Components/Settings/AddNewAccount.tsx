@@ -157,7 +157,7 @@ const AddNewAccount = (props: AddNewAccountProps) => {
                                     value = {connectionMethod}
                                     className="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm"
                                 >
-                                    <option value="profile">Named Profile (recommended)</option>
+                                    <option value="profile">Named Profile</option>
                                     <option value="access_key">User Access Key</option>
                                 </select>
                             </div>
