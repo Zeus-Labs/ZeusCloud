@@ -6,9 +6,12 @@ import { classNames } from '../../utils/utils';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import moment from 'moment';
+import { stringify } from 'querystring';
 
 export interface account_details {
     account_name: string,
+    connection_method: string,
+    profile: string,
     aws_access_key_id: string,
     aws_secret_access_key: string,
     default_region: string,
@@ -31,6 +34,8 @@ export async function getAccountDetails(): Promise<account_details[]> {
     response.data.forEach((curElement: account_details) => {
         accountDetailsList.push({
             account_name: curElement.account_name,
+            connection_method: curElement.connection_method,
+            profile: curElement.profile,
             aws_access_key_id: curElement.aws_access_key_id,
             aws_secret_access_key: curElement.aws_secret_access_key,
             default_region: curElement.default_region,
@@ -262,6 +267,23 @@ const AccountActions = ({ account_name, is_scan_running, setAccountDetailsList }
 }
 
 
+interface ConnectionDetailsProps {
+    connection_method: string,
+    profile:  string,
+}
+
+const ConnectionDetails = ({ connection_method, profile }: ConnectionDetailsProps) => {
+    if (connection_method === "profile") {
+        return <>Profile: {profile}</>
+    } else if (connection_method === "access_key") {
+        return <>User Access Key</>
+    }
+
+    return <></>
+
+}
+
+
 const ConnectedAccounts = () => {
     // accountDetailsList stores account details info pulled from the server
     const [accountDetailsList, setAccountDetailsList] = useState<account_details[]>([]);
@@ -300,6 +322,12 @@ const ConnectedAccounts = () => {
                           ignoreComponentExpansion: false,
                       },
                       {
+                          content: <ConnectionDetails connection_method={accountDetails.connection_method} profile={accountDetails.profile}></ConnectionDetails>,
+                          accessor_key: "connection_method",
+                          value: accountDetails.connection_method,
+                          ignoreComponentExpansion: false,
+                      },
+                      {
                           content: <ScanStatus is_scan_running={accountDetails.is_scan_running} is_rules_running={accountDetails.is_rules_running} running_time={accountDetails.running_time} last_scan_completed={accountDetails.last_scan_completed} />,
                           accessor_key: "scan_status",
                           value: accountDetails.is_scan_running,
@@ -327,13 +355,16 @@ const ConnectedAccounts = () => {
 
 
     const tableHeaderCSS = [{
-        "headerClassName": "w-1/3 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+        "headerClassName": "w-1/5 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
     },
     {
-        "headerClassName": "w-1/3 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+        "headerClassName": "w-1/5 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
     },
     {
-        "headerClassName": "w-1/3 px-3 py-3.5 uppercase text-center text-sm font-semibold text-gray-900",
+        "headerClassName": "w-1/5 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+    },
+    {
+        "headerClassName": "w-2/5 px-3 py-3.5 uppercase text-center text-sm font-semibold text-gray-900",
     }];
 
     const tableColumnHeaders =  
@@ -341,6 +372,11 @@ const ConnectedAccounts = () => {
         {
             header: "Account Name",
             accessor_key: "account_name",
+            allowSorting: false,
+        },
+        {
+            header: "Connection Details",
+            accessor_key: "connection_method",
             allowSorting: false,
         },
         {
