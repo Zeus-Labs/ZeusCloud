@@ -7,7 +7,7 @@ docker-release:
 quick-deploy:
 	docker-compose down
 	docker-compose pull
-	ENCRYPTION_KEY=$$(openssl rand -base64 32) docker-compose up
+	docker-compose up
 
 clean:
 	docker-compose down

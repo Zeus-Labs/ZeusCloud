@@ -146,8 +146,8 @@ func TriggerScan(postgresDb *gorm.DB) error {
 	} else if accountDetailsLst[0].ConnectionMethod == "access_key" {
 		cjr = CartographyJobRequest{
 			AccountName:        accountDetailsLst[0].AccountName,
-			AwsAccessKeyId:     string(accountDetailsLst[0].AwsAccessKeyId),
-			AwsSecretAccessKey: string(accountDetailsLst[0].AwsSecretAccessKey),
+			AwsAccessKeyId:     accountDetailsLst[0].AwsAccessKeyId,
+			AwsSecretAccessKey: accountDetailsLst[0].AwsSecretAccessKey,
 			DefaultRegion:      accountDetailsLst[0].DefaultRegion,
 		}
 	} else {
