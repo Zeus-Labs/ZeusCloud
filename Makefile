@@ -10,9 +10,10 @@ quick-deploy:
 	ENCRYPTION_KEY=$$(openssl rand -base64 32) docker-compose up
 
 clean:
-	docker volume rm zeuscloud_neo4j_conf
-	docker volume rm zeuscloud_neo4j_data
-	docker volume rm zeuscloud_neo4j_import
-	docker volume rm zeuscloud_neo4j_logs
-	docker volume rm zeuscloud_neo4j_plugins
-	docker volume rm zeuscloud_postgres
+	docker-compose down
+	docker volume rm zeuscloud_neo4j_conf || true
+	docker volume rm zeuscloud_neo4j_data || true
+	docker volume rm zeuscloud_neo4j_import || true
+	docker volume rm zeuscloud_neo4j_logs || true
+	docker volume rm zeuscloud_neo4j_plugins || true
+	docker volume rm zeuscloud_postgres || true
