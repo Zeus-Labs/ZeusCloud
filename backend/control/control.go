@@ -28,9 +28,10 @@ type StatusResponse struct {
 
 type CartographyJobRequest struct {
 	AccountName        string `json:"account_name"`
-	AwsAccessKeyId     string `json:"aws_access_key_id"`
-	AwsSecretAccessKey string `json:"aws_secret_access_key"`
-	DefaultRegion      string `json:"default_region"`
+	Profile            string `json:"profile,omitempty"`
+	AwsAccessKeyId     string `json:"aws_access_key_id,omitempty"`
+	AwsSecretAccessKey string `json:"aws_secret_access_key,omitempty"`
+	DefaultRegion      string `json:"default_region,omitempty"`
 }
 
 // RuleExecutionLoop tries to execute rules when
@@ -135,11 +136,22 @@ func TriggerScan(postgresDb *gorm.DB) error {
 	if len(accountDetailsLst) > 1 {
 		return fmt.Errorf("expected only 1 account details from db, got %v", len(accountDetailsLst))
 	}
-	cjr := CartographyJobRequest{
-		AccountName:        accountDetailsLst[0].AccountName,
-		AwsAccessKeyId:     string(accountDetailsLst[0].AwsAccessKeyId),
-		AwsSecretAccessKey: string(accountDetailsLst[0].AwsSecretAccessKey),
-		DefaultRegion:      accountDetailsLst[0].DefaultRegion,
+
+	var cjr CartographyJobRequest
+	if accountDetailsLst[0].ConnectionMethod == "profile" {
+		cjr = CartographyJobRequest{
+			AccountName: accountDetailsLst[0].AccountName,
+			Profile:     accountDetailsLst[0].Profile,
+		}
+	} else if accountDetailsLst[0].ConnectionMethod == "access_key" {
+		cjr = CartographyJobRequest{
+			AccountName:        accountDetailsLst[0].AccountName,
+			AwsAccessKeyId:     string(accountDetailsLst[0].AwsAccessKeyId),
+			AwsSecretAccessKey: string(accountDetailsLst[0].AwsSecretAccessKey),
+			DefaultRegion:      accountDetailsLst[0].DefaultRegion,
+		}
+	} else {
+		return fmt.Errorf("invalid connection method: %v", accountDetailsLst[0].ConnectionMethod)
 	}
 
 	// Attempt to start cartography job
@@ -179,4 +191,21 @@ func GetScanStatus() (StatusResponse, error) {
 		return StatusResponse{}, err
 	}
 	return sr, nil
+}
+
+type AwsProfilesResponse struct {
+	AwsProfiles []string `json:"aws_profiles"`
+}
+
+func GetAwsProfiles() (AwsProfilesResponse, error) {
+	resp, err := http.Get(os.Getenv("CARTOGRAPHY_URI") + "/get_aws_profiles")
+	if err != nil {
+		return AwsProfilesResponse{}, err
+	}
+	defer resp.Body.Close()
+	var apr AwsProfilesResponse
+	if err := json.NewDecoder(resp.Body).Decode(&apr); err != nil {
+		return AwsProfilesResponse{}, err
+	}
+	return apr, nil
 }

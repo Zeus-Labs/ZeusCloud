@@ -79,6 +79,7 @@ func main() {
 	mux.HandleFunc("/api/toggleAlertMuted", handlers.ToggleAlertMuted(postgresDb))
 	mux.HandleFunc("/api/getComplianceFramework", handlers.GetComplianceFramework(postgresDb))
 	mux.HandleFunc("/api/getComplianceFrameworkStats", handlers.GetComplianceFrameworkStats(postgresDb))
+	mux.HandleFunc("/api/getAwsProfiles", handlers.GetAwsProfiles())
 	mux.HandleFunc("/api/addAccountDetails", handlers.AddAccountDetails(postgresDb))
 	mux.HandleFunc("/api/deleteAccountDetails", handlers.DeleteAccountDetails(postgresDb))
 	mux.HandleFunc("/api/getAccountDetails", handlers.GetAccountDetails(postgresDb))
