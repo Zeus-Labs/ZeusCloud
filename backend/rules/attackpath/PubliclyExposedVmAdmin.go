@@ -131,8 +131,9 @@ func (PubliclyExposedVmAdmin) Execute(tx neo4j.Transaction) ([]types.Result, err
 
 func (PubliclyExposedVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	var params = make(map[string]interface{})
+	fmt.Printf("Resource Id: %+v", resourceId)
 	params["InstanceId"] = resourceId
-	_, err := tx.Run(
+	records, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(e:EC2Instance{id: $InstanceId})
 		OPTIONAL MATCH
 			directPublicPath=
@@ -164,7 +165,9 @@ func (PubliclyExposedVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId 
 		return types.GraphPathResult{}, err
 	}
 
-	// graphPathResultList, err := ProcessGraphPathResult(records, "paths")
+	//fmt.Printf("Right Before Process Graph Results %+v \n", records)
+	processedGraphResult, err := ProcessGraphPathResult(records, "paths")
+	fmt.Printf("Final %+v\n", processedGraphResult)
 	// if err != nil {
 	// 	return nil, err
 	// }

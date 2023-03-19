@@ -1,8 +1,66 @@
 package attackpath
 
 import (
+	"fmt"
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
+
+// ProcessGraphPathResult gets a raw neo4j result record.
+func ProcessGraphPathResult(records neo4j.Result, pathKeyStr string) (types.GraphPathResult, error) {
+	fmt.Printf("START of  ProcessGraphPathResult \n")
+
+	// Holds the list of paths that are processed.
+	var processedGraphPathResult types.GraphPathResult
+	var processedPath []types.Path
+	for records.Next() {
+		record := records.Record()
+		paths, ok := record.Get(pathKeyStr)
+		if !ok {
+			return types.GraphPathResult{}, fmt.Errorf("Failed to get record.")
+		}
+
+		pathsList, ok := paths.([]interface{})
+		if !ok {
+			return types.GraphPathResult{}, fmt.Errorf("Failed to cast to list of interfaces of paths")
+		}
+
+		var processedNodesList []types.Node
+		var processedRelationshipsList []types.Relationship
+		for _, path := range pathsList {
+			// Cast path
+			resultGraphPath, pathCastSuccessful := path.(neo4j.Path)
+			if !pathCastSuccessful {
+				return types.GraphPathResult{}, fmt.Errorf("Failed to retrieve graph path")
+			}
+
+			for _, node := range resultGraphPath.Nodes {
+				processedNodesList = append(processedNodesList, types.Node{
+					Id:     node.Id,
+					Labels: node.Labels,
+					Props:  node.Props,
+				})
+			}
+
+			for _, relationship := range resultGraphPath.Relationships {
+				processedRelationshipsList = append(processedRelationshipsList, types.Relationship{
+					Id:      relationship.Id,
+					StartId: relationship.StartId,
+					EndId:   relationship.EndId,
+					Type:    relationship.Type,
+					Props:   relationship.Props,
+				})
+			}
+			processedPath = append(processedPath, types.Path{
+				Nodes:         processedNodesList,
+				Relationships: processedRelationshipsList,
+			})
+		}
+	}
+
+	processedGraphPathResult.PathResult = append(processedGraphPathResult.PathResult, processedPath...)
+	return processedGraphPathResult, nil
+}
 
 func CheckNodeLabel(node types.Node, checkLabel string) bool {
 	for _, label := range node.Labels {
