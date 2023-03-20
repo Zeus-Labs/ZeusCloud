@@ -113,12 +113,17 @@ func (PrivateVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) 
 	params["InstanceId"] = resourceId
 	records, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(e:EC2Instance{id: $InstanceId})
-		WITH e
+		OPTIONAL MATCH
+			directPath=
+			(:IpRange)-[:MEMBER_OF_IP_RULE]->
+			(:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
+			(instance_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP|NETWORK_INTERFACE*..2]-(e)
+		WITH e, collect(directPath) as directPaths
 		OPTIONAL MATCH
 			adminRolePath=
 			(e)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_admin: True})
-		WITH e, collect(adminRolePath) as adminRolePaths
-		WITH adminRolePaths AS paths
+		WITH e, directPaths, collect(adminRolePath) as adminRolePaths
+		WITH directPaths + adminRolePaths AS paths
 		RETURN paths`,
 		params)
 	if err != nil {
@@ -129,5 +134,27 @@ func (PrivateVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) 
 	if err != nil {
 		return types.GraphPathResult{}, err
 	}
-	return processedGraphResult, nil
+
+	// Prune graph to display.
+	var prunedGraph []types.Path
+	for _, path := range processedGraphResult.PathResult {
+		processedBoolOne, processedPathOne := graphprocessing.ProcessIpRangeRuleNetworkInterfaceEc2Path(path)
+		processedBoolTwo, processedPathTwo := graphprocessing.ProcessIpRangeRulePermissionsEc2Path(path)
+		if processedBoolOne {
+			prunedGraph = append(prunedGraph, processedPathOne)
+		} else if processedBoolTwo {
+			prunedGraph = append(prunedGraph, processedPathTwo)
+		} else {
+			prunedGraph = append(prunedGraph, path)
+		}
+	}
+
+	for _, path := range prunedGraph {
+		fmt.Printf("Path Nodes %+v \n", path.Nodes)
+		fmt.Printf("Path Relationships %+v \n", path.Relationships)
+	}
+
+	var finalGraphResult types.GraphPathResult
+	finalGraphResult.PathResult = prunedGraph
+	return finalGraphResult, nil
 }
