@@ -1,4 +1,4 @@
-package attackpath
+package graphprocessing
 
 import (
 	"fmt"
@@ -6,13 +6,14 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-// ProcessGraphPathResult gets a raw neo4j result record.
+// ProcessGraphPathResult gets a raw neo4j result record and copies the data into
+// types.GraphPathResult.
 func ProcessGraphPathResult(records neo4j.Result, pathKeyStr string) (types.GraphPathResult, error) {
 	fmt.Printf("START of  ProcessGraphPathResult \n")
 
 	// Holds the list of paths that are processed.
 	var processedGraphPathResult types.GraphPathResult
-	var processedPath []types.Path
+
 	for records.Next() {
 		record := records.Record()
 		paths, ok := record.Get(pathKeyStr)
@@ -25,11 +26,13 @@ func ProcessGraphPathResult(records neo4j.Result, pathKeyStr string) (types.Grap
 			return types.GraphPathResult{}, fmt.Errorf("Failed to cast to list of interfaces of paths")
 		}
 
-		var processedNodesList []types.Node
-		var processedRelationshipsList []types.Relationship
 		for _, path := range pathsList {
 			// Cast path
 			resultGraphPath, pathCastSuccessful := path.(neo4j.Path)
+			var processedPath []types.Path
+			var processedNodesList []types.Node
+			var processedRelationshipsList []types.Relationship
+
 			if !pathCastSuccessful {
 				return types.GraphPathResult{}, fmt.Errorf("Failed to retrieve graph path")
 			}
@@ -55,10 +58,12 @@ func ProcessGraphPathResult(records neo4j.Result, pathKeyStr string) (types.Grap
 				Nodes:         processedNodesList,
 				Relationships: processedRelationshipsList,
 			})
+			processedGraphPathResult.PathResult = append(processedGraphPathResult.PathResult, processedPath...)
+			fmt.Printf("Processed Path Nodes: %+v \n", processedNodesList)
+			fmt.Printf("Processed Relationships: %+v \n", processedRelationshipsList)
 		}
 	}
 
-	processedGraphPathResult.PathResult = append(processedGraphPathResult.PathResult, processedPath...)
 	return processedGraphPathResult, nil
 }
 
@@ -142,20 +147,68 @@ func CheckElbSecurityGroupPattern(path types.Path) (bool, types.Path) {
 	}
 }
 
-// Returns if we have (elbv2)-[:EXPOSE]->(e) and gives the ec2 instance node.
-// func CheckElbV2ExposesVMPattern(path types.Path) (bool, types.Node) {
+// Returns if we have (elbv2)-[:EXPOSE]->(e) and gives the elbv2 instance node.
+func CheckElbV2ExposesVMPattern(path types.Path) (bool, types.Node) {
+	var elbv2Node types.Node
+	nodeIdToNodeMap := make(map[int64]types.Node)
+	for _, node := range path.Nodes {
+		nodeIdToNodeMap[node.Id] = node
+	}
 
-// }
+	loadBalancerExposesEc2InstanceEdge := false
+	for _, relationship := range path.Relationships {
+		startNodeId := relationship.StartId
+		endNodeId := relationship.EndId
+		edgeType := relationship.Type
+
+		startNode := nodeIdToNodeMap[startNodeId]
+		endNode := nodeIdToNodeMap[endNodeId]
+
+		if edgeType == "EXPOSE" {
+			if CheckNodeLabel(startNode, "LoadBalancerV2") && CheckNodeLabel(endNode,
+				"EC2Instance") {
+				loadBalancerExposesEc2InstanceEdge = true
+				elbv2Node = startNode
+			}
+		}
+	}
+
+	if loadBalancerExposesEc2InstanceEdge {
+		return true, elbv2Node
+	}
+	return false, elbv2Node
+}
+
+func AddSecurityGroupToElbv2ToVmPath(SgElbV2Path types.Path,
+	ElbV2ToVmPath types.Path) types.Path {
+	var finalPath types.Path
+
+	finalNodesList := ElbV2ToVmPath.Nodes
+	finalRelationshipList := ElbV2ToVmPath.Relationships
+
+	for _, node := range SgElbV2Path.Nodes {
+		if CheckNodeLabel(node, "EC2SecurityGroup") {
+			finalNodesList = append(finalNodesList, node)
+			finalRelationshipList = append(finalRelationshipList, SgElbV2Path.Relationships[0])
+		}
+	}
+
+	finalPath.Nodes = finalNodesList
+	finalPath.Relationships = finalRelationshipList
+	return finalPath
+}
 
 func ProcessElbSecurityGroupsVmPaths(pathList []types.Path) []types.Path {
 
 	var finalPathList []types.Path
 
-	// Find paths with elbv2 & security group/listener pattern in front of it.
+	// Stores the indices of the paths that are replaced
+	// Maps to a path you can replace with
+	skipRulesMap := make(map[int]types.Path)
 
 	// Build a map from elbv2 id to path returned (if successfully returned).
 	loadbalancerNodeIdToPathMap := make(map[int64]types.Path)
-	for _, path := range pathList {
+	for idx, path := range pathList {
 		patternExists, computedPath := CheckElbSecurityGroupPattern(path)
 		if patternExists {
 			// Loop through nodes and get node with elbv2.
@@ -168,22 +221,40 @@ func ProcessElbSecurityGroupsVmPaths(pathList []types.Path) []types.Path {
 			if elbv2Node.Id > 0 {
 				loadbalancerNodeIdToPathMap[elbv2Node.Id] = computedPath
 			}
+			skipRulesMap[idx] = types.Path{}
 		}
 	}
 
-	// Find the elbv2 to exposing Ec2 VM path. Augment/alter these paths.
-	// for _, path := range pathList {
+	// Find the elbv2 to exposing Ec2 VM path. Create a new path with
+	// security group, elbv2, and compute.
+	for idx, path := range pathList {
+		elbv2ExposedBool, elbv2Node := CheckElbV2ExposesVMPattern(path)
+		if elbv2ExposedBool {
+			computedElbSgPath := loadbalancerNodeIdToPathMap[elbv2Node.Id]
+			mergedDisplaySgElbComputePath := AddSecurityGroupToElbv2ToVmPath(computedElbSgPath, path)
+			skipRulesMap[idx] = mergedDisplaySgElbComputePath
+		}
+	}
 
-	// }
+	// Has the transformed paths.
+	for idx, path := range pathList {
+		// if path should not be skipped, then insert
+		computedPath, ok := skipRulesMap[idx]
+		if !ok {
+			finalPathList = append(finalPathList, path)
+		} else {
+			if len(computedPath.Nodes) > 0 && len(computedPath.Relationships) > 0 {
+				finalPathList = append(finalPathList, computedPath)
+			}
+		}
+	}
 
-	// Construct the finalPathList to return. Maintains all the same
-	// paths but also has
 	return finalPathList
 }
 
 // Returns a processed path for a EC2 (VM) with a Security group.
 // Path from ip range to ip rule to security group to ec2.
-func ProcessIpRangeRulePermissionsEc2Path(path types.Path) types.Path {
+func ProcessIpRangeRulePermissionsEc2Path(path types.Path) (bool, types.Path) {
 	nodeList := path.Nodes
 	relationshipList := path.Relationships
 
@@ -230,13 +301,13 @@ func ProcessIpRangeRulePermissionsEc2Path(path types.Path) types.Path {
 
 	// if any of those edges are false
 	if !ipRangeToRuleEdge || !ipRuleToEc2Edge || !ec2ToSecurityGroupEdge {
-		return path
+		return false, path
 	}
 
 	processedNodeList := []types.Node{ec2Node, sgNode}
 	processedRelationshipList := []types.Relationship{ec2ToSgRelationship}
 
-	return types.Path{
+	return true, types.Path{
 		Nodes:         processedNodeList,
 		Relationships: processedRelationshipList,
 	}
@@ -245,7 +316,7 @@ func ProcessIpRangeRulePermissionsEc2Path(path types.Path) types.Path {
 // Returns a processed path for a EC2 (VM) with a Security group.
 // This one has a network interface and requires and edge to be made
 // from the ec2 and security group.
-func ProcessIpRangeRuleNetworkInterfaceEc2Path(path types.Path) types.Path {
+func ProcessIpRangeRuleNetworkInterfaceEc2Path(path types.Path) (bool, types.Path) {
 
 	nodeList := path.Nodes
 	relationshipList := path.Relationships
@@ -300,7 +371,7 @@ func ProcessIpRangeRuleNetworkInterfaceEc2Path(path types.Path) types.Path {
 	// if any of those edges are false
 	if !ipRangeToRuleEdge || !ipRuleToSecurityGroup || !networkInterfaceToSecurityGroup ||
 		!ec2ToNetworkInterface {
-		return path
+		return false, path
 	}
 
 	processedNodeList := []types.Node{ec2Node, sgNode}
@@ -314,7 +385,7 @@ func ProcessIpRangeRuleNetworkInterfaceEc2Path(path types.Path) types.Path {
 	}
 	processedRelationshipList := []types.Relationship{ec2ToSgRelationship}
 
-	return types.Path{
+	return true, types.Path{
 		Nodes:         processedNodeList,
 		Relationships: processedRelationshipList,
 	}

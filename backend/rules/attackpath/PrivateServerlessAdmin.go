@@ -2,6 +2,7 @@ package attackpath
 
 import (
 	"fmt"
+	graphprocessing "github.com/Zeus-Labs/ZeusCloud/rules/graphprocessing"
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -106,7 +107,7 @@ func (PrivateServerlessAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId 
 	var params = make(map[string]interface{})
 	params["InstanceId"] = resourceId
 	// We lambda isn't exposed, we want to pick up the relevant role to return.
-	_, err := tx.Run(
+	records, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(lambda:AWSLambda{id: $InstanceId})
 		WITH lambda
 		OPTIONAL MATCH
@@ -121,10 +122,10 @@ func (PrivateServerlessAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId 
 		return types.GraphPathResult{}, err
 	}
 
-	// graphPathResultList, err := ProcessGraphPathResult(records, "paths")
-	// if err != nil {
-	// 	return nil, err
-	// }
+	processedGraphResult, err := graphprocessing.ProcessGraphPathResult(records, "paths")
+	if err != nil {
+		return types.GraphPathResult{}, err
+	}
 
-	return types.GraphPathResult{}, nil
+	return processedGraphResult, nil
 }

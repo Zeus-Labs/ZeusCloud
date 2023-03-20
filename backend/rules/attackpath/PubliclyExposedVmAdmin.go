@@ -2,6 +2,7 @@ package attackpath
 
 import (
 	"fmt"
+	graphprocessing "github.com/Zeus-Labs/ZeusCloud/rules/graphprocessing"
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -165,12 +166,30 @@ func (PubliclyExposedVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId 
 		return types.GraphPathResult{}, err
 	}
 
-	//fmt.Printf("Right Before Process Graph Results %+v \n", records)
-	processedGraphResult, err := ProcessGraphPathResult(records, "paths")
-	fmt.Printf("Final %+v\n", processedGraphResult)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	processedGraphResult, err := graphprocessing.ProcessGraphPathResult(records, "paths")
+	if err != nil {
+		return types.GraphPathResult{}, err
+	}
 
-	return types.GraphPathResult{}, nil
+	// Test processing.
+	var prunedGraph []types.Path
+	elbPathsPrunedGraph := graphprocessing.ProcessElbSecurityGroupsVmPaths(processedGraphResult.PathResult)
+	for _, path := range elbPathsPrunedGraph {
+		processedBoolOne, processedPathOne := graphprocessing.ProcessIpRangeRuleNetworkInterfaceEc2Path(path)
+		processedBoolTwo, processedPathTwo := graphprocessing.ProcessIpRangeRulePermissionsEc2Path(path)
+		if processedBoolOne {
+			prunedGraph = append(prunedGraph, processedPathOne)
+		} else if processedBoolTwo {
+			prunedGraph = append(prunedGraph, processedPathTwo)
+		} else {
+			prunedGraph = append(prunedGraph, path)
+		}
+	}
+
+	for _, prunedPath := range prunedGraph {
+		fmt.Printf("Nodes %+v \n", prunedPath.Nodes)
+		fmt.Printf("Relationships %+v, \n", prunedPath.Relationships)
+		fmt.Printf("-------\n")
+	}
+	return processedGraphResult, nil
 }

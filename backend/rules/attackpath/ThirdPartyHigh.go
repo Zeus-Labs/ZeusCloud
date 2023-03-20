@@ -2,6 +2,7 @@ package attackpath
 
 import (
 	"fmt"
+	graphprocessing "github.com/Zeus-Labs/ZeusCloud/rules/graphprocessing"
 
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -99,7 +100,7 @@ func (ThirdPartyHigh) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) 
 	params["ExternalAccountId"] = resourceId
 	// Return paths where the role is an high and any relevant paths
 	// where we have seed high.
-	_, err := tx.Run(
+	records, err := tx.Run(
 		`MATCH
 		externalPath=
 		(a:AWSAccount{inscope: true})-[:RESOURCE]->
@@ -122,10 +123,10 @@ func (ThirdPartyHigh) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) 
 		return types.GraphPathResult{}, err
 	}
 
-	// graphPathResultList, err := ProcessGraphPathResult(records, "paths")
-	// if err != nil {
-	// 	return nil, err
-	// }
+	graphPathResult, err := graphprocessing.ProcessGraphPathResult(records, "paths")
+	if err != nil {
+		return types.GraphPathResult{}, err
+	}
 
-	return types.GraphPathResult{}, nil
+	return graphPathResult, nil
 }

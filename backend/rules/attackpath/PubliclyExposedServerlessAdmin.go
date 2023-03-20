@@ -2,6 +2,7 @@ package attackpath
 
 import (
 	"fmt"
+	graphprocessing "github.com/Zeus-Labs/ZeusCloud/rules/graphprocessing"
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -116,7 +117,7 @@ func (PubliclyExposedServerlessAdmin) Execute(tx neo4j.Transaction) ([]types.Res
 func (PubliclyExposedServerlessAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	var params = make(map[string]interface{})
 	params["InstanceId"] = resourceId
-	_, err := tx.Run(
+	records, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(lambda:AWSLambda{id: $InstanceId})
 		OPTIONAL MATCH
 			indirectPublicPath=
@@ -140,10 +141,10 @@ func (PubliclyExposedServerlessAdmin) ProduceRuleGraph(tx neo4j.Transaction, res
 		return types.GraphPathResult{}, err
 	}
 
-	// graphPathResultList, err := ProcessGraphPathResult(records, "paths")
-	// if err != nil {
-	// 	return nil, err
-	// }
+	graphPathResult, err := graphprocessing.ProcessGraphPathResult(records, "paths")
+	if err != nil {
+		return types.GraphPathResult{}, err
+	}
 
-	return types.GraphPathResult{}, nil
+	return graphPathResult, nil
 }

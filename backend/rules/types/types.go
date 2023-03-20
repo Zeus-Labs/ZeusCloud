@@ -12,6 +12,7 @@ type Rule interface {
 	RiskCategories() RiskCategoryList               // Risk categories the rule fits into
 	Execute(tx neo4j.Transaction) ([]Result, error) // Execution logic of rule
 	ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (GraphPathResult, error)
+	// Processes the graph to display.
 }
 
 type Result struct {
