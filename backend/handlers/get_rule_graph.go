@@ -30,7 +30,7 @@ func GetRuleGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Reque
 		_, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 			fmt.Printf("Entered GetRuleGraph\n")
 
-			attackpathRule := attackpath.PubliclyExposedVmAdmin{}
+			attackpathRule := attackpath.PubliclyExposedVmHigh{}
 			return attackpathRule.ProduceRuleGraph(tx, ruleGraph)
 		})
 		if err != nil {

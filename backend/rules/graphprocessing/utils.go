@@ -147,15 +147,16 @@ func CheckElbSecurityGroupPattern(path types.Path) (bool, types.Path) {
 	}
 }
 
-// Returns if we have (elbv2)-[:EXPOSE]->(e) and gives the elbv2 instance node.
-func CheckElbV2ExposesVMPattern(path types.Path) (bool, types.Node) {
+// Returns if we have (elbv2)-[:EXPOSE]->(e) path and returns
+// 1) boolean 2) the elbv2 instance node.
+func CheckElbV2ExposesComputePattern(path types.Path, computeLabel string) (bool, types.Node) {
 	var elbv2Node types.Node
 	nodeIdToNodeMap := make(map[int64]types.Node)
 	for _, node := range path.Nodes {
 		nodeIdToNodeMap[node.Id] = node
 	}
 
-	loadBalancerExposesEc2InstanceEdge := false
+	loadBalancerExposesComputeEdge := false
 	for _, relationship := range path.Relationships {
 		startNodeId := relationship.StartId
 		endNodeId := relationship.EndId
@@ -166,25 +167,25 @@ func CheckElbV2ExposesVMPattern(path types.Path) (bool, types.Node) {
 
 		if edgeType == "EXPOSE" {
 			if CheckNodeLabel(startNode, "LoadBalancerV2") && CheckNodeLabel(endNode,
-				"EC2Instance") {
-				loadBalancerExposesEc2InstanceEdge = true
+				computeLabel) {
+				loadBalancerExposesComputeEdge = true
 				elbv2Node = startNode
 			}
 		}
 	}
 
-	if loadBalancerExposesEc2InstanceEdge {
+	if loadBalancerExposesComputeEdge {
 		return true, elbv2Node
 	}
 	return false, elbv2Node
 }
 
-func AddSecurityGroupToElbv2ToVmPath(SgElbV2Path types.Path,
-	ElbV2ToVmPath types.Path) types.Path {
+func AddSecurityGroupToElbv2ToComputePath(SgElbV2Path types.Path,
+	ElbV2ToComputePath types.Path) types.Path {
 	var finalPath types.Path
 
-	finalNodesList := ElbV2ToVmPath.Nodes
-	finalRelationshipList := ElbV2ToVmPath.Relationships
+	finalNodesList := ElbV2ToComputePath.Nodes
+	finalRelationshipList := ElbV2ToComputePath.Relationships
 
 	for _, node := range SgElbV2Path.Nodes {
 		if CheckNodeLabel(node, "EC2SecurityGroup") {
@@ -198,7 +199,10 @@ func AddSecurityGroupToElbv2ToVmPath(SgElbV2Path types.Path,
 	return finalPath
 }
 
-func ProcessElbSecurityGroupsVmPaths(pathList []types.Path) []types.Path {
+// ProcessElbSecurityGroupsVmPaths takes a list of all paths.
+// Returns all paths: 1) Leaves irrelevant paths unchanged & returns
+// 2) With security group connected to elb to relevant compute (VM or lambda).
+func ProcessElbSecurityGroupsComputePaths(pathList []types.Path, computeLabel string) []types.Path {
 
 	var finalPathList []types.Path
 
@@ -225,18 +229,18 @@ func ProcessElbSecurityGroupsVmPaths(pathList []types.Path) []types.Path {
 		}
 	}
 
-	// Find the elbv2 to exposing Ec2 VM path. Create a new path with
+	// Find the elbv2 exposing Compute (Ec2 VM or Lambda) path. Create a new path with
 	// security group, elbv2, and compute.
 	for idx, path := range pathList {
-		elbv2ExposedBool, elbv2Node := CheckElbV2ExposesVMPattern(path)
+		elbv2ExposedBool, elbv2Node := CheckElbV2ExposesComputePattern(path, computeLabel)
 		if elbv2ExposedBool {
 			computedElbSgPath := loadbalancerNodeIdToPathMap[elbv2Node.Id]
-			mergedDisplaySgElbComputePath := AddSecurityGroupToElbv2ToVmPath(computedElbSgPath, path)
+			mergedDisplaySgElbComputePath := AddSecurityGroupToElbv2ToComputePath(computedElbSgPath, path)
 			skipRulesMap[idx] = mergedDisplaySgElbComputePath
 		}
 	}
 
-	// Has the transformed paths.
+	// Create a new list with the transformed paths and all the unchanged paths.
 	for idx, path := range pathList {
 		// if path should not be skipped, then insert
 		computedPath, ok := skipRulesMap[idx]

@@ -143,30 +143,55 @@ func (PubliclyExposedVmHigh) ProduceRuleGraph(tx neo4j.Transaction, resourceId s
 			(instance_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP|NETWORK_INTERFACE*..2]-(e)
 		WITH e, collect(directPublicPath) as directPublicPaths
 		OPTIONAL MATCH
-			indirectPublicPath=
+			indirectELBListenerPath=
 			(:IpRange{range:'0.0.0.0/0'})-[:MEMBER_OF_IP_RULE]->
 			(perm:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
 			(elbv2_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP]-
 			(elbv2:LoadBalancerV2{scheme: 'internet-facing'})—[:ELBV2_LISTENER]->
 			(listener:ELBV2Listener),
+			indirectELBExposurePath=
 			(elbv2)-[:EXPOSE]->(e)
 		WHERE listener.port >= perm.fromport AND listener.port <= perm.toport
-		WITH e, directPublicPaths, collect(indirectPublicPath) as indirectPublicPaths
+		WITH e, directPublicPaths, collect(indirectELBListenerPath) as indirectELBListenerPaths,
+		collect(indirectELBExposurePath) as indirectELBExposurePaths
 		OPTIONAL MATCH
 			highRolePath=
 			(e)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_high: True})
-		WITH e, directPublicPaths, indirectPublicPaths,
+		WITH e, directPublicPaths, indirectELBListenerPaths, indirectELBExposurePaths,
 		collect(highRolePath) as highRolePaths
-		WITH directPublicPaths + indirectPublicPaths + highRolePaths AS paths
+		WITH directPublicPaths + indirectELBListenerPaths + indirectELBExposurePaths + highRolePaths AS paths
 		RETURN paths`,
 		params)
 	if err != nil {
 		return types.GraphPathResult{}, err
 	}
 
-	graphPathResult, err := graphprocessing.ProcessGraphPathResult(records, "paths")
+	processedGraphResult, err := graphprocessing.ProcessGraphPathResult(records, "paths")
 	if err != nil {
 		return types.GraphPathResult{}, err
 	}
-	return graphPathResult, nil
+
+	// Prune graph to display.
+	var prunedGraph []types.Path
+	elbPathsPrunedGraph := graphprocessing.ProcessElbSecurityGroupsComputePaths(processedGraphResult.PathResult, "EC2Instance")
+	for _, path := range elbPathsPrunedGraph {
+		processedBoolOne, processedPathOne := graphprocessing.ProcessIpRangeRuleNetworkInterfaceEc2Path(path)
+		processedBoolTwo, processedPathTwo := graphprocessing.ProcessIpRangeRulePermissionsEc2Path(path)
+		if processedBoolOne {
+			prunedGraph = append(prunedGraph, processedPathOne)
+		} else if processedBoolTwo {
+			prunedGraph = append(prunedGraph, processedPathTwo)
+		} else {
+			prunedGraph = append(prunedGraph, path)
+		}
+	}
+
+	for _, path := range prunedGraph {
+		fmt.Printf("Path Nodes %+v \n", path.Nodes)
+		fmt.Printf("Path Relationships %+v \n", path.Relationships)
+	}
+
+	var finalGraphResult types.GraphPathResult
+	finalGraphResult.PathResult = prunedGraph
+	return finalGraphResult, nil
 }

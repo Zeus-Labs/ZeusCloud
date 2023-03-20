@@ -171,9 +171,9 @@ func (PubliclyExposedVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId 
 		return types.GraphPathResult{}, err
 	}
 
-	// Test processing.
+	// Prune graph to display.
 	var prunedGraph []types.Path
-	elbPathsPrunedGraph := graphprocessing.ProcessElbSecurityGroupsVmPaths(processedGraphResult.PathResult)
+	elbPathsPrunedGraph := graphprocessing.ProcessElbSecurityGroupsComputePaths(processedGraphResult.PathResult, "EC2Instance")
 	for _, path := range elbPathsPrunedGraph {
 		processedBoolOne, processedPathOne := graphprocessing.ProcessIpRangeRuleNetworkInterfaceEc2Path(path)
 		processedBoolTwo, processedPathTwo := graphprocessing.ProcessIpRangeRulePermissionsEc2Path(path)
@@ -186,10 +186,7 @@ func (PubliclyExposedVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId 
 		}
 	}
 
-	for _, prunedPath := range prunedGraph {
-		fmt.Printf("Nodes %+v \n", prunedPath.Nodes)
-		fmt.Printf("Relationships %+v, \n", prunedPath.Relationships)
-		fmt.Printf("-------\n")
-	}
-	return processedGraphResult, nil
+	var finalGraphResult types.GraphPathResult
+	finalGraphResult.PathResult = prunedGraph
+	return finalGraphResult, nil
 }
