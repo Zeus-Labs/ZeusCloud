@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"log"
 	"net/http"
 
@@ -9,17 +10,30 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-//var ruleGraphCategoryMap = map[string]AssetRetriever{
-//	"iamUser":  inventory.RetrieveIamUsers,
-//	"iamGroup": inventory.RetrieveIamGroups,
-//	"iamRole":  inventory.RetrieveIamRoles,
-//}
+var ruleGraphMap = map[string]types.Rule{
+	"private_serverless_admin_permissions":          attackpath.PrivateServerlessAdmin{},
+	"private_vm_admin_permissions":                  attackpath.PrivateVmAdmin{},
+	"publicly_exposed_vm_admin_permissions":         attackpath.PubliclyExposedVmAdmin{},
+	"publicly_exposed_vm_high_permissions":          attackpath.PubliclyExposedVmHigh{},
+	"publicly_exposed_vm_priv_escalation":           attackpath.PubliclyExposedVmPrivEsc{},
+	"publicly_exposed_serverless_admin_permissions": attackpath.PubliclyExposedServerlessAdmin{},
+	"publicly_exposed_serverless_high_permissions":  attackpath.PubliclyExposedServerlessHigh{},
+	"publicly_exposed_serverless_priv_escalation":   attackpath.PubliclyExposedServerlessPrivEsc{},
+	"third_party_admin_permissions":                 attackpath.ThirdPartyAdmin{},
+	"third_party_high_permissions":                  attackpath.ThirdPartyHigh{},
+}
 
 func GetRuleGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("Entered GetRuleGraph\n")
-		log.Printf("TESTING LOG \n")
-		ruleGraph := r.URL.Query().Get("rulegraph")
+		log.Printf("Entered Get Rule Graph \n")
+		resourceId := r.URL.Query().Get("resource")
+		rule := r.URL.Query().Get("rule")
+
+		if _, ok := ruleGraphMap[rule]; !ok {
+			log.Println("Invalid rule to graph provided")
+			http.Error(w, "Invalid rule to graph provided", 500)
+			return
+		}
 
 		session := driver.NewSession(neo4j.SessionConfig{
 			AccessMode:   neo4j.AccessModeRead,
@@ -27,11 +41,19 @@ func GetRuleGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Reque
 		})
 		defer session.Close()
 
+		// TODO: parse the return
 		_, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
-			fmt.Printf("Entered GetRuleGraph\n")
-
-			attackpathRule := attackpath.ThirdPartyAdmin{}
-			return attackpathRule.ProduceRuleGraph(tx, ruleGraph)
+			ruleToCall := ruleGraphMap[rule]
+			graphPathResult, err := ruleToCall.ProduceRuleGraph(tx, resourceId)
+			if err != nil {
+				log.Printf("failed to retrieve rule graph results")
+				http.Error(w, "failed to retrieve rule graph results", 500)
+				return graphPathResult, err
+			}
+			ruleToCall.ProduceDisplayGraph(graphPathResult)
+			// x, err := ruleToCall.ProduceRuleGraph(tx, resourceId)
+			log.Printf("Produce Rule Graph Error %+v", err)
+			return graphPathResult, err
 		})
 		if err != nil {
 			log.Printf("failed to retrieve rule graph results")
