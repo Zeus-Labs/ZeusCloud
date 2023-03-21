@@ -1,7 +1,6 @@
 package db
 
 import (
-	"encoding/base64"
 	"fmt"
 	"log"
 	"os"
@@ -19,16 +18,9 @@ func InitPostgres() *gorm.DB {
 	database := os.Getenv("POSTGRES_DB")
 	host := os.Getenv("POSTGRES_HOST")
 
-	if os.Getenv("ENCRYPTION_KEY") == "" {
-		log.Fatal(fmt.Errorf("encryption key is required"))
-	}
-	encryptionKey, err := base64.StdEncoding.DecodeString(os.Getenv("ENCRYPTION_KEY"))
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	connStr := fmt.Sprintf("host=%s user=%s password=%s port=%s database=%s sslmode=disable", host, user, password, port, database)
 	var db *gorm.DB
+	var err error
 	for {
 		db, err = gorm.Open(postgres.Open(connStr), &gorm.Config{})
 		if err != nil {
@@ -38,8 +30,6 @@ func InitPostgres() *gorm.DB {
 		}
 		break
 	}
-
-	models.SetEncryptionKey(encryptionKey)
 
 	err = db.AutoMigrate(&models.RuleData{}, &models.RuleResult{}, &models.AccountDetails{})
 	if err != nil {

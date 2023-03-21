@@ -56,6 +56,8 @@ services:
     environment:
       - CARTOGRAPHY_NEO4J_URI=${NEO4J_URI}
       - CARTOGRAPHY_VERBOSE=False
+      - AWS_CONFIG_FILE=/srv/cartography/.aws/config
+      - AWS_SHARED_CREDENTIALS_FILE=/srv/cartography/.aws/credentials
     networks:
       - app_network
     user: cartography
@@ -63,6 +65,9 @@ services:
     restart: on-failure
     depends_on:
       - neo4j
+    volumes:
+      - ${AWS_CONFIG_FILE}:/srv/cartography/.aws/config
+      - ${AWS_SHARED_CREDENTIALS_FILE}:/srv/cartography/.aws/credentials
 
   frontend:
     image: zeuscloudhq/zeuscloud-frontend:${PULL_VERSION}
@@ -86,7 +91,6 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
-      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
       - CARTOGRAPHY_URI=${CARTOGRAPHY_URI}
     networks:
       - app_network

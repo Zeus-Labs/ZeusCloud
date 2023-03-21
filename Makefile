@@ -7,4 +7,13 @@ docker-release:
 quick-deploy:
 	docker-compose down
 	docker-compose pull
-	ENCRYPTION_KEY=$$(openssl rand -base64 32) docker-compose up
+	docker-compose up
+
+clean:
+	docker-compose down
+	docker volume rm zeuscloud_neo4j_conf || true
+	docker volume rm zeuscloud_neo4j_data || true
+	docker volume rm zeuscloud_neo4j_import || true
+	docker volume rm zeuscloud_neo4j_logs || true
+	docker volume rm zeuscloud_neo4j_plugins || true
+	docker volume rm zeuscloud_postgres || true
