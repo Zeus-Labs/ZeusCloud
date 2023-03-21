@@ -171,6 +171,11 @@ func (PubliclyExposedVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId 
 		return types.GraphPathResult{}, err
 	}
 
+	for _, path := range processedGraphResult.PathResult {
+		fmt.Printf("Path Nodes %+v \n", path.Nodes)
+		fmt.Printf("Path Relationships %+v \n", path.Relationships)
+	}
+
 	// Prune graph to display.
 	var prunedGraph []types.Path
 	elbPathsPrunedGraph := graphprocessing.ProcessElbSecurityGroupsComputePaths(processedGraphResult.PathResult, "EC2Instance")
@@ -188,18 +193,22 @@ func (PubliclyExposedVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId 
 
 	var finalGraphResult types.GraphPathResult
 
-	for _, path := range prunedGraph {
-		fmt.Printf("Path Nodes %+v \n", path.Nodes)
-		fmt.Printf("Path Relationships %+v \n", path.Relationships)
-	}
+	//for _, path := range prunedGraph {
+	//	fmt.Printf("Path Nodes %+v \n", path.Nodes)
+	//	fmt.Printf("Path Relationships %+v \n", path.Relationships)
+	//}
 
 	finalGraphResult.PathResult = prunedGraph
 	return finalGraphResult, nil
 }
 
 func (PubliclyExposedVmAdmin) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
-	dg := types.DisplayGraph{}
-	dg.InitDisplayGraph()
-
+	fmt.Printf("----Start Produce Display Graph---")
+	//dg := types.DisplayGraph{}
+	//dg.InitDisplayGraph()
+	//
+	//graphprocessing.BuildAdjListSecurityGroupToCompute(&dg, gp, "EC2Instance")
+	//graphprocessing.PrintAdjList(&dg)
+	fmt.Printf("Finished Produce Display Graph \n")
 	return types.DisplayGraph{}, nil
 }
