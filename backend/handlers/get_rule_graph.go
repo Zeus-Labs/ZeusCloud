@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"log"
 	"net/http"

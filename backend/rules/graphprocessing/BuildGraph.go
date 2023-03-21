@@ -1,0 +1,5 @@
+package graphprocessing
+
+func BuildAdjList() {
+
+}

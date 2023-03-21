@@ -82,6 +82,7 @@ func CheckNodeLabel(node types.Node, checkLabel string) bool {
 //	(listener:ELBV2Listener)
 //
 // Returns if pattern is met, returns a path: elbv2_group (security group), elbv2 (load balancer), and relationship.
+// Returns a relationship between ip range and the elbv2_group (security group) relationship.
 func CheckElbSecurityGroupPattern(path types.Path) (bool, types.Path) {
 
 	nodeIdToNodeMap := make(map[int64]types.Node)
@@ -98,6 +99,9 @@ func CheckElbSecurityGroupPattern(path types.Path) (bool, types.Path) {
 	var elbv2Node types.Node
 	var elbv2ToSecurityGroupRelationship types.Relationship
 
+	// Create an edge of ip range to security group
+	var ipRangeNode types.Node
+
 	for _, relationship := range path.Relationships {
 		startNodeId := relationship.StartId
 		endNodeId := relationship.EndId
@@ -108,6 +112,7 @@ func CheckElbSecurityGroupPattern(path types.Path) (bool, types.Path) {
 
 		if edgeType == "MEMBER_OF_IP_RULE" {
 			if CheckNodeLabel(startNode, "IpRange") && CheckNodeLabel(endNode, "IpRule") {
+				ipRangeNode = startNode
 				ipRangeToIpRuleEdge = true
 			}
 		}
@@ -139,9 +144,17 @@ func CheckElbSecurityGroupPattern(path types.Path) (bool, types.Path) {
 		return false, types.Path{}
 	}
 
+	// Add relationship from ip range to security group
+	ipRangeToSecurityGroupRelationship := types.Relationship{
+		Id:      1,
+		StartId: ipRangeNode.Id,
+		EndId:   elbv2SecurityGroupNode.Id,
+		Type:    "IP_RANGE_SECURITY_GROUP",
+	}
+
 	return true, types.Path{
-		Nodes:         []types.Node{elbv2Node, elbv2SecurityGroupNode},
-		Relationships: []types.Relationship{elbv2ToSecurityGroupRelationship},
+		Nodes:         []types.Node{elbv2Node, elbv2SecurityGroupNode, ipRangeNode},
+		Relationships: []types.Relationship{elbv2ToSecurityGroupRelationship, ipRangeToSecurityGroupRelationship},
 	}
 }
 
@@ -178,18 +191,21 @@ func CheckElbV2ExposesComputePattern(path types.Path, computeLabel string) (bool
 	return false, elbv2Node
 }
 
-func AddSecurityGroupToElbv2ToComputePath(SgElbV2Path types.Path,
+func AddSecurityGroupToElbv2ToComputePath(computedIpSgElbPath types.Path,
 	ElbV2ToComputePath types.Path) types.Path {
 	var finalPath types.Path
 
 	finalNodesList := ElbV2ToComputePath.Nodes
 	finalRelationshipList := ElbV2ToComputePath.Relationships
 
-	for _, node := range SgElbV2Path.Nodes {
-		if CheckNodeLabel(node, "EC2SecurityGroup") {
+	for _, node := range computedIpSgElbPath.Nodes {
+		if CheckNodeLabel(node, "EC2SecurityGroup") || CheckNodeLabel(node, "IpRange") {
 			finalNodesList = append(finalNodesList, node)
-			finalRelationshipList = append(finalRelationshipList, SgElbV2Path.Relationships[0])
 		}
+	}
+
+	for _, relationship := range computedIpSgElbPath.Relationships {
+		finalRelationshipList = append(finalRelationshipList, relationship)
 	}
 
 	finalPath.Nodes = finalNodesList
@@ -232,8 +248,8 @@ func ProcessElbSecurityGroupsComputePaths(pathList []types.Path, computeLabel st
 	for idx, path := range pathList {
 		elbv2ExposedBool, elbv2Node := CheckElbV2ExposesComputePattern(path, computeLabel)
 		if elbv2ExposedBool {
-			computedElbSgPath := loadbalancerNodeIdToPathMap[elbv2Node.Id]
-			mergedDisplaySgElbComputePath := AddSecurityGroupToElbv2ToComputePath(computedElbSgPath, path)
+			computedIpSgElbPath := loadbalancerNodeIdToPathMap[elbv2Node.Id]
+			mergedDisplaySgElbComputePath := AddSecurityGroupToElbv2ToComputePath(computedIpSgElbPath, path)
 			skipRulesMap[idx] = mergedDisplaySgElbComputePath
 		}
 	}
@@ -256,6 +272,7 @@ func ProcessElbSecurityGroupsComputePaths(pathList []types.Path, computeLabel st
 
 // Returns a processed path for a EC2 (VM) with a Security group.
 // Path from ip range to ip rule to security group to ec2.
+// Output path: ip range to sg to VM.
 func ProcessIpRangeRulePermissionsEc2Path(path types.Path) (bool, types.Path) {
 	nodeList := path.Nodes
 	relationshipList := path.Relationships
@@ -273,6 +290,8 @@ func ProcessIpRangeRulePermissionsEc2Path(path types.Path) (bool, types.Path) {
 	var sgNode types.Node
 	var ec2ToSgRelationship types.Relationship
 
+	var ipRangeNode types.Node
+
 	for _, relationship := range relationshipList {
 		startNodeId := relationship.StartId
 		endNodeId := relationship.EndId
@@ -283,6 +302,7 @@ func ProcessIpRangeRulePermissionsEc2Path(path types.Path) (bool, types.Path) {
 
 		if edgeType == "MEMBER_OF_IP_RULE" {
 			if CheckNodeLabel(startNode, "IpRange") && CheckNodeLabel(endNode, "IpRule") {
+				ipRangeNode = startNode
 				ipRangeToRuleEdge = true
 			}
 		}
@@ -306,8 +326,16 @@ func ProcessIpRangeRulePermissionsEc2Path(path types.Path) (bool, types.Path) {
 		return false, path
 	}
 
-	processedNodeList := []types.Node{ec2Node, sgNode}
-	processedRelationshipList := []types.Relationship{ec2ToSgRelationship}
+	// Add relationship from ip range to security group
+	ipRangeToSecurityGroupRelationship := types.Relationship{
+		Id:      1,
+		StartId: ipRangeNode.Id,
+		EndId:   sgNode.Id,
+		Type:    "IP_RANGE_SECURITY_GROUP",
+	}
+
+	processedNodeList := []types.Node{ec2Node, sgNode, ipRangeNode}
+	processedRelationshipList := []types.Relationship{ec2ToSgRelationship, ipRangeToSecurityGroupRelationship}
 
 	return true, types.Path{
 		Nodes:         processedNodeList,
@@ -337,6 +365,8 @@ func ProcessIpRangeRuleNetworkInterfaceEc2Path(path types.Path) (bool, types.Pat
 	var sgNode types.Node
 	var ec2ToSgRelationship types.Relationship
 
+	var ipRangeNode types.Node
+
 	for _, relationship := range relationshipList {
 		startNodeId := relationship.StartId
 		endNodeId := relationship.EndId
@@ -347,6 +377,7 @@ func ProcessIpRangeRuleNetworkInterfaceEc2Path(path types.Path) (bool, types.Pat
 
 		if edgeType == "MEMBER_OF_IP_RULE" {
 			if CheckNodeLabel(startNode, "IpRange") && CheckNodeLabel(endNode, "IpRule") {
+				ipRangeNode = startNode
 				ipRangeToRuleEdge = true
 			}
 		}
@@ -376,7 +407,15 @@ func ProcessIpRangeRuleNetworkInterfaceEc2Path(path types.Path) (bool, types.Pat
 		return false, path
 	}
 
-	processedNodeList := []types.Node{ec2Node, sgNode}
+	processedNodeList := []types.Node{ec2Node, sgNode, ipRangeNode}
+
+	// Add relationship from ip range to security group
+	ipRangeToSecurityGroupRelationship := types.Relationship{
+		Id:      1,
+		StartId: ipRangeNode.Id,
+		EndId:   sgNode.Id,
+		Type:    "IP_RANGE_SECURITY_GROUP",
+	}
 
 	// Generate random relationship id, doesn't matter
 	ec2ToSgRelationship = types.Relationship{
@@ -385,7 +424,7 @@ func ProcessIpRangeRuleNetworkInterfaceEc2Path(path types.Path) (bool, types.Pat
 		EndId:   sgNode.Id,
 		Type:    "MEMBER_OF_EC2_SECURITY_GROUP",
 	}
-	processedRelationshipList := []types.Relationship{ec2ToSgRelationship}
+	processedRelationshipList := []types.Relationship{ec2ToSgRelationship, ipRangeToSecurityGroupRelationship}
 
 	return true, types.Path{
 		Nodes:         processedNodeList,

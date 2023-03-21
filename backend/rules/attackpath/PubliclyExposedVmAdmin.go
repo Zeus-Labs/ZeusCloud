@@ -187,6 +187,12 @@ func (PubliclyExposedVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId 
 	}
 
 	var finalGraphResult types.GraphPathResult
+
+	for _, path := range prunedGraph {
+		fmt.Printf("Path Nodes %+v \n", path.Nodes)
+		fmt.Printf("Path Relationships %+v \n", path.Relationships)
+	}
+
 	finalGraphResult.PathResult = prunedGraph
 	return finalGraphResult, nil
 }
