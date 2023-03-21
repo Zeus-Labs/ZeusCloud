@@ -86,3 +86,7 @@ func (EBSOptimizedEnabled) Execute(tx neo4j.Transaction) ([]types.Result, error)
 func (EBSOptimizedEnabled) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (EBSOptimizedEnabled) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

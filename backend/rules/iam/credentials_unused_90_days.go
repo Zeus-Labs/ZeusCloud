@@ -101,3 +101,7 @@ func (CredentialsUnused90Days) Execute(tx neo4j.Transaction) ([]types.Result, er
 func (CredentialsUnused90Days) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (CredentialsUnused90Days) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

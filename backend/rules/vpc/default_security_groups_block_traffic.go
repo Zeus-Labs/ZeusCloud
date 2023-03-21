@@ -90,3 +90,7 @@ func (DefaultSecurityGroupsBlockTraffic) Execute(tx neo4j.Transaction) ([]types.
 func (DefaultSecurityGroupsBlockTraffic) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (DefaultSecurityGroupsBlockTraffic) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

@@ -92,3 +92,7 @@ func (ExpiredServerCertificates) Execute(tx neo4j.Transaction) ([]types.Result, 
 func (ExpiredServerCertificates) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (ExpiredServerCertificates) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

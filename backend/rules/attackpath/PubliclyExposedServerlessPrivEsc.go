@@ -148,3 +148,7 @@ func (PubliclyExposedServerlessPrivEsc) ProduceRuleGraph(tx neo4j.Transaction, r
 
 	return graphPathResult, nil
 }
+
+func (PubliclyExposedServerlessPrivEsc) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

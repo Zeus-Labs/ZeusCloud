@@ -93,3 +93,7 @@ func (NoStarPolicies) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 func (NoStarPolicies) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (NoStarPolicies) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

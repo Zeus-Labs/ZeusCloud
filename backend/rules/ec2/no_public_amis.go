@@ -90,3 +90,7 @@ func (NoPublicAMIs) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 func (NoPublicAMIs) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (NoPublicAMIs) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

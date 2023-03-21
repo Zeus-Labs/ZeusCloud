@@ -128,5 +128,14 @@ func (ThirdPartyAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string)
 		return types.GraphPathResult{}, err
 	}
 
+	fmt.Printf("----Final Nodes---- \n")
+	for _, path := range graphPathResult.PathResult {
+		fmt.Printf("Path Nodes %+v \n", path.Nodes)
+		fmt.Printf("Path Relationships %+v \n", path.Relationships)
+	}
 	return graphPathResult, nil
+}
+
+func (ThirdPartyAdmin) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
 }

@@ -195,3 +195,7 @@ func (PubliclyExposedVmHigh) ProduceRuleGraph(tx neo4j.Transaction, resourceId s
 	finalGraphResult.PathResult = prunedGraph
 	return finalGraphResult, nil
 }
+
+func (PubliclyExposedVmHigh) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

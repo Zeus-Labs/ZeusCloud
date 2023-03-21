@@ -102,3 +102,7 @@ func (NetworkGatewayChanges) Execute(tx neo4j.Transaction) ([]types.Result, erro
 func (NetworkGatewayChanges) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (NetworkGatewayChanges) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

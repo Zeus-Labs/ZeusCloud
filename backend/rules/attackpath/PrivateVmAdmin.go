@@ -158,3 +158,7 @@ func (PrivateVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) 
 	finalGraphResult.PathResult = prunedGraph
 	return finalGraphResult, nil
 }
+
+func (PrivateVmAdmin) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

@@ -90,3 +90,7 @@ func (UserAttachedToGroup) Execute(tx neo4j.Transaction) ([]types.Result, error)
 func (UserAttachedToGroup) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (UserAttachedToGroup) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

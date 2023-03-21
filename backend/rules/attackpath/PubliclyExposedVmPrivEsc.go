@@ -171,3 +171,7 @@ func (PubliclyExposedVmPrivEsc) ProduceRuleGraph(tx neo4j.Transaction, resourceI
 
 	return graphPathResult, nil
 }
+
+func (PubliclyExposedVmPrivEsc) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

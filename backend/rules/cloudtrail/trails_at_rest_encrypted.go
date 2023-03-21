@@ -88,3 +88,7 @@ func (TrailsAtRestEncrypted) Execute(tx neo4j.Transaction) ([]types.Result, erro
 func (TrailsAtRestEncrypted) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (TrailsAtRestEncrypted) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

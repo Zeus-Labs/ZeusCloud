@@ -93,3 +93,7 @@ func (EnableFlowLogs) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 func (EnableFlowLogs) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (EnableFlowLogs) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

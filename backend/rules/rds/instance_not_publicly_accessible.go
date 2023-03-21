@@ -89,3 +89,7 @@ func (InstanceNotPubliclyAccessible) Execute(tx neo4j.Transaction) ([]types.Resu
 func (InstanceNotPubliclyAccessible) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (InstanceNotPubliclyAccessible) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

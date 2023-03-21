@@ -102,3 +102,7 @@ func (SignInWithoutMFA) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 func (SignInWithoutMFA) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (SignInWithoutMFA) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

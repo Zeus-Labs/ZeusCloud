@@ -13,6 +13,7 @@ type Rule interface {
 	Execute(tx neo4j.Transaction) ([]Result, error) // Execution logic of rule
 	ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (GraphPathResult, error)
 	// Processes the graph to display.
+	ProduceDisplayGraph(gp GraphPathResult) (DisplayGraph, error)
 }
 
 type Result struct {
@@ -21,6 +22,18 @@ type Result struct {
 	AccountID    string
 	Status       string
 	Context      string
+}
+
+type DisplayGraph struct {
+	startNodeId int64
+	// Only has edges to nodes to the right of node.
+	adjList map[int64][]Node
+}
+
+func (dg *DisplayGraph) InitDisplayGraph() {
+	dg.startNodeId = 0
+	adjList := make(map[int64][]Node)
+	dg.adjList = adjList
 }
 
 type GraphPathResult struct {

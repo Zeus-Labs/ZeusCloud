@@ -107,3 +107,7 @@ func (RestrictPubliclyWritable) Execute(tx neo4j.Transaction) ([]types.Result, e
 func (RestrictPubliclyWritable) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (RestrictPubliclyWritable) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

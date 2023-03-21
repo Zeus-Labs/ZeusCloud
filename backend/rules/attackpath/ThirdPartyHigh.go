@@ -130,3 +130,7 @@ func (ThirdPartyHigh) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) 
 
 	return graphPathResult, nil
 }
+
+func (ThirdPartyHigh) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

@@ -88,3 +88,7 @@ func (DomainsAtRestEncrypted) Execute(tx neo4j.Transaction) ([]types.Result, err
 func (DomainsAtRestEncrypted) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (DomainsAtRestEncrypted) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

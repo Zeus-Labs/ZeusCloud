@@ -111,3 +111,7 @@ func (AvoidInsecureCiphers) Execute(tx neo4j.Transaction) ([]types.Result, error
 func (AvoidInsecureCiphers) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (AvoidInsecureCiphers) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

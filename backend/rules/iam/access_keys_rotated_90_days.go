@@ -107,3 +107,7 @@ func (AccessKeysRotated90Days) Execute(tx neo4j.Transaction) ([]types.Result, er
 func (AccessKeysRotated90Days) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (AccessKeysRotated90Days) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

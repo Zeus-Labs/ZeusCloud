@@ -190,3 +190,10 @@ func (PubliclyExposedVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId 
 	finalGraphResult.PathResult = prunedGraph
 	return finalGraphResult, nil
 }
+
+func (PubliclyExposedVmAdmin) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	dg := types.DisplayGraph{}
+	dg.InitDisplayGraph()
+
+	return types.DisplayGraph{}, nil
+}

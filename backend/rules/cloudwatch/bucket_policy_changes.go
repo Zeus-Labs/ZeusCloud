@@ -102,3 +102,7 @@ func (BucketPolicyChanges) Execute(tx neo4j.Transaction) ([]types.Result, error)
 func (BucketPolicyChanges) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (BucketPolicyChanges) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

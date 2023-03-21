@@ -88,3 +88,7 @@ func (AvoidPublicIPs) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 func (AvoidPublicIPs) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (AvoidPublicIPs) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

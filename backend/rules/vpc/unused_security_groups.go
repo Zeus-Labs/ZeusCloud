@@ -91,3 +91,7 @@ func (UnusedSecurityGroups) Execute(tx neo4j.Transaction) ([]types.Result, error
 func (UnusedSecurityGroups) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (UnusedSecurityGroups) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

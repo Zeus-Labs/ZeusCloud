@@ -90,3 +90,7 @@ func (PasswordNumbersRequired) Execute(tx neo4j.Transaction) ([]types.Result, er
 func (PasswordNumbersRequired) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (PasswordNumbersRequired) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

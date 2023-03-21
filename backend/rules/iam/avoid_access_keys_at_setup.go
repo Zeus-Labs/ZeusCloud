@@ -91,3 +91,7 @@ func (AvoidAccessKeysAtSetup) Execute(tx neo4j.Transaction) ([]types.Result, err
 func (AvoidAccessKeysAtSetup) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (AvoidAccessKeysAtSetup) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

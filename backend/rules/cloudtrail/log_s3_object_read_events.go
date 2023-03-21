@@ -111,3 +111,7 @@ func (LogS3ObjectReadEvents) Execute(tx neo4j.Transaction) ([]types.Result, erro
 func (LogS3ObjectReadEvents) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (LogS3ObjectReadEvents) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

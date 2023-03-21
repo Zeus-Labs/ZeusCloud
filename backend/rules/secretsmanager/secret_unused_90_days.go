@@ -92,3 +92,7 @@ func (SecretUnused90Days) Execute(tx neo4j.Transaction) ([]types.Result, error) 
 func (SecretUnused90Days) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (SecretUnused90Days) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

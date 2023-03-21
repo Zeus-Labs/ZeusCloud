@@ -89,3 +89,7 @@ func (PasswordMinLength) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 func (PasswordMinLength) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (PasswordMinLength) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

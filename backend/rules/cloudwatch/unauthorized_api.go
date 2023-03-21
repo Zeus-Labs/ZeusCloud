@@ -101,3 +101,7 @@ func (UnauthorizedAPI) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 func (UnauthorizedAPI) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (UnauthorizedAPI) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

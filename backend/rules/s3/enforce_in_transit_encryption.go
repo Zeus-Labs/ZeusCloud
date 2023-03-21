@@ -122,3 +122,7 @@ func (EnforceInTransitEncryption) Execute(tx neo4j.Transaction) ([]types.Result,
 func (EnforceInTransitEncryption) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (EnforceInTransitEncryption) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

@@ -129,3 +129,7 @@ func (PrivateServerlessAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId 
 
 	return processedGraphResult, nil
 }
+
+func (PrivateServerlessAdmin) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

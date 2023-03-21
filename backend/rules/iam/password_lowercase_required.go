@@ -90,3 +90,7 @@ func (PasswordLowercaseRequired) Execute(tx neo4j.Transaction) ([]types.Result, 
 func (PasswordLowercaseRequired) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (PasswordLowercaseRequired) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

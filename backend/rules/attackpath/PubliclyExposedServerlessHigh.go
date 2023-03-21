@@ -149,3 +149,7 @@ func (PubliclyExposedServerlessHigh) ProduceRuleGraph(tx neo4j.Transaction, reso
 
 	return graphPathResult, nil
 }
+
+func (PubliclyExposedServerlessHigh) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

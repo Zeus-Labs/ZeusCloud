@@ -59,8 +59,6 @@ func ProcessGraphPathResult(records neo4j.Result, pathKeyStr string) (types.Grap
 				Relationships: processedRelationshipsList,
 			})
 			processedGraphPathResult.PathResult = append(processedGraphPathResult.PathResult, processedPath...)
-			fmt.Printf("Processed Path Nodes: %+v \n", processedNodesList)
-			fmt.Printf("Processed Relationships: %+v \n", processedRelationshipsList)
 		}
 	}
 

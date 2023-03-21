@@ -89,3 +89,7 @@ func (AccessLoggingEnabled) Execute(tx neo4j.Transaction) ([]types.Result, error
 func (AccessLoggingEnabled) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (AccessLoggingEnabled) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

@@ -101,3 +101,7 @@ func (ConfigConfigurationChanges) Execute(tx neo4j.Transaction) ([]types.Result,
 func (ConfigConfigurationChanges) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (ConfigConfigurationChanges) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

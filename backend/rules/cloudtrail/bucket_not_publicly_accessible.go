@@ -102,3 +102,7 @@ func (BucketNotPubliclyAccessible) Execute(tx neo4j.Transaction) ([]types.Result
 func (BucketNotPubliclyAccessible) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (BucketNotPubliclyAccessible) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

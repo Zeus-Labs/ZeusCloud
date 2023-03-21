@@ -89,3 +89,7 @@ func (EBSAtRestEncrypted) Execute(tx neo4j.Transaction) ([]types.Result, error) 
 func (EBSAtRestEncrypted) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (EBSAtRestEncrypted) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

@@ -101,3 +101,7 @@ func (OrganizationChanges) Execute(tx neo4j.Transaction) ([]types.Result, error)
 func (OrganizationChanges) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (OrganizationChanges) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

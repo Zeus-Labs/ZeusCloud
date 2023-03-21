@@ -102,3 +102,7 @@ func (RootAccountUsage) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 func (RootAccountUsage) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (RootAccountUsage) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

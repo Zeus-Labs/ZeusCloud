@@ -89,3 +89,7 @@ func (InstanceAtRestEncrypted) Execute(tx neo4j.Transaction) ([]types.Result, er
 func (InstanceAtRestEncrypted) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (InstanceAtRestEncrypted) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}

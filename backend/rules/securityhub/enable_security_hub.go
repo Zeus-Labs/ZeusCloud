@@ -88,3 +88,7 @@ func (EnableSecurityHub) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 func (EnableSecurityHub) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	return types.GraphPathResult{}, nil
 }
+
+func (EnableSecurityHub) ProduceDisplayGraph(gp types.GraphPathResult) (types.DisplayGraph, error) {
+	return types.DisplayGraph{}, nil
+}
