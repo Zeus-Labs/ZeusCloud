@@ -120,10 +120,10 @@ To access the UI, go to: http://localhost:80.
 
 Please do not run ZeusCloud exposed to the public internet. Use the latest versions of ZeusCloud to get all security related patches. Report any security vulnerabilities to founders@zeuscloud.io. 
 
-## Open source vs. paid
+## Open-source vs. cloud-hosted
 
 This repo is freely available under the [Apache 2.0 license](https://github.com/Zeus-Labs/ZeusCloud/blob/main/LICENSE).
 
-A cloud-hosted solution with features like user management and advanced attack path analysis is available with an enterprise license. Contact us at founders@zeuscloud.io for more information.
+We're working on a cloud-hosted solution which handles deployment and infra management. Contact us at founders@zeuscloud.io for more information!
 
 Special thanks to the amazing [Cartography](https://github.com/lyft/cartography) project, which ZeusCloud uses for its asset inventory. Credit to PostHog and Airbyte for inspiration around public-facing materials - like this README!
