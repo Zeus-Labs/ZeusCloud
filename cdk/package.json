@@ -23,7 +23,7 @@
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.279.0",
     "aws-cdk-lib": "2.54.0",
-    "constructs": "^10.1.260",
+    "constructs": "^10.1.263",
     "source-map-support": "^0.5.21"
   }
 }
