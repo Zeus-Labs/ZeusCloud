@@ -1,20 +1,21 @@
 package inventory
 
 import (
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/Zeus-Labs/ZeusCloud/util"
+	"github.com/hashicorp/go-multierror"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 type KmsKey struct {
-	Id           string    `json:"id"`
-	AccountId    string    `json:"account_id"`
-	CreationDate time.Time `json:"creation_date"`
-	Enabled      bool      `json:"enabled"`
-	Region       string    `json:"region"`
-	Origin       string    `json:"region"`
+	Id           *string    `json:"id"`
+	AccountId    *string    `json:"account_id"`
+	CreationDate *time.Time `json:"creation_date"`
+	Enabled      *bool      `json:"enabled"`
+	Region       *string    `json:"region"`
+	Origin       *string    `json:"region"`
 }
 
 func RetrieveKmsKeys(tx neo4j.Transaction) ([]interface{}, error) {
@@ -34,35 +35,24 @@ func RetrieveKmsKeys(tx neo4j.Transaction) ([]interface{}, error) {
 	var retrievedKmsKeys []interface{}
 	for records.Next() {
 		record := records.Record()
-		id, _ := record.Get("id")
-		idStr, ok := id.(string)
-		if !ok {
-			return nil, fmt.Errorf("id %v should be of type string", idStr)
+
+		var parsingErrs error
+		idStr, err := util.ParseAsOptionalString(record, "id")
+		multierror.Append(parsingErrs, err)
+		accountIDStr, err := util.ParseAsOptionalString(record, "account_id")
+		multierror.Append(parsingErrs, err)
+		creationDate, err := util.ParseAsOptionalTime(record, "creation_date")
+		multierror.Append(parsingErrs, err)
+		enabledBool, err := util.ParseAsOptionalBool(record, "enabled")
+		multierror.Append(parsingErrs, err)
+		regionStr, err := util.ParseAsOptionalString(record, "region")
+		multierror.Append(parsingErrs, err)
+		originStr, err := util.ParseAsOptionalString(record, "origin")
+		multierror.Append(parsingErrs, err)
+		if parsingErrs != nil {
+			log.Printf("Encountered errors parsing resource: %v, continuing on...", parsingErrs.Error())
 		}
-		accountID, _ := record.Get("account_id")
-		accountIDStr, ok := accountID.(string)
-		if !ok {
-			return nil, fmt.Errorf("account_id %v should be of type string", accountIDStr)
-		}
-		creationDate, err := util.ParseAsTime(record, "creation_date")
-		if err != nil {
-			return nil, err
-		}
-		enabled, _ := record.Get("enabled")
-		enabledBool, ok := enabled.(bool)
-		if !ok {
-			return nil, fmt.Errorf("enabled %v should be of type bool", enabledBool)
-		}
-		region, _ := record.Get("region")
-		regionStr, ok := region.(string)
-		if !ok {
-			return nil, fmt.Errorf("region %v should be of type string", regionStr)
-		}
-		origin, _ := record.Get("origin")
-		originStr, ok := origin.(string)
-		if !ok {
-			return nil, fmt.Errorf("origin %v should be of type string", originStr)
-		}
+
 		retrievedKmsKeys = append(retrievedKmsKeys, KmsKey{
 			Id:           idStr,
 			AccountId:    accountIDStr,

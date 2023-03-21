@@ -51,7 +51,7 @@ func ParseAsOptionalTimeISO8601(record *db.Record, key string) (*time.Time, erro
 }
 
 func ParseAsOptionalString(record *db.Record, key string) (*string, error) {
-	value, _ := record.Get("key")
+	value, _ := record.Get(key)
 	valueStr, ok := value.(string)
 	if !ok {
 		return nil, fmt.Errorf("value %v should be of type string", valueStr)
@@ -60,7 +60,7 @@ func ParseAsOptionalString(record *db.Record, key string) (*string, error) {
 }
 
 func ParseAsOptionalBool(record *db.Record, key string) (*bool, error) {
-	value, _ := record.Get("key")
+	value, _ := record.Get(key)
 	valueBool, ok := value.(bool)
 	if !ok {
 		return nil, fmt.Errorf("value %v should be of type bool", valueBool)
@@ -68,11 +68,11 @@ func ParseAsOptionalBool(record *db.Record, key string) (*bool, error) {
 	return &valueBool, nil
 }
 
-func ParseAsOptionalInt(record *db.Record, key string) (*int, error) {
-	value, _ := record.Get("key")
-	valueInt, ok := value.(int)
+func ParseAsOptionalInt64(record *db.Record, key string) (*int64, error) {
+	value, _ := record.Get(key)
+	valueInt64, ok := value.(int64)
 	if !ok {
-		return nil, fmt.Errorf("value %v should be of type int", valueInt)
+		return nil, fmt.Errorf("value %v should be of type int", valueInt64)
 	}
-	return &valueInt, nil
+	return &valueInt64, nil
 }

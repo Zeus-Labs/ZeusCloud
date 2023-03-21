@@ -1,23 +1,24 @@
 package inventory
 
 import (
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/Zeus-Labs/ZeusCloud/util"
+	"github.com/hashicorp/go-multierror"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 type Ec2Instance struct {
-	InstancdId      string    `json:"instance_id"`
-	AccountId       string    `json:"account_id"`
-	LaunchTime      time.Time `json:"launch_time"`
-	State           string    `json:"state"`
-	PubliclyExposed string    `json:"publicly_exposed"` // TODO: Standardize this across cartography, attack paths, asset inventory, and graph viz
-	IamRoles        []string  `json:"iam_roles"`
-	KeyPairs        []string  `json:"key_pairs"`
-	Vpc             string    `json:"vpc"`
-	Region          string    `json:"region"`
+	InstancdId      *string    `json:"instance_id"`
+	AccountId       *string    `json:"account_id"`
+	LaunchTime      *time.Time `json:"launch_time"`
+	State           *string    `json:"state"`
+	PubliclyExposed *string    `json:"publicly_exposed"` // TODO: Standardize this across cartography, attack paths, asset inventory, and graph viz
+	IamRoles        []string   `json:"iam_roles"`
+	KeyPairs        []string   `json:"key_pairs"`
+	Vpc             *string    `json:"vpc"`
+	Region          *string    `json:"region"`
 }
 
 func RetrieveEc2Instances(tx neo4j.Transaction) ([]interface{}, error) {
@@ -46,48 +47,30 @@ func RetrieveEc2Instances(tx neo4j.Transaction) ([]interface{}, error) {
 	var retrievedEc2Instances []interface{}
 	for records.Next() {
 		record := records.Record()
-		instanceId, _ := record.Get("instance_id")
-		instanceIdStr, ok := instanceId.(string)
-		if !ok {
-			return nil, fmt.Errorf("instance_id %v should be of type string", instanceIdStr)
+
+		var parsingErrs error
+		instanceIdStr, err := util.ParseAsOptionalString(record, "instance_id")
+		multierror.Append(parsingErrs, err)
+		accountIDStr, err := util.ParseAsOptionalString(record, "account_id")
+		multierror.Append(parsingErrs, err)
+		launchTime, err := util.ParseAsOptionalTime(record, "launch_time")
+		multierror.Append(parsingErrs, err)
+		stateStr, err := util.ParseAsOptionalString(record, "state")
+		multierror.Append(parsingErrs, err)
+		publiclyExposedStr, err := util.ParseAsOptionalString(record, "publicly_exposed")
+		multierror.Append(parsingErrs, err)
+		iamRolesLst, err := util.ParseAsOptionalStringList(record, "iam_roles")
+		multierror.Append(parsingErrs, err)
+		keyPairsLst, err := util.ParseAsOptionalStringList(record, "key_pairs")
+		multierror.Append(parsingErrs, err)
+		vpcStr, err := util.ParseAsOptionalString(record, "vpc")
+		multierror.Append(parsingErrs, err)
+		regionStr, err := util.ParseAsOptionalString(record, "region")
+		multierror.Append(parsingErrs, err)
+		if parsingErrs != nil {
+			log.Printf("Encountered errors parsing resource: %v, continuing on...", parsingErrs.Error())
 		}
-		accountID, _ := record.Get("account_id")
-		accountIDStr, ok := accountID.(string)
-		if !ok {
-			return nil, fmt.Errorf("account_id %v should be of type string", accountIDStr)
-		}
-		launchTime, err := util.ParseAsTime(record, "launch_time")
-		if err != nil {
-			return nil, err
-		}
-		state, _ := record.Get("state")
-		stateStr, ok := state.(string)
-		if !ok {
-			return nil, fmt.Errorf("state %v should be of type string", stateStr)
-		}
-		publiclyExposed, _ := record.Get("publicly_exposed")
-		publiclyExposedStr, ok := publiclyExposed.(string)
-		if !ok {
-			return nil, fmt.Errorf("publicly_exposed %v should be of type string", publiclyExposedStr)
-		}
-		iamRolesLst, err := util.ParseAsStringList(record, "iam_roles")
-		if err != nil {
-			return nil, err
-		}
-		keyPairsLst, err := util.ParseAsStringList(record, "key_pairs")
-		if err != nil {
-			return nil, err
-		}
-		vpc, _ := record.Get("vpc")
-		vpcStr, ok := vpc.(string)
-		if !ok {
-			return nil, fmt.Errorf("vpc %v should be of type string", vpcStr)
-		}
-		region, _ := record.Get("region")
-		regionStr, ok := region.(string)
-		if !ok {
-			return nil, fmt.Errorf("region %v should be of type string", regionStr)
-		}
+
 		retrievedEc2Instances = append(retrievedEc2Instances, Ec2Instance{
 			InstancdId:      instanceIdStr,
 			AccountId:       accountIDStr,

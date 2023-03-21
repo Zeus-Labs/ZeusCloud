@@ -1,16 +1,18 @@
 package inventory
 
 import (
-	"fmt"
+	"log"
 
+	"github.com/Zeus-Labs/ZeusCloud/util"
+	"github.com/hashicorp/go-multierror"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 type InternetGateway struct {
-	Arn       string `json:"arn"`
-	AccountId string `json:"account_id"`
-	VPC       string `json:"vpc"`
-	Region    string `json:"region"`
+	Arn       *string `json:"arn"`
+	AccountId *string `json:"account_id"`
+	VPC       *string `json:"vpc"`
+	Region    *string `json:"region"`
 }
 
 func RetrieveInternetGateways(tx neo4j.Transaction) ([]interface{}, error) {
@@ -30,26 +32,20 @@ func RetrieveInternetGateways(tx neo4j.Transaction) ([]interface{}, error) {
 	var retrievedInternetGateways []interface{}
 	for records.Next() {
 		record := records.Record()
-		arn, _ := record.Get("arn")
-		arnStr, ok := arn.(string)
-		if !ok {
-			return nil, fmt.Errorf("arn %v should be of type string", arnStr)
+
+		var parsingErrs error
+		arnStr, err := util.ParseAsOptionalString(record, "arn")
+		multierror.Append(parsingErrs, err)
+		accountIDStr, err := util.ParseAsOptionalString(record, "account_id")
+		multierror.Append(parsingErrs, err)
+		vpcStr, err := util.ParseAsOptionalString(record, "vpc")
+		multierror.Append(parsingErrs, err)
+		regionStr, err := util.ParseAsOptionalString(record, "region")
+		multierror.Append(parsingErrs, err)
+		if parsingErrs != nil {
+			log.Printf("Encountered errors parsing resource: %v, continuing on...", parsingErrs.Error())
 		}
-		accountID, _ := record.Get("account_id")
-		accountIDStr, ok := accountID.(string)
-		if !ok {
-			return nil, fmt.Errorf("account_id %v should be of type string", accountIDStr)
-		}
-		vpc, _ := record.Get("vpc")
-		vpcStr, ok := vpc.(string)
-		if !ok {
-			return nil, fmt.Errorf("vpc %v should be of type string", vpcStr)
-		}
-		region, _ := record.Get("region")
-		regionStr, ok := region.(string)
-		if !ok {
-			return nil, fmt.Errorf("region %v should be of type string", regionStr)
-		}
+
 		retrievedInternetGateways = append(retrievedInternetGateways, InternetGateway{
 			Arn:       arnStr,
 			AccountId: accountIDStr,

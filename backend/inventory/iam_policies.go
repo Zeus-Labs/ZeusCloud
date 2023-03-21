@@ -1,17 +1,18 @@
 package inventory
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/Zeus-Labs/ZeusCloud/util"
+	"github.com/hashicorp/go-multierror"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 type IamPolicy struct {
-	Id         string   `json:"id"`
-	AccountId  string   `json:"account_id"`
-	Name       string   `json:"name"`
-	PolicyType string   `json:"policy_type"`
+	Id         *string  `json:"id"`
+	AccountId  *string  `json:"account_id"`
+	Name       *string  `json:"name"`
+	PolicyType *string  `json:"policy_type"`
 	IamUsers   []string `json:"iam_users"`
 	IamGroups  []string `json:"iam_groups"`
 	IamRoles   []string `json:"iam_roles"`
@@ -41,38 +42,26 @@ func RetrieveIamPolicies(tx neo4j.Transaction) ([]interface{}, error) {
 	var retrievedIamPolicies []interface{}
 	for records.Next() {
 		record := records.Record()
-		id, _ := record.Get("id")
-		idStr, ok := id.(string)
-		if !ok {
-			return nil, fmt.Errorf("id %v should be of type string", idStr)
+
+		var parsingErrs error
+		idStr, err := util.ParseAsOptionalString(record, "id")
+		multierror.Append(parsingErrs, err)
+		accountIDStr, err := util.ParseAsOptionalString(record, "account_id")
+		multierror.Append(parsingErrs, err)
+		nameStr, err := util.ParseAsOptionalString(record, "name")
+		multierror.Append(parsingErrs, err)
+		policyTypeStr, err := util.ParseAsOptionalString(record, "policy_type")
+		multierror.Append(parsingErrs, err)
+		iamUsersLst, err := util.ParseAsOptionalStringList(record, "iam_users")
+		multierror.Append(parsingErrs, err)
+		iamGroupsLst, err := util.ParseAsOptionalStringList(record, "iam_groups")
+		multierror.Append(parsingErrs, err)
+		iamRolesLst, err := util.ParseAsOptionalStringList(record, "iam_roles")
+		multierror.Append(parsingErrs, err)
+		if parsingErrs != nil {
+			log.Printf("Encountered errors parsing resource: %v, continuing on...", parsingErrs.Error())
 		}
-		accountID, _ := record.Get("account_id")
-		accountIDStr, ok := accountID.(string)
-		if !ok {
-			return nil, fmt.Errorf("account_id %v should be of type string", accountIDStr)
-		}
-		name, _ := record.Get("name")
-		nameStr, ok := name.(string)
-		if !ok {
-			return nil, fmt.Errorf("friendly_name %v should be of type string", nameStr)
-		}
-		policyType, _ := record.Get("policy_type")
-		policyTypeStr, ok := policyType.(string)
-		if !ok {
-			return nil, fmt.Errorf("policy_type %v should be of type string", policyTypeStr)
-		}
-		iamUsersLst, err := util.ParseAsStringList(record, "iam_users")
-		if err != nil {
-			return nil, err
-		}
-		iamGroupsLst, err := util.ParseAsStringList(record, "iam_groups")
-		if err != nil {
-			return nil, err
-		}
-		iamRolesLst, err := util.ParseAsStringList(record, "iam_roles")
-		if err != nil {
-			return nil, err
-		}
+
 		retrievedIamPolicies = append(retrievedIamPolicies, IamPolicy{
 			Id:         idStr,
 			AccountId:  accountIDStr,

@@ -1,17 +1,19 @@
 package inventory
 
 import (
-	"fmt"
+	"log"
 
+	"github.com/Zeus-Labs/ZeusCloud/util"
+	"github.com/hashicorp/go-multierror"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 type SecurityGroup struct {
-	Id        string `json:"id"`
-	AccountId string `json:"account_id"`
-	Name      string `json:"name"`
-	Vpc       string `json:"vpc"`
-	Region    string `json:"region"`
+	Id        *string `json:"id"`
+	AccountId *string `json:"account_id"`
+	Name      *string `json:"name"`
+	Vpc       *string `json:"vpc"`
+	Region    *string `json:"region"`
 }
 
 func RetrieveSecurityGroups(tx neo4j.Transaction) ([]interface{}, error) {
@@ -32,31 +34,22 @@ func RetrieveSecurityGroups(tx neo4j.Transaction) ([]interface{}, error) {
 	var retrievedSecurityGroups []interface{}
 	for records.Next() {
 		record := records.Record()
-		id, _ := record.Get("id")
-		idStr, ok := id.(string)
-		if !ok {
-			return nil, fmt.Errorf("id %v should be of type string", idStr)
+
+		var parsingErrs error
+		idStr, err := util.ParseAsOptionalString(record, "id")
+		multierror.Append(parsingErrs, err)
+		accountIDStr, err := util.ParseAsOptionalString(record, "account_id")
+		multierror.Append(parsingErrs, err)
+		nameStr, err := util.ParseAsOptionalString(record, "name")
+		multierror.Append(parsingErrs, err)
+		vpcStr, err := util.ParseAsOptionalString(record, "vpc")
+		multierror.Append(parsingErrs, err)
+		regionStr, err := util.ParseAsOptionalString(record, "region")
+		multierror.Append(parsingErrs, err)
+		if parsingErrs != nil {
+			log.Printf("Encountered errors parsing resource: %v, continuing on...", parsingErrs.Error())
 		}
-		accountID, _ := record.Get("account_id")
-		accountIDStr, ok := accountID.(string)
-		if !ok {
-			return nil, fmt.Errorf("account_id %v should be of type string", accountIDStr)
-		}
-		name, _ := record.Get("name")
-		nameStr, ok := name.(string)
-		if !ok {
-			return nil, fmt.Errorf("name %v should be of type string", nameStr)
-		}
-		vpc, _ := record.Get("vpc")
-		vpcStr, ok := vpc.(string)
-		if !ok {
-			return nil, fmt.Errorf("vpc %v should be of type string", vpcStr)
-		}
-		region, _ := record.Get("region")
-		regionStr, ok := region.(string)
-		if !ok {
-			return nil, fmt.Errorf("region %v should be of type string", regionStr)
-		}
+
 		retrievedSecurityGroups = append(retrievedSecurityGroups, SecurityGroup{
 			Id:        idStr,
 			AccountId: accountIDStr,

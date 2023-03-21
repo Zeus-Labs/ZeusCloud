@@ -1,19 +1,20 @@
 package inventory
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/Zeus-Labs/ZeusCloud/util"
+	"github.com/hashicorp/go-multierror"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 type Vpc struct {
-	Id               string   `json:"id"`
-	AccountId        string   `json:"account_id"`
-	PrimaryCidrBlock string   `json:"primary_cidr_block"`
-	State            string   `json:"state"`
-	IsDefault        bool     `json:"is_default"`
-	Region           string   `json:"region"`
+	Id               *string  `json:"id"`
+	AccountId        *string  `json:"account_id"`
+	PrimaryCidrBlock *string  `json:"primary_cidr_block"`
+	State            *string  `json:"state"`
+	IsDefault        *bool    `json:"is_default"`
+	Region           *string  `json:"region"`
 	SubnetIds        []string `json:"subnet_ids"`
 }
 
@@ -24,10 +25,10 @@ func RetrieveVpcs(tx neo4j.Transaction) ([]interface{}, error) {
 		WITH a, v, collect(sn.id) as subnet_ids
 		RETURN v.id as id,
 		a.id as account_id,
-		e.primary_cidr_block as primary_cidr_block,
-		e.state as state,
+		v.primary_cidr_block as primary_cidr_block,
+		v.state as state,
 		v.is_default as is_default,
-		e.region as region,
+		v.region as region,
 		subnet_ids`,
 		nil,
 	)
@@ -37,40 +38,26 @@ func RetrieveVpcs(tx neo4j.Transaction) ([]interface{}, error) {
 	var retrievedVpcs []interface{}
 	for records.Next() {
 		record := records.Record()
-		id, _ := record.Get("id")
-		idStr, ok := id.(string)
-		if !ok {
-			return nil, fmt.Errorf("id %v should be of type string", idStr)
+
+		var parsingErrs error
+		idStr, err := util.ParseAsOptionalString(record, "id")
+		multierror.Append(parsingErrs, err)
+		accountIDStr, err := util.ParseAsOptionalString(record, "account_id")
+		multierror.Append(parsingErrs, err)
+		primaryCidrBlockStr, err := util.ParseAsOptionalString(record, "primary_cidr_block")
+		multierror.Append(parsingErrs, err)
+		stateStr, err := util.ParseAsOptionalString(record, "state")
+		multierror.Append(parsingErrs, err)
+		isDefaultBool, err := util.ParseAsOptionalBool(record, "is_default")
+		multierror.Append(parsingErrs, err)
+		regionStr, err := util.ParseAsOptionalString(record, "region")
+		multierror.Append(parsingErrs, err)
+		subnetIdsLst, err := util.ParseAsOptionalStringList(record, "subnet_ids")
+		multierror.Append(parsingErrs, err)
+		if parsingErrs != nil {
+			log.Printf("Encountered errors parsing resource: %v, continuing on...", parsingErrs.Error())
 		}
-		accountID, _ := record.Get("account_id")
-		accountIDStr, ok := accountID.(string)
-		if !ok {
-			return nil, fmt.Errorf("account_id %v should be of type string", accountIDStr)
-		}
-		primaryCidrBlock, _ := record.Get("primary_cidr_block")
-		primaryCidrBlockStr, ok := primaryCidrBlock.(string)
-		if !ok {
-			return nil, fmt.Errorf("primary_cidr_block %v should be of type string", primaryCidrBlockStr)
-		}
-		state, _ := record.Get("state")
-		stateStr, ok := state.(string)
-		if !ok {
-			return nil, fmt.Errorf("state %v should be of type string", stateStr)
-		}
-		isDefault, _ := record.Get("is_default")
-		isDefaultBool, ok := isDefault.(bool)
-		if !ok {
-			return nil, fmt.Errorf("is_default %v should be of type bool", isDefaultBool)
-		}
-		region, _ := record.Get("region")
-		regionStr, ok := region.(string)
-		if !ok {
-			return nil, fmt.Errorf("region %v should be of type string", regionStr)
-		}
-		subnetIdsLst, err := util.ParseAsStringList(record, "subnet_ids")
-		if err != nil {
-			return nil, err
-		}
+
 		retrievedVpcs = append(retrievedVpcs, Vpc{
 			Id:               idStr,
 			AccountId:        accountIDStr,

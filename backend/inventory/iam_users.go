@@ -1,18 +1,19 @@
 package inventory
 
 import (
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/Zeus-Labs/ZeusCloud/util"
+	"github.com/hashicorp/go-multierror"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 type IamUser struct {
-	Arn              string     `json:"arn"`
-	AccountId        string     `json:"account_id"`
-	FriendlyName     string     `json:"friendly_name"`
-	CreateDate       time.Time  `json:"create_date"`
+	Arn              *string    `json:"arn"`
+	AccountId        *string    `json:"account_id"`
+	FriendlyName     *string    `json:"friendly_name"`
+	CreateDate       *time.Time `json:"create_date"`
 	PasswordLastUsed *time.Time `json:"password_last_used"`
 	IamGroups        []string   `json:"iam_groups"`
 	IamRoles         []string   `json:"iam_roles"`
@@ -48,42 +49,30 @@ func RetrieveIamUsers(tx neo4j.Transaction) ([]interface{}, error) {
 	var retrievedIamUsers []interface{}
 	for records.Next() {
 		record := records.Record()
-		arn, _ := record.Get("arn")
-		arnStr, ok := arn.(string)
-		if !ok {
-			return nil, fmt.Errorf("arn %v should be of type string", arnStr)
+
+		var parsingErrs error
+		arnStr, err := util.ParseAsOptionalString(record, "arn")
+		multierror.Append(parsingErrs, err)
+		accountIDStr, err := util.ParseAsOptionalString(record, "account_id")
+		multierror.Append(parsingErrs, err)
+		friendlyNameStr, err := util.ParseAsOptionalString(record, "friendly_name")
+		multierror.Append(parsingErrs, err)
+		createDateTime, err := util.ParseAsOptionalTime(record, "create_date")
+		multierror.Append(parsingErrs, err)
+		passwordLastUsedTime, err := util.ParseAsOptionalTime(record, "password_last_used")
+		multierror.Append(parsingErrs, err)
+		iamGroupsLst, err := util.ParseAsOptionalStringList(record, "iam_groups")
+		multierror.Append(parsingErrs, err)
+		iamRolesLst, err := util.ParseAsOptionalStringList(record, "iam_roles")
+		multierror.Append(parsingErrs, err)
+		iamPoliciesLst, err := util.ParseAsOptionalStringList(record, "iam_policies")
+		multierror.Append(parsingErrs, err)
+		accessKeysLst, err := util.ParseAsOptionalStringList(record, "access_keys")
+		multierror.Append(parsingErrs, err)
+		if parsingErrs != nil {
+			log.Printf("Encountered errors parsing resource: %v, continuing on...", parsingErrs.Error())
 		}
-		accountID, _ := record.Get("account_id")
-		accountIDStr, ok := accountID.(string)
-		if !ok {
-			return nil, fmt.Errorf("account_id %v should be of type string", accountIDStr)
-		}
-		friendlyName, _ := record.Get("friendly_name")
-		friendlyNameStr, ok := friendlyName.(string)
-		if !ok {
-			return nil, fmt.Errorf("friendly_name %v should be of type string", friendlyNameStr)
-		}
-		createDateTime, err := util.ParseAsTime(record, "create_date")
-		if err != nil {
-			return nil, err
-		}
-		passwordLastUsedTime := util.ParseAsOptionalTime(record, "password_last_used")
-		iamGroupsLst, err := util.ParseAsStringList(record, "iam_groups")
-		if err != nil {
-			return nil, err
-		}
-		iamRolesLst, err := util.ParseAsStringList(record, "iam_roles")
-		if err != nil {
-			return nil, err
-		}
-		iamPoliciesLst, err := util.ParseAsStringList(record, "iam_policies")
-		if err != nil {
-			return nil, err
-		}
-		accessKeysLst, err := util.ParseAsStringList(record, "access_keys")
-		if err != nil {
-			return nil, err
-		}
+
 		retrievedIamUsers = append(retrievedIamUsers, IamUser{
 			Arn:              arnStr,
 			AccountId:        accountIDStr,

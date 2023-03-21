@@ -1,21 +1,22 @@
 package inventory
 
 import (
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/Zeus-Labs/ZeusCloud/util"
+	"github.com/hashicorp/go-multierror"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 type IamRole struct {
-	Arn       string `json:"arn"`
-	AccountId string `json:"account_id"`
-	// FriendlyName      string   `json:"friendly_name"` TODO: cartography doesn't have this right now
-	CreateDate        time.Time `json:"create_date"`
-	IamRoles          []string  `json:"iam_roles"`
-	IamPolicies       []string  `json:"iam_policies"`
-	TrustedPrincipals []string  `json:"trusted_principals"`
+	Arn       *string `json:"arn"`
+	AccountId *string `json:"account_id"`
+	// FriendlyName      *string   `json:"friendly_name"` TODO: cartography doesn't have this right now
+	CreateDate        *time.Time `json:"create_date"`
+	IamRoles          []string   `json:"iam_roles"`
+	IamPolicies       []string   `json:"iam_policies"`
+	TrustedPrincipals []string   `json:"trusted_principals"`
 }
 
 func RetrieveIamRoles(tx neo4j.Transaction) ([]interface{}, error) {
@@ -41,32 +42,24 @@ func RetrieveIamRoles(tx neo4j.Transaction) ([]interface{}, error) {
 	var retrievedIamRoles []interface{}
 	for records.Next() {
 		record := records.Record()
-		arn, _ := record.Get("arn")
-		arnStr, ok := arn.(string)
-		if !ok {
-			return nil, fmt.Errorf("arn %v should be of type string", arnStr)
+
+		var parsingErrs error
+		arnStr, err := util.ParseAsOptionalString(record, "arn")
+		multierror.Append(parsingErrs, err)
+		accountIDStr, err := util.ParseAsOptionalString(record, "account_id")
+		multierror.Append(parsingErrs, err)
+		createDateTime, err := util.ParseAsOptionalTime(record, "create_date")
+		multierror.Append(parsingErrs, err)
+		iamRolesLst, err := util.ParseAsOptionalStringList(record, "iam_roles")
+		multierror.Append(parsingErrs, err)
+		iamPoliciesLst, err := util.ParseAsOptionalStringList(record, "iam_policies")
+		multierror.Append(parsingErrs, err)
+		trustedPrincipalsLst, err := util.ParseAsOptionalStringList(record, "trusted_principals")
+		multierror.Append(parsingErrs, err)
+		if parsingErrs != nil {
+			log.Printf("Encountered errors parsing resource: %v, continuing on...", parsingErrs.Error())
 		}
-		accountID, _ := record.Get("account_id")
-		accountIDStr, ok := accountID.(string)
-		if !ok {
-			return nil, fmt.Errorf("account_id %v should be of type string", accountIDStr)
-		}
-		createDateTime, err := util.ParseAsTime(record, "create_date")
-		if err != nil {
-			return nil, err
-		}
-		iamRolesLst, err := util.ParseAsStringList(record, "iam_roles")
-		if err != nil {
-			return nil, err
-		}
-		iamPoliciesLst, err := util.ParseAsStringList(record, "iam_policies")
-		if err != nil {
-			return nil, err
-		}
-		trustedPrincipalsLst, err := util.ParseAsStringList(record, "trusted_principals")
-		if err != nil {
-			return nil, err
-		}
+
 		retrievedIamRoles = append(retrievedIamRoles, IamRole{
 			Arn:               arnStr,
 			AccountId:         accountIDStr,

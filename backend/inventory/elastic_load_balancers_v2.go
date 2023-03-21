@@ -1,21 +1,22 @@
 package inventory
 
 import (
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/Zeus-Labs/ZeusCloud/util"
+	"github.com/hashicorp/go-multierror"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 type ElasticLoadBalancerV2 struct {
-	DnsName         string    `json:"dns_name"`
-	AccountId       string    `json:"account_id"`
-	Name            string    `json:"name"`
-	Scheme          string    `json:"scheme"`
-	PubliclyExposed string    `json:"publicly_exposed"` // TODO: Standardize this across cartography, attack paths, asset inventory, and graph viz
-	CreatedTime     time.Time `json:"created_time"`
-	Region          string    `json:"region"`
+	DnsName         *string    `json:"dns_name"`
+	AccountId       *string    `json:"account_id"`
+	Name            *string    `json:"name"`
+	Scheme          *string    `json:"scheme"`
+	PubliclyExposed *string    `json:"publicly_exposed"` // TODO: Standardize this across cartography, attack paths, asset inventory, and graph viz
+	CreatedTime     *time.Time `json:"created_time"`
+	Region          *string    `json:"region"`
 }
 
 func RetrieveElasticLoadBalancersV2(tx neo4j.Transaction) ([]interface{}, error) {
@@ -26,7 +27,7 @@ func RetrieveElasticLoadBalancersV2(tx neo4j.Transaction) ([]interface{}, error)
 		lbv2.name as name,
 		lbv2.scheme as scheme,
 		CASE WHEN lbv2.exposed_internet THEN "Yes" ELSE "No" END as publicly_exposed,
-		lbv2.createdtime as created_time
+		lbv2.createdtime as created_time,
 		lbv2.region as region`,
 		nil,
 	)
@@ -36,40 +37,26 @@ func RetrieveElasticLoadBalancersV2(tx neo4j.Transaction) ([]interface{}, error)
 	var retrievedElasticLoadBalancersV2 []interface{}
 	for records.Next() {
 		record := records.Record()
-		dnsName, _ := record.Get("dns_name")
-		dnsNameStr, ok := dnsName.(string)
-		if !ok {
-			return nil, fmt.Errorf("dns_name %v should be of type string", dnsNameStr)
+
+		var parsingErrs error
+		dnsNameStr, err := util.ParseAsOptionalString(record, "dns_name")
+		multierror.Append(parsingErrs, err)
+		accountIDStr, err := util.ParseAsOptionalString(record, "account_id")
+		multierror.Append(parsingErrs, err)
+		nameStr, err := util.ParseAsOptionalString(record, "name")
+		multierror.Append(parsingErrs, err)
+		schemeStr, err := util.ParseAsOptionalString(record, "scheme")
+		multierror.Append(parsingErrs, err)
+		publiclyExposedStr, err := util.ParseAsOptionalString(record, "publicly_exposed")
+		multierror.Append(parsingErrs, err)
+		createdTime, err := util.ParseAsOptionalTime(record, "created_time")
+		multierror.Append(parsingErrs, err)
+		regionStr, err := util.ParseAsOptionalString(record, "region")
+		multierror.Append(parsingErrs, err)
+		if parsingErrs != nil {
+			log.Printf("Encountered errors parsing resource: %v, continuing on...", parsingErrs.Error())
 		}
-		accountID, _ := record.Get("account_id")
-		accountIDStr, ok := accountID.(string)
-		if !ok {
-			return nil, fmt.Errorf("account_id %v should be of type string", accountIDStr)
-		}
-		name, _ := record.Get("name")
-		nameStr, ok := name.(string)
-		if !ok {
-			return nil, fmt.Errorf("name %v should be of type string", nameStr)
-		}
-		scheme, _ := record.Get("scheme")
-		schemeStr, ok := scheme.(string)
-		if !ok {
-			return nil, fmt.Errorf("scheme %v should be of type string", schemeStr)
-		}
-		publiclyExposed, _ := record.Get("publicly_exposed")
-		publiclyExposedStr, ok := publiclyExposed.(string)
-		if !ok {
-			return nil, fmt.Errorf("publicly_exposed %v should be of type string", publiclyExposedStr)
-		}
-		createdTime, err := util.ParseAsTime(record, "created_time")
-		if err != nil {
-			return nil, err
-		}
-		region, _ := record.Get("region")
-		regionStr, ok := region.(string)
-		if !ok {
-			return nil, fmt.Errorf("region %v should be of type string", regionStr)
-		}
+
 		retrievedElasticLoadBalancersV2 = append(retrievedElasticLoadBalancersV2, ElasticLoadBalancerV2{
 			DnsName:         dnsNameStr,
 			AccountId:       accountIDStr,

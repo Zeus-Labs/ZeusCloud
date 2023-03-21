@@ -1,21 +1,22 @@
 package inventory
 
 import (
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/Zeus-Labs/ZeusCloud/util"
+	"github.com/hashicorp/go-multierror"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 type IamGroup struct {
-	Arn          string    `json:"arn"`
-	AccountId    string    `json:"account_id"`
-	FriendlyName string    `json:"friendly_name"`
-	CreateDate   time.Time `json:"create_date"`
-	IamUsers     []string  `json:"iam_users"`
-	IamRoles     []string  `json:"iam_roles"`
-	IamPolicies  []string  `json:"iam_policies"`
+	Arn          *string    `json:"arn"`
+	AccountId    *string    `json:"account_id"`
+	FriendlyName *string    `json:"friendly_name"`
+	CreateDate   *time.Time `json:"create_date"`
+	IamUsers     []string   `json:"iam_users"`
+	IamRoles     []string   `json:"iam_roles"`
+	IamPolicies  []string   `json:"iam_policies"`
 }
 
 func RetrieveIamGroups(tx neo4j.Transaction) ([]interface{}, error) {
@@ -42,37 +43,26 @@ func RetrieveIamGroups(tx neo4j.Transaction) ([]interface{}, error) {
 	var retrievedIamGroups []interface{}
 	for records.Next() {
 		record := records.Record()
-		arn, _ := record.Get("arn")
-		arnStr, ok := arn.(string)
-		if !ok {
-			return nil, fmt.Errorf("arn %v should be of type string", arnStr)
+
+		var parsingErrs error
+		arnStr, err := util.ParseAsOptionalString(record, "arn")
+		multierror.Append(parsingErrs, err)
+		accountIDStr, err := util.ParseAsOptionalString(record, "account_id")
+		multierror.Append(parsingErrs, err)
+		friendlyNameStr, err := util.ParseAsOptionalString(record, "friendly_name")
+		multierror.Append(parsingErrs, err)
+		createDateTime, err := util.ParseAsOptionalTime(record, "create_date")
+		multierror.Append(parsingErrs, err)
+		iamUsersLst, err := util.ParseAsOptionalStringList(record, "iam_users")
+		multierror.Append(parsingErrs, err)
+		iamRolesLst, err := util.ParseAsOptionalStringList(record, "iam_roles")
+		multierror.Append(parsingErrs, err)
+		iamPoliciesLst, err := util.ParseAsOptionalStringList(record, "iam_policies")
+		multierror.Append(parsingErrs, err)
+		if parsingErrs != nil {
+			log.Printf("Encountered errors parsing resource: %v, continuing on...", parsingErrs.Error())
 		}
-		accountID, _ := record.Get("account_id")
-		accountIDStr, ok := accountID.(string)
-		if !ok {
-			return nil, fmt.Errorf("account_id %v should be of type string", accountIDStr)
-		}
-		friendlyName, _ := record.Get("friendly_name")
-		friendlyNameStr, ok := friendlyName.(string)
-		if !ok {
-			return nil, fmt.Errorf("friendly_name %v should be of type string", friendlyNameStr)
-		}
-		createDateTime, err := util.ParseAsTime(record, "create_date")
-		if err != nil {
-			return nil, err
-		}
-		iamUsersLst, err := util.ParseAsStringList(record, "iam_users")
-		if err != nil {
-			return nil, err
-		}
-		iamRolesLst, err := util.ParseAsStringList(record, "iam_roles")
-		if err != nil {
-			return nil, err
-		}
-		iamPoliciesLst, err := util.ParseAsStringList(record, "iam_policies")
-		if err != nil {
-			return nil, err
-		}
+
 		retrievedIamGroups = append(retrievedIamGroups, IamGroup{
 			Arn:          arnStr,
 			AccountId:    accountIDStr,

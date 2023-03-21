@@ -15,16 +15,16 @@ var assetCategoryMap = map[string]AssetRetriever{
 	"iamUsers":               inventory.RetrieveIamUsers,
 	"iamGroups":              inventory.RetrieveIamGroups,
 	"iamRoles":               inventory.RetrieveIamRoles,
-	"iamPolicies":            inventory.RetrieveIamPolicies,            // TO TEST
-	"ec2Instances":           inventory.RetrieveEc2Instances,           // TO TEST
-	"lambdaFunctions":        inventory.RetrieveLambdaFunctions,        // TO TEST
-	"vpcs":                   inventory.RetrieveVpcs,                   // TO TEST
-	"securityGroups":         inventory.RetrieveSecurityGroups,         // TO TEST
-	"internetGateways":       inventory.RetrieveInternetGateways,       // TO TEST
-	"elasticLoadBalancersV2": inventory.RetrieveElasticLoadBalancersV2, // TO TEST
-	"rdsInstances":           inventory.RetrieveRdsInstances,           // TO TEST
-	"s3Buckets":              inventory.RetrieveS3Buckets,              // TO TEST
-	"kmsKeys":                inventory.RetrieveKmsKeys,                // TO TEST
+	"iamPolicies":            inventory.RetrieveIamPolicies,
+	"ec2Instances":           inventory.RetrieveEc2Instances,
+	"lambdaFunctions":        inventory.RetrieveLambdaFunctions,
+	"vpcs":                   inventory.RetrieveVpcs,
+	"securityGroups":         inventory.RetrieveSecurityGroups,
+	"internetGateways":       inventory.RetrieveInternetGateways,
+	"elasticLoadBalancersV2": inventory.RetrieveElasticLoadBalancersV2,
+	"rdsInstances":           inventory.RetrieveRdsInstances,
+	"s3Buckets":              inventory.RetrieveS3Buckets,
+	"kmsKeys":                inventory.RetrieveKmsKeys,
 }
 
 func GetAssetInventory(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Request) {
