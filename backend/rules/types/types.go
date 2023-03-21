@@ -25,15 +25,29 @@ type Result struct {
 }
 
 type DisplayGraph struct {
-	startNodeId int64
+	NodeIdToNodeMap map[int64]Node
+	StartNodeList   []Node
 	// Only has edges to nodes to the right of node.
-	adjList map[int64][]Node
+	AdjList map[int64][]Node
 }
 
 func (dg *DisplayGraph) InitDisplayGraph() {
-	dg.startNodeId = 0
+	var startNodeList []Node
+	dg.StartNodeList = startNodeList
 	adjList := make(map[int64][]Node)
-	dg.adjList = adjList
+	dg.AdjList = adjList
+	nodeIdToNodeMap := make(map[int64]Node)
+	dg.NodeIdToNodeMap = nodeIdToNodeMap
+}
+
+func (dg *DisplayGraph) BuildNodeIdToNodeMap(gp GraphPathResult) {
+	nodeIdToNodeMap := make(map[int64]Node)
+	for _, path := range gp.PathResult {
+		for _, node := range path.Nodes {
+			nodeIdToNodeMap[node.Id] = node
+		}
+	}
+	dg.NodeIdToNodeMap = nodeIdToNodeMap
 }
 
 type GraphPathResult struct {
