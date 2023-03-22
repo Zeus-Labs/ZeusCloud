@@ -129,3 +129,7 @@ func (PubliclyExposedVmPrivEsc) Execute(tx neo4j.Transaction) ([]types.Result, e
 	}
 	return results, nil
 }
+
+func (PubliclyExposedVmPrivEsc) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
+}

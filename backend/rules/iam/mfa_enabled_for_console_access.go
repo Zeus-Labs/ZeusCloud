@@ -85,3 +85,7 @@ func (MfaEnabledForConsoleAccess) Execute(tx neo4j.Transaction) ([]types.Result,
 	}
 	return results, nil
 }
+
+func (MfaEnabledForConsoleAccess) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
+}

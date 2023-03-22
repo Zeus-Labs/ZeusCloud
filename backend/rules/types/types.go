@@ -11,6 +11,31 @@ type Rule interface {
 	Severity() Severity                             // Severity level of the rule
 	RiskCategories() RiskCategoryList               // Risk categories the rule fits into
 	Execute(tx neo4j.Transaction) ([]Result, error) // Execution logic of rule
+	ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (GraphPathResult, error)
+}
+
+type GraphPathResult struct {
+	PathResult []Path
+}
+
+type Node struct {
+	Id     int64                  // Id of this node.
+	Labels []string               // Labels attached to this Node.
+	Props  map[string]interface{} // Properties of this Node.
+}
+
+// Relationship represents a relationship in the neo4j graph database
+type Relationship struct {
+	Id      int64                  // Identity of this Relationship.
+	StartId int64                  // Identity of the start node of this Relationship.
+	EndId   int64                  // Identity of the end node of this Relationship.
+	Type    string                 // Type of this Relationship.
+	Props   map[string]interface{} // Properties of this Relationship.
+}
+
+type Path struct {
+	Nodes         []Node // All the nodes in the path.
+	Relationships []Relationship
 }
 
 type Result struct {

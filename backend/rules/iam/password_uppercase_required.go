@@ -86,3 +86,7 @@ func (PasswordUppercaseRequired) Execute(tx neo4j.Transaction) ([]types.Result, 
 	}
 	return results, nil
 }
+
+func (PasswordUppercaseRequired) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
+}

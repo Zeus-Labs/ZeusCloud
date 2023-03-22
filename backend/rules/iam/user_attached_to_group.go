@@ -86,3 +86,7 @@ func (UserAttachedToGroup) Execute(tx neo4j.Transaction) ([]types.Result, error)
 	}
 	return results, nil
 }
+
+func (UserAttachedToGroup) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
+}

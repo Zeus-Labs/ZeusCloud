@@ -2,37 +2,31 @@ package attackpath
 
 import (
 	"fmt"
-
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-type PubliclyExposedVmHigh struct{}
+type PrivateVmAdmin struct{}
 
-func (PubliclyExposedVmHigh) UID() string {
-	return "attackpath/publicly_exposed_vm_high_permissions"
+func (PrivateVmAdmin) UID() string {
+	return "attackpath/private_vm_admin_permissions"
 }
 
-func (PubliclyExposedVmHigh) Description() string {
-	return "Publicly exposed VM instance with high permissions."
+func (PrivateVmAdmin) Description() string {
+	return "Private VM instance with effective admin permissions."
 }
 
-func (PubliclyExposedVmHigh) Severity() types.Severity {
+func (PrivateVmAdmin) Severity() types.Severity {
 	return types.High
 }
 
-func (PubliclyExposedVmHigh) RiskCategories() types.RiskCategoryList {
+func (PrivateVmAdmin) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
-		types.PubliclyExposed,
 		types.IamMisconfiguration,
 	}
 }
 
-// EC2 is considered publicly exposed if
-// - it's directly exposed through security group / IP
-// - it's exposed through an ELBv2
-// TODO: Add other mechanisms of exposure like ELBv1?
-func (PubliclyExposedVmHigh) Execute(tx neo4j.Transaction) ([]types.Result, error) {
+func (PrivateVmAdmin) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 	records, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(e:EC2Instance)
 		OPTIONAL MATCH
@@ -50,47 +44,30 @@ func (PubliclyExposedVmHigh) Execute(tx neo4j.Transaction) ([]types.Result, erro
 		WHERE listener.port >= perm.fromport AND listener.port <= perm.toport
 		WITH a, e, instance_group_ids, collect(distinct elbv2.id) as public_elbv2_ids
 		OPTIONAL MATCH
-			(e)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_high: True})
-		WITH a, e, instance_group_ids, public_elbv2_ids, collect(role.arn) as high_roles, collect(role.high_reason) as high_reasons
-		WITH a, e, instance_group_ids, public_elbv2_ids, high_roles, high_reasons,
-		(e.publicipaddress IS NOT NULL AND size(instance_group_ids) > 0) OR size(public_elbv2_ids) > 0 as publicly_exposed,
-		(size(high_roles) > 0) as is_high
+			(e)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_admin: True})
+		WITH a, e, instance_group_ids, public_elbv2_ids, collect(role.arn) as admin_roles, collect(role.admin_reason) as admin_reasons
+		WITH a, e, instance_group_ids, public_elbv2_ids, admin_roles, admin_reasons,
+		(e.publicipaddress IS NULL OR size(instance_group_ids) = 0) AND size(public_elbv2_ids) = 0 as private,
+		(size(admin_roles) > 0) as is_admin
 		RETURN e.id as resource_id,
 		'EC2Instance' as resource_type,
 		a.id as account_id,
-		CASE 
-			WHEN publicly_exposed AND is_high THEN 'failed'
+		CASE
+			WHEN private AND is_admin THEN 'failed'
 			ELSE 'passed'
 		END as status,
-		CASE 
-			WHEN publicly_exposed THEN (
-				'The instance is publicly exposed. ' +
-				CASE 
-					WHEN e.publicipaddress IS NOT NULL THEN 'The instance has a public IP address: ' + e.publicipaddress + '.'
-					ELSE 'The instance has no public IP address.'
-				END + ' ' +
-				CASE 
-					WHEN size(instance_group_ids) > 0 THEN 'The following security groups attached to the instance allow traffic from 0.0.0.0/0: ' + substring(apoc.text.join(instance_group_ids, ', '), 0, 1000) + '.'
-					ELSE 'No security group attached to the instance allows traffic from 0.0.0.0/0.'
-				END + ' ' +
-				CASE 
-					WHEN size(public_elbv2_ids) > 0 THEN 'The instance is publicly exposed through these ELBv2 load balancers: ' + substring(apoc.text.join(public_elbv2_ids, ', '), 0, 1000) + '.'
-					ELSE 'The instance is not publicly exposed through any ELBv2 load balancers.'
-				END
+		CASE
+			WHEN is_admin THEN (
+				'The instance is effectively an admin in the account because of: ' + admin_reasons[0] + '.'
 			)
-			ELSE 'The instance is neither directly publicly exposed, nor indirectly public exposed through an ELBv2 load balancer.'
-		END + ' ' +
-		CASE 
-			WHEN is_high THEN (
-				'The instance has high privileges in the account because of: ' + high_reasons[0] + '.'
-			)
-			ELSE 'The instance was not detected as being high-privileged in the account.'
+			ELSE 'The instance was not detected as effectively an admin in the account.'
 		END as context`,
 		nil,
 	)
 	if err != nil {
 		return nil, err
 	}
+
 	var results []types.Result
 	for records.Next() {
 		record := records.Record()
@@ -130,6 +107,27 @@ func (PubliclyExposedVmHigh) Execute(tx neo4j.Transaction) ([]types.Result, erro
 	return results, nil
 }
 
-func (PubliclyExposedVmHigh) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+func (PrivateVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	var params = make(map[string]interface{})
+	params["InstanceId"] = resourceId
+	_, err := tx.Run(
+		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(e:EC2Instance{id: $InstanceId})
+		OPTIONAL MATCH
+			directPath=
+			(:IpRange)-[:MEMBER_OF_IP_RULE]->
+			(:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
+			(instance_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP|NETWORK_INTERFACE*..2]-(e)
+		WITH e, collect(directPath) as directPaths
+		OPTIONAL MATCH
+			adminRolePath=
+			(e)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_admin: True})
+		WITH e, directPaths, collect(adminRolePath) as adminRolePaths
+		WITH directPaths + adminRolePaths AS paths
+		RETURN paths`,
+		params)
+	if err != nil {
+		return types.GraphPathResult{}, err
+	}
+
 	return types.GraphPathResult{}, nil
 }

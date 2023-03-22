@@ -115,6 +115,7 @@ var AttackPathsRulesToExecute = []types.Rule{
 	attackpath.PubliclyExposedServerlessPrivEsc{},
 	attackpath.PubliclyExposedServerlessHigh{},
 	attackpath.PrivateServerlessAdmin{},
+	attackpath.PrivateVmAdmin{},
 	attackpath.ThirdPartyHigh{},
 	attackpath.ThirdPartyAdmin{},
 }

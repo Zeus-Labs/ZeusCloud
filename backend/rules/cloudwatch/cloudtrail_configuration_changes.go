@@ -97,3 +97,7 @@ func (CloudtrailConfigurationChanges) Execute(tx neo4j.Transaction) ([]types.Res
 	}
 	return results, nil
 }
+
+func (CloudtrailConfigurationChanges) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	return types.GraphPathResult{}, nil
+}
