@@ -132,6 +132,7 @@ func (PubliclyExposedVmHigh) Execute(tx neo4j.Transaction) ([]types.Result, erro
 }
 
 func (PubliclyExposedVmHigh) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	fmt.Printf("ProduceRuleGraph %+v", resourceId)
 	params := map[string]interface{}{
 		"InstanceId": resourceId,
 	}
@@ -142,28 +143,29 @@ func (PubliclyExposedVmHigh) ProduceRuleGraph(tx neo4j.Transaction, resourceId s
 			(e)-[:MEMBER_OF_EC2_SECURITY_GROUP|NETWORK_INTERFACE*..2]->(instance_group:EC2SecurityGroup)
 			<-[:MEMBER_OF_EC2_SECURITY_GROUP]-(:IpPermissionInbound)
 			<-[:MEMBER_OF_IP_RULE]-(:IpRange{id: '0.0.0.0/0'})
-		WITH e, collect(directPublicPath) as directPublicPaths
+		WITH a, e, collect(directPublicPath) as directPublicPaths
 		OPTIONAL MATCH
-			indirectELBListenerPath=
 			(:IpRange{range:'0.0.0.0/0'})-[:MEMBER_OF_IP_RULE]->
 			(perm:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
 			(elbv2_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP]-
 			(elbv2:LoadBalancerV2{scheme: 'internet-facing'})—[:ELBV2_LISTENER]->
 			(listener:ELBV2Listener),
-			indirectELBExposurePath=
 			(e)<-[:EXPOSE]-(elbv2)
 		WHERE listener.port >= perm.fromport AND listener.port <= perm.toport
-		WITH e, directPublicPaths, collect(indirectELBListenerPath) as indirectELBListenerPaths,
-		collect(indirectELBExposurePath) as indirectELBExposurePaths
+		OPTIONAL MATCH
+			indirectPath=(e)<-[:EXPOSE]-(elbv2)-[:MEMBER_OF_EC2_SECURITY_GROUP]->(elbv2_group)
+			<-[:MEMBER_OF_EC2_SECURITY_GROUP]-(perm)<-[:MEMBER_OF_IP_RULE]-(iprange)
+		WITH a, e, directPublicPaths, collect(indirectPath) as indirectPaths
 		OPTIONAL MATCH
 			highRolePath=
 			(e)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_high: True})
-		WITH e, directPublicPaths, indirectELBListenerPaths, indirectELBExposurePaths,
+		WITH a, e, directPublicPaths, indirectPaths,
 		collect(highRolePath) as highRolePaths
-		WITH directPublicPaths + indirectELBListenerPaths + indirectELBExposurePaths + highRolePaths AS paths
+		WITH directPublicPaths + indirectPaths + highRolePaths AS paths
 		RETURN paths`,
 		params)
 	if err != nil {
+		fmt.Errorf(err.Error())
 		return types.GraphPathResult{}, err
 	}
 

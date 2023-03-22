@@ -6,22 +6,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Zeus-Labs/ZeusCloud/rules/attackpath"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
-
-var ruleGraphMap = map[string]types.Rule{
-	"attackpath/private_serverless_admin_permissions":          attackpath.PrivateServerlessAdmin{},
-	"attackpath/private_vm_admin_permissions":                  attackpath.PrivateVmAdmin{},
-	"attackpath/publicly_exposed_vm_admin_permissions":         attackpath.PubliclyExposedVmAdmin{},
-	"attackpath/publicly_exposed_vm_high_permissions":          attackpath.PubliclyExposedVmHigh{},
-	"attackpath/publicly_exposed_vm_priv_escalation":           attackpath.PubliclyExposedVmPrivEsc{},
-	"attackpath/publicly_exposed_serverless_admin_permissions": attackpath.PubliclyExposedServerlessAdmin{},
-	"attackpath/publicly_exposed_serverless_high_permissions":  attackpath.PubliclyExposedServerlessHigh{},
-	"attackpath/publicly_exposed_serverless_priv_escalation":   attackpath.PubliclyExposedServerlessPrivEsc{},
-	"attackpath/third_party_admin_permissions":                 attackpath.ThirdPartyAdmin{},
-	"attackpath/third_party_high_permissions":                  attackpath.ThirdPartyHigh{},
-}
 
 func GetRuleGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
