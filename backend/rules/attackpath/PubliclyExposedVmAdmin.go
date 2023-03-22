@@ -2,6 +2,7 @@ package attackpath
 
 import (
 	"fmt"
+	"github.com/Zeus-Labs/ZeusCloud/rules/processgraph"
 
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -131,5 +132,42 @@ func (PubliclyExposedVmAdmin) Execute(tx neo4j.Transaction) ([]types.Result, err
 }
 
 func (PubliclyExposedVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+	params := map[string]interface{}{
+		"InstanceId": resourceId,
+	}
+	records, err := tx.Run(
+		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(e:EC2Instance{id: $InstanceId})
+		OPTIONAL MATCH
+			directPublicPath=
+			(e)-[:MEMBER_OF_EC2_SECURITY_GROUP|NETWORK_INTERFACE*..2]->(instance_group:EC2SecurityGroup)
+			<-[:MEMBER_OF_EC2_SECURITY_GROUP]-(:IpPermissionInbound)
+			<-[:MEMBER_OF_IP_RULE]-(:IpRange{id: '0.0.0.0/0'})
+		WITH a, e, collect(directPublicPath) as directPublicPaths
+		OPTIONAL MATCH
+			indirectELBListenerPath=
+			(:IpRange{range:'0.0.0.0/0'})-[:MEMBER_OF_IP_RULE]->
+			(perm:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
+			(elbv2_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP]-
+			(elbv2:LoadBalancerV2{scheme: 'internet-facing'})—[:ELBV2_LISTENER]->
+			(listener:ELBV2Listener),
+			indirectELBExposurePath=
+			(e)<-[:EXPOSE]-(elbv2)
+		WHERE listener.port >= perm.fromport AND listener.port <= perm.toport
+		WITH a, e, directPublicPaths, collect(indirectELBListenerPath) as indirectELBListenerPaths,
+		collect(indirectELBExposurePath) as indirectELBExposurePaths
+		OPTIONAL MATCH
+			adminRolePath=
+			(e)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_admin: True})
+		WITH a, e, directPublicPaths, indirectELBListenerPaths, indirectELBExposurePaths,
+		collect(adminRolePath) as adminRolePaths
+		WITH directPublicPaths + indirectELBListenerPaths + indirectELBExposurePaths + adminRolePaths AS paths
+		RETURN paths`,
+		params)
+	if err != nil {
+		return types.GraphPathResult{}, err
+	}
+
+	processgraph.ProcessGraphPathResult(records, "paths")
+
 	return types.GraphPathResult{}, nil
 }

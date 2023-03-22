@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/Zeus-Labs/ZeusCloud/rules"
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"log"
 	"net/http"
@@ -28,7 +29,16 @@ func GetRuleGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Reque
 		resourceId := r.URL.Query().Get("resource")
 		ruleId := r.URL.Query().Get("ruleid")
 
-		if _, ok := ruleGraphMap[rule]; !ok {
+		var attackPathRuleDisplay types.Rule
+		var attackPathFound bool
+		for _, attackpathRule := range rules.AttackPathsRulesToExecute {
+			if attackpathRule.UID() == ruleId {
+				attackPathFound = true
+				attackPathRuleDisplay = attackpathRule
+			}
+		}
+
+		if !attackPathFound {
 			log.Println("Invalid rule to graph provided")
 			http.Error(w, "Invalid rule to graph provided", 500)
 			return
@@ -42,15 +52,13 @@ func GetRuleGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Reque
 
 		// TODO: parse the return
 		_, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
-			ruleToCall := ruleGraphMap[rule]
-			graphPathResult, err := ruleToCall.ProduceRuleGraph(tx, resourceId)
+
+			graphPathResult, err := attackPathRuleDisplay.ProduceRuleGraph(tx, resourceId)
 			if err != nil {
 				log.Printf("failed to retrieve rule graph results")
 				http.Error(w, "failed to retrieve rule graph results", 500)
 				return graphPathResult, err
 			}
-			ruleToCall.ProduceDisplayGraph(graphPathResult)
-			// x, err := ruleToCall.ProduceRuleGraph(tx, resourceId)
 			log.Printf("Produce Rule Graph Error %+v", err)
 			return graphPathResult, err
 		})
@@ -59,11 +67,5 @@ func GetRuleGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Reque
 			http.Error(w, "failed to retrieve rule graph results", 500)
 			return
 		}
-		//resultsArr, ok := results.([]types.GraphPathResult)
-		//if !ok {
-		//	return nil, fmt.Errorf("issue type casting results %v", results)
-		//}
-		//return resultsArr, nil
-
 	}
 }
