@@ -121,6 +121,12 @@ func CompressPaths(graphPaths types.Graph) types.GraphPathResult {
 				nodesList = append(nodesList, node)
 			}
 		}
+
+		// Print
+		for _, testNode := range nodesList {
+			fmt.Printf("Test node %+v", testNode)
+		}
+		fmt.Printf("----end of list----- \n")
 		CompressedPaths = append(CompressedPaths, types.CompressedPath{
 			Nodes: nodesList,
 		})
