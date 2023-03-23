@@ -19,6 +19,7 @@ type GraphPathResult struct {
 	CompressedPaths []CompressedPath
 }
 
+// CompressedPath is a path represented by a list of nodes.
 type CompressedPath struct {
 	Nodes []Node
 }
@@ -85,4 +86,23 @@ func (rcl RiskCategoryList) AsStringArray() pq.StringArray {
 		categories = append(categories, string(c))
 	}
 	return pq.StringArray(categories)
+}
+
+type DisplayNode struct {
+	// Label will tell the type of the node
+	NodeLabel string `json:"node_label"`
+	// resourceId uniquely identifying the node
+	ResourceId int64 `json:"resource_id"`
+	// displayId to show in visualization
+	DisplayId string `json:"display_id"`
+}
+
+type DisplayPath struct {
+	DisplayNodes []DisplayNode `json:"display_nodes"`
+}
+
+type DisplayGraph struct {
+	CentralNode    DisplayNode   `json:"central_node"`
+	LeftSidePaths  []DisplayPath `json:"left_side_paths"`
+	RightSidePaths []DisplayPath `json:"right_side_paths"`
 }

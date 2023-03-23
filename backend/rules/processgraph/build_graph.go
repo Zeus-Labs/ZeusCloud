@@ -26,7 +26,6 @@ func CompressNodeBool(node types.Node) bool {
 // ProcessGraphPathResult gets a raw neo4j result record and copies the data into
 // types.GraphPathResult.
 func ProcessGraphPathResult(records neo4j.Result, pathKeyStr string) (types.Graph, error) {
-	fmt.Printf("START of  ProcessGraphPathResult \n")
 
 	// Holds the list of paths that are processed.
 	var processedGraphPathResult types.Graph
@@ -111,7 +110,6 @@ func GraphStartNodeCheck(graphPaths types.Graph, resourceId string) (
 
 func CompressPaths(graphPaths types.Graph) types.GraphPathResult {
 
-	var compressedGraphResult types.GraphPathResult
 	var CompressedPaths []types.CompressedPath
 	for _, path := range graphPaths.PathList {
 		var nodesList []types.Node
@@ -122,15 +120,112 @@ func CompressPaths(graphPaths types.Graph) types.GraphPathResult {
 			}
 		}
 
-		// Print
-		for _, testNode := range nodesList {
-			fmt.Printf("Test node %+v", testNode)
-		}
-		fmt.Printf("----end of list----- \n")
 		CompressedPaths = append(CompressedPaths, types.CompressedPath{
 			Nodes: nodesList,
 		})
 	}
 
-	return compressedGraphResult
+	return types.GraphPathResult{
+		CompressedPaths: CompressedPaths,
+	}
+}
+
+func CheckNodeLabel(node types.Node, checkLabel string) bool {
+	for _, label := range node.Labels {
+		if checkLabel == label {
+			return true
+		}
+	}
+	return false
+}
+
+// ConvertNodeToDisplayNode converts node from neo4 node to what we
+// return to the frontend.
+func ConvertNodeToDisplayNode(node types.Node) (types.DisplayNode, error) {
+	displayNodeLabel := "No Label"
+	displayId := "No Display Id"
+	nodeProps := node.Props
+
+	if CheckNodeLabel(node, "Instance") || CheckNodeLabel(node, "EC2Instance") {
+		displayNodeLabel = "EC2 Instance"
+		displayId = nodeProps["instanceid"].(string)
+	} else if CheckNodeLabel(node, "LoadBalancerV2") {
+		displayNodeLabel = "Load Balancer"
+		displayId = nodeProps["id"].(string)
+	} else if CheckNodeLabel(node, "EC2SecurityGroup") {
+		displayNodeLabel = "Security Group"
+		displayId = nodeProps["id"].(string)
+	} else if CheckNodeLabel(node, "IpRange") {
+		displayNodeLabel = "Ip Range"
+		displayId = nodeProps["id"].(string)
+	} else if CheckNodeLabel(node, "AWSRole") && CheckNodeLabel(node, "AWSPrincipal") {
+		displayNodeLabel = "AWS Role"
+		displayId = nodeProps["arn"].(string)
+	} else if CheckNodeLabel(node, "AWSPrincipal") {
+		// Could be a root account.
+		displayNodeLabel = "AWS Principal"
+		displayId = nodeProps["arn"].(string)
+	} else if CheckNodeLabel(node, "AWSAccount") {
+		displayNodeLabel = "AWS Account"
+		displayId = nodeProps["id"].(string)
+	} else if CheckNodeLabel(node, "AWSLambda") {
+		displayNodeLabel = "AWS Lambda"
+		displayId = nodeProps["id"].(string)
+	} else {
+		return types.DisplayNode{}, fmt.Errorf("Node %+v is unsupported", node)
+	}
+
+	return types.DisplayNode{
+		NodeLabel:  displayNodeLabel,
+		ResourceId: node.Id,
+		DisplayId:  displayId,
+	}, nil
+}
+
+// Assumes you have a valid input of a graph path result.
+func ConvertToDisplayGraph(graphPathResult types.GraphPathResult) (types.DisplayGraph,
+	error) {
+	if len(graphPathResult.CompressedPaths) == 0 {
+		return types.DisplayGraph{}, nil
+	}
+
+	// Get the central display node.
+	centralDisplayNode, err := ConvertNodeToDisplayNode(graphPathResult.CompressedPaths[0].Nodes[0])
+	if err != nil {
+		return types.DisplayGraph{}, err
+	}
+
+	var leftSidePath []types.DisplayPath
+	var rightSidePath []types.DisplayPath
+
+	for _, compressedPath := range graphPathResult.CompressedPaths {
+		var compressedDisplayNodes []types.DisplayNode
+		isLeftPath := false
+		for _, node := range compressedPath.Nodes {
+			if CheckNodeLabel(node, "IpRange") {
+				isLeftPath = true
+			}
+			convertedNode, err := ConvertNodeToDisplayNode(node)
+			if err != nil {
+				return types.DisplayGraph{}, err
+			}
+			compressedDisplayNodes = append(compressedDisplayNodes, convertedNode)
+
+		}
+		displayPath := types.DisplayPath{
+			DisplayNodes: compressedDisplayNodes,
+		}
+
+		if isLeftPath {
+			leftSidePath = append(leftSidePath, displayPath)
+		} else {
+			rightSidePath = append(rightSidePath, displayPath)
+		}
+	}
+
+	return types.DisplayGraph{
+		CentralNode:    centralDisplayNode,
+		LeftSidePaths:  leftSidePath,
+		RightSidePaths: rightSidePath,
+	}, nil
 }

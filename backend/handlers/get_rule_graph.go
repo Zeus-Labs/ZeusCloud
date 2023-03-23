@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"encoding/json"
 	"github.com/Zeus-Labs/ZeusCloud/rules"
+	"github.com/Zeus-Labs/ZeusCloud/rules/processgraph"
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"log"
 	"net/http"
@@ -11,7 +13,6 @@ import (
 
 func GetRuleGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Entered Get Rule Graph \n")
 		resourceId := r.URL.Query().Get("resource")
 		ruleId := r.URL.Query().Get("ruleid")
 
@@ -36,8 +37,7 @@ func GetRuleGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Reque
 		})
 		defer session.Close()
 
-		// TODO: parse the return
-		_, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		results, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 
 			graphPathResult, err := attackPathRuleDisplay.ProduceRuleGraph(tx, resourceId)
 			if err != nil {
@@ -46,12 +46,21 @@ func GetRuleGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Reque
 				return graphPathResult, err
 			}
 			log.Printf("Produce Rule Graph Error %+v", err)
-			return graphPathResult, err
+			displayGraph, err := processgraph.ConvertToDisplayGraph(graphPathResult)
+			return displayGraph, err
 		})
 		if err != nil {
 			log.Printf("failed to retrieve rule graph results")
 			http.Error(w, "failed to retrieve rule graph results", 500)
 			return
 		}
+
+		retDataBytes, err := json.Marshal(results.(types.DisplayGraph))
+		if err != nil {
+			log.Printf("failed to marshal %v error: %v", results, err)
+			http.Error(w, "failed get rule graph results", 500)
+			return
+		}
+		w.Write(retDataBytes)
 	}
 }
