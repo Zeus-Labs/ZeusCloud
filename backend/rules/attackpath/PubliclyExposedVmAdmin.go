@@ -167,7 +167,15 @@ func (PubliclyExposedVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId 
 		return types.GraphPathResult{}, err
 	}
 
-	processgraph.ProcessGraphPathResult(records, "paths")
+	graphPathResult, err := processgraph.ProcessGraphPathResult(records, "paths")
+	if err != nil {
+		return types.GraphPathResult{}, err
+	}
 
+	// Check that all the paths start with the correct node.
+	pathCheckBool, pathsFailing := processgraph.PathsResultCheck(graphPathResult, resourceId)
+	if !pathCheckBool {
+		return types.GraphPathResult{}, fmt.Errorf("Error %v Paths Failing %+v", err.Error(), pathsFailing)
+	}
 	return types.GraphPathResult{}, nil
 }

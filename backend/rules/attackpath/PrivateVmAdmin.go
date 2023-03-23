@@ -2,6 +2,7 @@ package attackpath
 
 import (
 	"fmt"
+	"github.com/Zeus-Labs/ZeusCloud/rules/processgraph"
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -110,13 +111,13 @@ func (PrivateVmAdmin) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 func (PrivateVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	var params = make(map[string]interface{})
 	params["InstanceId"] = resourceId
-	_, err := tx.Run(
+	records, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(e:EC2Instance{id: $InstanceId})
 		OPTIONAL MATCH
 			directPath=
-			(:IpRange)-[:MEMBER_OF_IP_RULE]->
-			(:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
-			(instance_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP|NETWORK_INTERFACE*..2]-(e)
+			(e)-[:MEMBER_OF_EC2_SECURITY_GROUP|NETWORK_INTERFACE*..2]->(instance_group:EC2SecurityGroup)
+			<-[:MEMBER_OF_EC2_SECURITY_GROUP]-(:IpPermissionInbound)
+			<-[:MEMBER_OF_IP_RULE]-(:IpRange)
 		WITH e, collect(directPath) as directPaths
 		OPTIONAL MATCH
 			adminRolePath=
@@ -128,6 +129,8 @@ func (PrivateVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) 
 	if err != nil {
 		return types.GraphPathResult{}, err
 	}
+
+	processgraph.ProcessGraphPathResult(records, "paths")
 
 	return types.GraphPathResult{}, nil
 }

@@ -18,6 +18,10 @@ type GraphPathResult struct {
 	PathResult []Path
 }
 
+type Graph struct {
+	PathResult []Path
+}
+
 type Node struct {
 	Id     int64                  // Id of this node.
 	Labels []string               // Labels attached to this Node.

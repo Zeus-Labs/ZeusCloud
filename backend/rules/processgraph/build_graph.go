@@ -8,22 +8,22 @@ import (
 
 // ProcessGraphPathResult gets a raw neo4j result record and copies the data into
 // types.GraphPathResult.
-func ProcessGraphPathResult(records neo4j.Result, pathKeyStr string) (types.GraphPathResult, error) {
+func ProcessGraphPathResult(records neo4j.Result, pathKeyStr string) (types.Graph, error) {
 	fmt.Printf("START of  ProcessGraphPathResult \n")
 
 	// Holds the list of paths that are processed.
-	var processedGraphPathResult types.GraphPathResult
+	var processedGraphPathResult types.Graph
 
 	for records.Next() {
 		record := records.Record()
 		paths, ok := record.Get(pathKeyStr)
 		if !ok {
-			return types.GraphPathResult{}, fmt.Errorf("Failed to get record.")
+			return types.Graph{}, fmt.Errorf("Failed to get record.")
 		}
 
 		pathsList, ok := paths.([]interface{})
 		if !ok {
-			return types.GraphPathResult{}, fmt.Errorf("Failed to cast to list of interfaces of paths")
+			return types.Graph{}, fmt.Errorf("Failed to cast to list of interfaces of paths")
 		}
 
 		for _, path := range pathsList {
@@ -34,7 +34,7 @@ func ProcessGraphPathResult(records neo4j.Result, pathKeyStr string) (types.Grap
 			var processedRelationshipsList []types.Relationship
 
 			if !pathCastSuccessful {
-				return types.GraphPathResult{}, fmt.Errorf("Failed to retrieve graph path")
+				return types.Graph{}, fmt.Errorf("Failed to retrieve graph path")
 			}
 
 			for _, node := range resultGraphPath.Nodes {
@@ -66,4 +66,28 @@ func ProcessGraphPathResult(records neo4j.Result, pathKeyStr string) (types.Grap
 	}
 
 	return processedGraphPathResult, nil
+}
+
+// Returns boolean if the paths check passes and returns which paths may be
+// incorrect.
+func PathsResultCheck(graphPathResult types.Graph, resourceId string) (
+	bool, []types.Path) {
+	pathResult := graphPathResult.PathResult
+
+	var incorrectPaths []types.Path
+	// Check that every
+	for _, path := range pathResult {
+		if len(path.Nodes) > 0 {
+			node := path.Nodes[0]
+			nodeStr := (node.Props["id"]).(string)
+			if nodeStr != resourceId {
+				incorrectPaths = append(incorrectPaths, path)
+			}
+		}
+	}
+
+	if len(incorrectPaths) > 0 {
+		return false, incorrectPaths
+	}
+	return true, incorrectPaths
 }
