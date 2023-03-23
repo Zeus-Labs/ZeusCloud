@@ -14,12 +14,17 @@ type Rule interface {
 	ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (GraphPathResult, error)
 }
 
+// GraphPathResult is a list of paths after compression.
 type GraphPathResult struct {
-	PathResult []Path
+	CompressedPaths []CompressedPath
+}
+
+type CompressedPath struct {
+	Nodes []Node
 }
 
 type Graph struct {
-	PathResult []Path
+	PathList []Path
 }
 
 type Node struct {

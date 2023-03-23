@@ -6,6 +6,23 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
+// CompressNodeBool returns whether we have to compress node boolean.
+func CompressNodeBool(node types.Node) bool {
+
+	nodeLabelToSkipMap := map[string]bool{
+		"IpPermissionInbound": true,
+		"IpRule":              true,
+		"NetworkInterface":    true,
+	}
+	for _, label := range node.Labels {
+		_, ok := nodeLabelToSkipMap[label]
+		if ok {
+			return true
+		}
+	}
+	return false
+}
+
 // ProcessGraphPathResult gets a raw neo4j result record and copies the data into
 // types.GraphPathResult.
 func ProcessGraphPathResult(records neo4j.Result, pathKeyStr string) (types.Graph, error) {
@@ -61,7 +78,7 @@ func ProcessGraphPathResult(records neo4j.Result, pathKeyStr string) (types.Grap
 				Nodes:         processedNodesList,
 				Relationships: processedRelationshipsList,
 			})
-			processedGraphPathResult.PathResult = append(processedGraphPathResult.PathResult, processedPath...)
+			processedGraphPathResult.PathList = append(processedGraphPathResult.PathList, processedPath...)
 		}
 	}
 
@@ -70,9 +87,9 @@ func ProcessGraphPathResult(records neo4j.Result, pathKeyStr string) (types.Grap
 
 // Returns boolean if the paths check passes and returns which paths may be
 // incorrect.
-func PathsResultCheck(graphPathResult types.Graph, resourceId string) (
+func GraphStartNodeCheck(graphPaths types.Graph, resourceId string) (
 	bool, []types.Path) {
-	pathResult := graphPathResult.PathResult
+	pathResult := graphPaths.PathList
 
 	var incorrectPaths []types.Path
 	// Check that every
@@ -90,4 +107,24 @@ func PathsResultCheck(graphPathResult types.Graph, resourceId string) (
 		return false, incorrectPaths
 	}
 	return true, incorrectPaths
+}
+
+func CompressPaths(graphPaths types.Graph) types.GraphPathResult {
+
+	var compressedGraphResult types.GraphPathResult
+	var CompressedPaths []types.CompressedPath
+	for _, path := range graphPaths.PathList {
+		var nodesList []types.Node
+		for _, node := range path.Nodes {
+			// if don't need to compress, add the node to the list of nodes
+			if !CompressNodeBool(node) {
+				nodesList = append(nodesList, node)
+			}
+		}
+		CompressedPaths = append(CompressedPaths, types.CompressedPath{
+			Nodes: nodesList,
+		})
+	}
+
+	return compressedGraphResult
 }
