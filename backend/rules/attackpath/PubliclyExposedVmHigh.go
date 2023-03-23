@@ -132,7 +132,6 @@ func (PubliclyExposedVmHigh) Execute(tx neo4j.Transaction) ([]types.Result, erro
 }
 
 func (PubliclyExposedVmHigh) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
-	fmt.Printf("ProduceRuleGraph %+v", resourceId)
 	params := map[string]interface{}{
 		"InstanceId": resourceId,
 	}

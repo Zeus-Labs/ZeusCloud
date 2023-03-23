@@ -2,6 +2,7 @@ package attackpath
 
 import (
 	"fmt"
+	"github.com/Zeus-Labs/ZeusCloud/rules/processgraph"
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -114,5 +115,47 @@ func (PubliclyExposedServerlessAdmin) Execute(tx neo4j.Transaction) ([]types.Res
 }
 
 func (PrivateServerlessAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
-	return types.GraphPathResult{}, nil
+	params := map[string]interface{}{
+		"InstanceId": resourceId,
+	}
+	records, err := tx.Run(
+		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(lambda:AWSLambda{id: $InstanceId})
+		OPTIONAL MATCH
+			(:IpRange{range:'0.0.0.0/0'})-[:MEMBER_OF_IP_RULE]->
+			(perm:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
+			(elbv2_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP]-
+			(elbv2:LoadBalancerV2{scheme: 'internet-facing'})—[:ELBV2_LISTENER]->
+			(listener:ELBV2Listener),
+			(lambda)<-[:EXPOSE]-(elbv2)
+		WHERE listener.port >= perm.fromport AND listener.port <= perm.toport
+		OPTIONAL MATCH
+			indirectPath=(lambda)<-[:EXPOSE]-(elbv2)-[:MEMBER_OF_EC2_SECURITY_GROUP]->(elbv2_group)
+			<-[:MEMBER_OF_EC2_SECURITY_GROUP]-(perm)<-[:MEMBER_OF_IP_RULE]-(iprange)
+		WITH a, lambda, collect(indirectPath) as indirectPaths
+		OPTIONAL MATCH
+			adminRolePath=
+			(lambda)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_admin: True})
+		WITH lambda, indirectPaths, collect(adminRolePath) as adminRolePaths
+		WITH indirectPaths + adminRolePaths AS paths
+		RETURN paths`,
+		params,
+	)
+	if err != nil {
+		return types.GraphPathResult{}, err
+	}
+
+	// Parsed out graph from the query.
+	graph, err := processgraph.ProcessGraphPathResult(records, "paths")
+	if err != nil {
+		return types.GraphPathResult{}, err
+	}
+
+	// Check that all the paths start with the correct node.
+	pathCheckBool, pathsFailing := processgraph.GraphStartNodeCheck(graph, resourceId)
+	if !pathCheckBool {
+		return types.GraphPathResult{}, fmt.Errorf("Error %v Paths Failing %+v", err.Error(), pathsFailing)
+	}
+
+	graphPathResult := processgraph.CompressPaths(graph)
+	return graphPathResult, nil
 }

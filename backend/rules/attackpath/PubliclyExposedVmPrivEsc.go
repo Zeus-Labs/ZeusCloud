@@ -2,6 +2,7 @@ package attackpath
 
 import (
 	"fmt"
+	"github.com/Zeus-Labs/ZeusCloud/rules/processgraph"
 
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -131,5 +132,54 @@ func (PubliclyExposedVmPrivEsc) Execute(tx neo4j.Transaction) ([]types.Result, e
 }
 
 func (PubliclyExposedVmPrivEsc) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
-	return types.GraphPathResult{}, nil
+	params := map[string]interface{}{
+		"InstanceId": resourceId,
+	}
+	records, err := tx.Run(
+		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(e:EC2Instance{id: $InstanceId})
+		OPTIONAL MATCH
+			directPublicPath=
+			(e)-[:MEMBER_OF_EC2_SECURITY_GROUP|NETWORK_INTERFACE*..2]->(instance_group:EC2SecurityGroup)
+			<-[:MEMBER_OF_EC2_SECURITY_GROUP]-(:IpPermissionInbound)
+			<-[:MEMBER_OF_IP_RULE]-(:IpRange{id: '0.0.0.0/0'})
+		WITH a, e, collect(directPublicPath) as directPublicPaths
+		OPTIONAL MATCH
+			(:IpRange{range:'0.0.0.0/0'})-[:MEMBER_OF_IP_RULE]->
+			(perm:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
+			(elbv2_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP]-
+			(elbv2:LoadBalancerV2{scheme: 'internet-facing'})—[:ELBV2_LISTENER]->
+			(listener:ELBV2Listener),
+			(e)<-[:EXPOSE]-(elbv2)
+		WHERE listener.port >= perm.fromport AND listener.port <= perm.toport
+		OPTIONAL MATCH
+			indirectPath=(e)<-[:EXPOSE]-(elbv2)-[:MEMBER_OF_EC2_SECURITY_GROUP]->(elbv2_group)
+			<-[:MEMBER_OF_EC2_SECURITY_GROUP]-(perm)<-[:MEMBER_OF_IP_RULE]-(iprange)
+		WITH a, e, directPublicPaths, collect(indirectPath) as indirectPaths
+		OPTIONAL MATCH
+			privilegeEscalationPath=
+			(e)-[:STS_ASSUME_ROLE_ALLOW*1..4]->(role:AWSRole)-[privEscalation:PRIVILEGE_ESCALATION]->(escRole)
+		WITH a, e, directPublicPaths, indirectPaths,
+		collect(privilegeEscalationPath) as privilegeEscalationPaths
+		WITH directPublicPaths + indirectPaths + privilegeEscalationPaths AS paths
+		RETURN paths`,
+		params)
+	if err != nil {
+		fmt.Errorf(err.Error())
+		return types.GraphPathResult{}, err
+	}
+
+	// Parsed out graph from the query.
+	graph, err := processgraph.ProcessGraphPathResult(records, "paths")
+	if err != nil {
+		return types.GraphPathResult{}, err
+	}
+
+	// Check that all the paths start with the correct node.
+	pathCheckBool, pathsFailing := processgraph.GraphStartNodeCheck(graph, resourceId)
+	if !pathCheckBool {
+		return types.GraphPathResult{}, fmt.Errorf("Error %v Paths Failing %+v", err.Error(), pathsFailing)
+	}
+
+	graphPathResult := processgraph.CompressPaths(graph)
+	return graphPathResult, nil
 }
