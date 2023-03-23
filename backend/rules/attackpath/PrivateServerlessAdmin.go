@@ -2,6 +2,7 @@ package attackpath
 
 import (
 	"fmt"
+	"github.com/Zeus-Labs/ZeusCloud/rules/processgraph"
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -103,5 +104,34 @@ func (PrivateServerlessAdmin) Execute(tx neo4j.Transaction) ([]types.Result, err
 }
 
 func (PubliclyExposedServerlessAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
-	return types.GraphPathResult{}, nil
+	var params = make(map[string]interface{})
+	params["InstanceId"] = resourceId
+	records, err := tx.Run(
+		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(lambda:AWSLambda{id: $InstanceId})
+		WITH lambda
+		OPTIONAL MATCH
+			adminRolePath=
+			(lambda)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_admin: True})
+		WITH lambda, collect(adminRolePath) as adminRolePaths
+		WITH adminRolePaths AS paths
+		RETURN paths`,
+		params)
+	if err != nil {
+		return types.GraphPathResult{}, err
+	}
+
+	// Parsed out graph from the query.
+	graph, err := processgraph.ProcessGraphPathResult(records, "paths")
+	if err != nil {
+		return types.GraphPathResult{}, err
+	}
+
+	// Check that all the paths start with the correct node.
+	pathCheckBool, pathsFailing := processgraph.GraphStartNodeCheck(graph, resourceId)
+	if !pathCheckBool {
+		return types.GraphPathResult{}, fmt.Errorf("Error %v Paths Failing %+v", err.Error(), pathsFailing)
+	}
+
+	graphPathResult := processgraph.CompressPaths(graph)
+	return graphPathResult, nil
 }

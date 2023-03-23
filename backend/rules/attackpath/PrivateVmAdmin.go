@@ -130,7 +130,18 @@ func (PrivateVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) 
 		return types.GraphPathResult{}, err
 	}
 
-	processgraph.ProcessGraphPathResult(records, "paths")
+	// Parsed out graph from the query.
+	graph, err := processgraph.ProcessGraphPathResult(records, "paths")
+	if err != nil {
+		return types.GraphPathResult{}, err
+	}
 
-	return types.GraphPathResult{}, nil
+	// Check that all the paths start with the correct node.
+	pathCheckBool, pathsFailing := processgraph.GraphStartNodeCheck(graph, resourceId)
+	if !pathCheckBool {
+		return types.GraphPathResult{}, fmt.Errorf("Error %v Paths Failing %+v", err.Error(), pathsFailing)
+	}
+
+	graphPathResult := processgraph.CompressPaths(graph)
+	return graphPathResult, nil
 }
