@@ -2,6 +2,7 @@ package attackpath
 
 import (
 	"fmt"
+	"github.com/Zeus-Labs/ZeusCloud/rules/processgraph"
 
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -95,5 +96,44 @@ func (ThirdPartyHigh) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 }
 
 func (ThirdPartyHigh) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
-	return types.GraphPathResult{}, nil
+	params := map[string]interface{}{
+		"ExternalAccountId": resourceId,
+	}
+	records, err := tx.Run(
+		`MATCH
+		externalPath=
+		(eAccount:AWSAccount{id: $ExternalAccountId})-[:RESOURCE]->(externalPrincipal:AWSPrincipal)
+		<-[r:TRUSTS_AWS_PRINCIPAL]-(role:AWSRole)<-[:RESOURCE]-(a:AWSAccount{inscope: true})
+		WHERE externalPrincipal.arn ENDS WITH 'root' AND
+		(NOT eAccount.inscope OR NOT EXISTS(eAccount.inscope)) AND
+		role.is_high
+		WITH a, role, collect(externalPath) as externalPaths
+		OPTIONAL MATCH
+			assumeRolePath=
+			(eAccount)-[:RESOURCE]->(externalPrincipal)<-[r]-(role)
+			-[:STS_ASSUME_ROLE_ALLOW*1..4]->(seedHighRole:AWSRole)
+			WHERE seedHighRole.is_seed_high
+		WITH a, role, externalPaths, collect(assumeRolePath) as assumeRolePaths
+		WITH externalPaths + assumeRolePaths as paths
+		RETURN paths`,
+		params)
+	if err != nil {
+		fmt.Errorf(err.Error())
+		return types.GraphPathResult{}, err
+	}
+
+	// Parsed out graph from the query.
+	graph, err := processgraph.ProcessGraphPathResult(records, "paths")
+	if err != nil {
+		return types.GraphPathResult{}, err
+	}
+
+	// Check that all the paths start with the correct node.
+	pathCheckBool, pathsFailing := processgraph.GraphStartNodeCheck(graph, resourceId)
+	if !pathCheckBool {
+		return types.GraphPathResult{}, fmt.Errorf("Error %v Paths Failing %+v", err.Error(), pathsFailing)
+	}
+
+	graphPathResult := processgraph.CompressPaths(graph)
+	return graphPathResult, nil
 }
