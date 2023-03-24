@@ -11,7 +11,7 @@ type Rule interface {
 	Severity() Severity                             // Severity level of the rule
 	RiskCategories() RiskCategoryList               // Risk categories the rule fits into
 	Execute(tx neo4j.Transaction) ([]Result, error) // Execution logic of rule
-	ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (GraphPathResult, error)
+	ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (neo4j.Result, error)
 }
 
 // GraphPathResult is a list of paths after compression.

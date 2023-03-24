@@ -2,8 +2,6 @@ package attackpath
 
 import (
 	"fmt"
-	"github.com/Zeus-Labs/ZeusCloud/rules/processgraph"
-
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -131,7 +129,7 @@ func (PubliclyExposedVmPrivEsc) Execute(tx neo4j.Transaction) ([]types.Result, e
 	return results, nil
 }
 
-func (PubliclyExposedVmPrivEsc) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+func (PubliclyExposedVmPrivEsc) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (neo4j.Result, error) {
 	params := map[string]interface{}{
 		"InstanceId": resourceId,
 	}
@@ -164,22 +162,8 @@ func (PubliclyExposedVmPrivEsc) ProduceRuleGraph(tx neo4j.Transaction, resourceI
 		RETURN paths`,
 		params)
 	if err != nil {
-		fmt.Errorf(err.Error())
-		return types.GraphPathResult{}, err
+		return nil, err
 	}
 
-	// Parsed out graph from the query.
-	graph, err := processgraph.ProcessGraphPathResult(records, "paths")
-	if err != nil {
-		return types.GraphPathResult{}, err
-	}
-
-	// Check that all the paths start with the correct node.
-	pathCheckBool, pathsFailing := processgraph.GraphStartNodeCheck(graph, resourceId)
-	if !pathCheckBool {
-		return types.GraphPathResult{}, fmt.Errorf("Error %v Paths Failing %+v", err.Error(), pathsFailing)
-	}
-
-	graphPathResult := processgraph.CompressPaths(graph)
-	return graphPathResult, nil
+	return records, nil
 }

@@ -85,6 +85,6 @@ func (LogFileValidationEnabled) Execute(tx neo4j.Transaction) ([]types.Result, e
 	return results, nil
 }
 
-func (LogFileValidationEnabled) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
-	return types.GraphPathResult{}, nil
+func (LogFileValidationEnabled) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (neo4j.Result, error) {
+	return nil, nil
 }

@@ -86,6 +86,6 @@ func (UnusedEIPAddresses) Execute(tx neo4j.Transaction) ([]types.Result, error) 
 	return results, nil
 }
 
-func (UnusedEIPAddresses) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
-	return types.GraphPathResult{}, nil
+func (UnusedEIPAddresses) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (neo4j.Result, error) {
+	return nil, nil
 }

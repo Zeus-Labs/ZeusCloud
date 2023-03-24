@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/Zeus-Labs/ZeusCloud/rules"
 	"github.com/Zeus-Labs/ZeusCloud/rules/processgraph"
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
@@ -40,12 +41,25 @@ func GetRuleGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Reque
 
 		results, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 
-			graphPathResult, err := attackPathRuleDisplay.ProduceRuleGraph(tx, resourceId)
+			records, err := attackPathRuleDisplay.ProduceRuleGraph(tx, resourceId)
 			if err != nil {
 				log.Printf("failed to retrieve rule graph results")
 				http.Error(w, "failed to retrieve rule graph results", 500)
-				return graphPathResult, err
+				return nil, err
 			}
+			graph, err := processgraph.ProcessGraphPathResult(records, "paths")
+			if err != nil {
+				return nil, err
+			}
+
+			// Check that all the paths start with the correct node.
+			pathCheckBool, pathsFailing := processgraph.GraphStartNodeCheck(graph)
+			if !pathCheckBool {
+				return nil, fmt.Errorf("Error %v Paths Failing %+v", err.Error(), pathsFailing)
+			}
+
+			graphPathResult := processgraph.CompressPaths(graph)
+
 			displayGraph, err := processgraph.ConvertToDisplayGraph(graphPathResult)
 			return displayGraph, err
 		})
