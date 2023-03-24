@@ -114,7 +114,7 @@ func (PubliclyExposedServerlessAdmin) Execute(tx neo4j.Transaction) ([]types.Res
 	return results, nil
 }
 
-func (PrivateServerlessAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
+func (PubliclyExposedServerlessAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (types.GraphPathResult, error) {
 	params := map[string]interface{}{
 		"InstanceId": resourceId,
 	}

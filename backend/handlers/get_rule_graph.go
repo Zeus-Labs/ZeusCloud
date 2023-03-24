@@ -22,6 +22,7 @@ func GetRuleGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Reque
 			if attackpathRule.UID() == ruleId {
 				attackPathFound = true
 				attackPathRuleDisplay = attackpathRule
+				break
 			}
 		}
 
@@ -45,7 +46,6 @@ func GetRuleGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Reque
 				http.Error(w, "failed to retrieve rule graph results", 500)
 				return graphPathResult, err
 			}
-			log.Printf("Produce Rule Graph Error %+v", err)
 			displayGraph, err := processgraph.ConvertToDisplayGraph(graphPathResult)
 			return displayGraph, err
 		})
