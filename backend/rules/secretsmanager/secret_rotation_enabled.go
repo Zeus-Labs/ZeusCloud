@@ -84,3 +84,7 @@ func (SecretRotationEnabled) Execute(tx neo4j.Transaction) ([]types.Result, erro
 	}
 	return results, nil
 }
+
+func (SecretRotationEnabled) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (neo4j.Result, error) {
+	return nil, nil
+}

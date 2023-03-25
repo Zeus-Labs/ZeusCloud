@@ -92,3 +92,7 @@ func (SecretRotatesWithin90Days) Execute(tx neo4j.Transaction) ([]types.Result, 
 	}
 	return results, nil
 }
+
+func (SecretRotatesWithin90Days) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (neo4j.Result, error) {
+	return nil, nil
+}

@@ -85,3 +85,7 @@ func (InstanceIAMAuthenticationEnabled) Execute(tx neo4j.Transaction) ([]types.R
 	}
 	return results, nil
 }
+
+func (InstanceIAMAuthenticationEnabled) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (neo4j.Result, error) {
+	return nil, nil
+}

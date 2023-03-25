@@ -11,6 +11,41 @@ type Rule interface {
 	Severity() Severity                             // Severity level of the rule
 	RiskCategories() RiskCategoryList               // Risk categories the rule fits into
 	Execute(tx neo4j.Transaction) ([]Result, error) // Execution logic of rule
+	ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (neo4j.Result, error)
+}
+
+// GraphPathResult is a list of paths after compression.
+type GraphPathResult struct {
+	CompressedPaths []CompressedPath
+}
+
+// CompressedPath is a path represented by a list of nodes.
+type CompressedPath struct {
+	Nodes []Node
+}
+
+type Graph struct {
+	PathList []Path
+}
+
+type Node struct {
+	Id     int64                  // Id of this node.
+	Labels []string               // Labels attached to this Node.
+	Props  map[string]interface{} // Properties of this Node.
+}
+
+// Relationship represents a relationship in the neo4j graph database
+type Relationship struct {
+	Id      int64                  // Identity of this Relationship.
+	StartId int64                  // Identity of the start node of this Relationship.
+	EndId   int64                  // Identity of the end node of this Relationship.
+	Type    string                 // Type of this Relationship.
+	Props   map[string]interface{} // Properties of this Relationship.
+}
+
+type Path struct {
+	Nodes         []Node // All the nodes in the path.
+	Relationships []Relationship
 }
 
 type Result struct {
@@ -51,4 +86,23 @@ func (rcl RiskCategoryList) AsStringArray() pq.StringArray {
 		categories = append(categories, string(c))
 	}
 	return pq.StringArray(categories)
+}
+
+type DisplayNode struct {
+	// Label will tell the type of the node
+	NodeLabel string `json:"node_label"`
+	// resourceId uniquely identifying the node
+	ResourceId int64 `json:"resource_id"`
+	// displayId to show in visualization
+	DisplayId string `json:"display_id"`
+}
+
+type DisplayPath struct {
+	DisplayNodes []DisplayNode `json:"display_nodes"`
+}
+
+type DisplayGraph struct {
+	CentralNode    DisplayNode   `json:"central_node"`
+	LeftSidePaths  []DisplayPath `json:"left_side_paths"`
+	RightSidePaths []DisplayPath `json:"right_side_paths"`
 }

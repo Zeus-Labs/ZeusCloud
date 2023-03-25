@@ -98,3 +98,7 @@ func (NACLChanges) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 	}
 	return results, nil
 }
+
+func (NACLChanges) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (neo4j.Result, error) {
+	return nil, nil
+}

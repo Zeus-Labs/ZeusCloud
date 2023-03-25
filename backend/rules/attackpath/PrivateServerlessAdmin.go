@@ -101,3 +101,21 @@ func (PrivateServerlessAdmin) Execute(tx neo4j.Transaction) ([]types.Result, err
 	}
 	return results, nil
 }
+
+func (PrivateServerlessAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (neo4j.Result, error) {
+	params := map[string]interface{}{
+		"InstanceId": resourceId,
+	}
+	records, err := tx.Run(
+		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(lambda:AWSLambda{id: $InstanceId})
+		OPTIONAL MATCH
+			adminRolePath=
+			(lambda)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_admin: True})
+		WITH lambda, collect(adminRolePath) as adminRolePaths
+		RETURN adminRolePaths AS paths`,
+		params)
+	if err != nil {
+		return nil, err
+	}
+	return records, nil
+}

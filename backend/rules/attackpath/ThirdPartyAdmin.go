@@ -2,7 +2,6 @@ package attackpath
 
 import (
 	"fmt"
-
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -92,4 +91,33 @@ func (ThirdPartyAdmin) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 		})
 	}
 	return results, nil
+}
+
+func (ThirdPartyAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (neo4j.Result, error) {
+	params := map[string]interface{}{
+		"ExternalAccountId": resourceId,
+	}
+	records, err := tx.Run(
+		`MATCH
+		externalPath=
+		(eAccount:AWSAccount{id: $ExternalAccountId})-[:RESOURCE]->(externalPrincipal:AWSPrincipal)
+		<-[r:TRUSTS_AWS_PRINCIPAL]-(role:AWSRole)<-[:RESOURCE]-(a:AWSAccount{inscope: true})
+		WHERE externalPrincipal.arn ENDS WITH 'root' AND
+		(NOT eAccount.inscope OR NOT EXISTS(eAccount.inscope)) AND
+		role.is_admin
+		WITH a, role, collect(externalPath) as externalPaths
+		OPTIONAL MATCH
+			assumeRolePath=
+			(eAccount)-[:RESOURCE]->(externalPrincipal)<-[r]-(role)
+			-[:STS_ASSUME_ROLE_ALLOW*1..4]->(seedAdminRole:AWSRole)
+			WHERE seedAdminRole.is_seed_admin
+		WITH a, role, externalPaths, collect(assumeRolePath) as assumeRolePaths
+		WITH externalPaths + assumeRolePaths as paths
+		RETURN paths`,
+		params)
+	if err != nil {
+		return records, err
+	}
+
+	return records, nil
 }
