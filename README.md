@@ -56,7 +56,6 @@ A cloud-hosted version is available on special request - email founders@zeusclou
 
 ## Features
 
-![ZeusCloud](https://user-images.githubusercontent.com/20483346/217993491-69bbb84b-ce5f-4432-9aac-8a362c01c1bd.gif)
 ![ZeusCloud](https://user-images.githubusercontent.com/20483346/228135412-5eefe13b-0037-474c-9b8b-407b37ab14eb.gif)
 
 * **Discover Attack Paths** - Discover toxic risk combinations an attacker can use to penetrate your environment.
