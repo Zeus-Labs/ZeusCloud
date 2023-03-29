@@ -35,20 +35,74 @@ func (BlockPublicAccessConfig) Execute(tx neo4j.Transaction) ([]types.Result, er
 	// where it is missing.
 	records, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(s:S3Bucket)
+		OPTIONAL MATCH (a)-[:RESOURCE]->(accountAccessBlock:S3AccountAccessBlock)
+		WITH a, s, 
+		CASE 
+			WHEN accountAccessBlock IS NOT NULL 
+			AND accountAccessBlock.ignore_public_acls THEN true
+			ELSE false
+		END AS ac_ignore_public_acls,
+		CASE 
+			WHEN accountAccessBlock IS NOT NULL 
+			AND accountAccessBlock.block_public_acls THEN true
+			ELSE false
+		END AS ac_block_public_acls,
+		CASE 
+			WHEN accountAccessBlock IS NOT NULL 
+			AND accountAccessBlock.restrict_public_buckets THEN true
+			ELSE false
+		END AS ac_restrict_public_buckets,
+		CASE 
+			WHEN accountAccessBlock IS NOT NULL 
+			AND accountAccessBlock.block_public_policy THEN true
+			ELSE false
+		END AS ac_block_public_policy
 		RETURN s.id as resource_id,
 		'S3Bucket' as resource_type,
 		a.id as account_id,
-		CASE 
-			WHEN s.ignore_public_acls AND s.block_public_acls AND s.restrict_public_buckets THEN 'passed'
+		CASE
+			WHEN (s.ignore_public_acls OR ac_ignore_public_acls) AND
+			(s.block_public_acls OR ac_block_public_acls) AND
+			(s.restrict_public_buckets OR ac_restrict_public_buckets) AND 
+			(s.block_public_policy OR ac_block_public_policy) THEN 'passed'
 			ELSE 'failed'
 		END as status,
+		CASE 
+			WHEN ac_ignore_public_acls
+			THEN 'All public ACLs in this account are ignored.'
+			ELSE 'Public ACLs in this account are not set to be ignored.'
+		END + ' ' +
+		CASE 
+			WHEN ac_block_public_acls
+			THEN 'Creation/modification of ACLs in this account that enable public access will be blocked.'
+			ELSE 'Creation/modification of ACLs in this account that enable public access will not be blocked.'
+		END + ' ' +
+		CASE 
+			WHEN ac_block_public_policy
+			THEN 'Rejects calls to PUT Bucket Policy in this account if the specified bucket
+			policy allows public access.'
+			ELSE 'Will not reject calls to PUT Bucket Policy in this account if the specified bucket policy allows
+			public access.'
+		END + ' ' +
+		CASE 
+			WHEN ac_restrict_public_buckets 
+			THEN 'All bucket policies in this account enabling public access are ignored.'
+			ELSE 'Bucket policies enabling public access in this account are not set to be ignored.'
+		END + ' ' +
 		CASE 
 			WHEN s.ignore_public_acls THEN 'All public ACLs on this bucket are ignored.'
 			ELSE 'Public ACLs on the bucket are not set to be ignored.'
 		END + ' ' +
 		CASE 
-			WHEN s.block_public_acls THEN 'Creation/modification of ACLs on the bucket that enable public access will be blocked.'
+			WHEN s.block_public_acls THEN 'Creation/modification of ACLs on the bucket that enable
+			public access will be blocked.'
 			ELSE 'Creation/modification of ACLs on the bucket that enable public access will not be blocked.'
+		END + ' ' +
+		CASE 
+			WHEN s.block_public_policy THEN 'Rejects calls to PUT Bucket Policy if the specified bucket policy allows
+			public acces.s'
+			ELSE 'Will not reject calls to PUT Bucket Policy if the specified bucket policy allows
+			public access.'
 		END + ' ' +
 		CASE 
 			WHEN s.restrict_public_buckets THEN 'All bucket policies enabling public access to this bucket are ignored.'
