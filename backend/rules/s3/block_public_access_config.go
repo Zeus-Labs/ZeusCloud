@@ -39,7 +39,8 @@ func (BlockPublicAccessConfig) Execute(tx neo4j.Transaction) ([]types.Result, er
 		'S3Bucket' as resource_type,
 		a.id as account_id,
 		CASE 
-			WHEN s.ignore_public_acls AND s.block_public_acls AND s.restrict_public_buckets THEN 'passed'
+			WHEN s.ignore_public_acls AND s.block_public_acls AND s.restrict_public_buckets AND
+			s.block_public_policy THEN 'passed'
 			ELSE 'failed'
 		END as status,
 		CASE 
@@ -49,6 +50,12 @@ func (BlockPublicAccessConfig) Execute(tx neo4j.Transaction) ([]types.Result, er
 		CASE 
 			WHEN s.block_public_acls THEN 'Creation/modification of ACLs on the bucket that enable public access will be blocked.'
 			ELSE 'Creation/modification of ACLs on the bucket that enable public access will not be blocked.'
+		END + ' ' +
+		CASE 
+			WHEN s.block_public_policy THEN 'Rejects calls to PUT Bucket Policy if the specified bucket policy allows
+			public access'
+			ELSE 'Will not reject calls to PUT Bucket Policy if the specified bucket policy allows
+			public access'
 		END + ' ' +
 		CASE 
 			WHEN s.restrict_public_buckets THEN 'All bucket policies enabling public access to this bucket are ignored.'
