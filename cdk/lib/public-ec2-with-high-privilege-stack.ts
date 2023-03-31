@@ -2,6 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import * as elbv2_targets from 'aws-cdk-lib/aws-elasticloadbalancingv2-targets';
 import * as autoscaling from 'aws-cdk-lib/aws-autoscaling';
 
 // Be EXTRA CAREFUL if you deploy this
@@ -29,7 +30,7 @@ export class PublicEc2WithHighPrivilegeStack extends cdk.Stack {
         vpcName: 'vpcForPublicEc2WithHighPrivilege',
     });
     
-    // Public EC2 with high privilege
+    // Public EC2 (direct + ALB) with high privilege
     const highRole = new iam.Role(
         this,
         'ec2-high-role',
@@ -59,7 +60,7 @@ export class PublicEc2WithHighPrivilegeStack extends cdk.Stack {
         ec2.Port.tcp(80),
         'Allows HTTP access from Internet'
     )
-    new ec2.Instance(this, 'directPublicEC2', {
+    const instance = new ec2.Instance(this, 'directPublicEC2', {
         vpc: vpc,
         role: highRole,
         securityGroup: securityGroup,
@@ -75,6 +76,17 @@ export class PublicEc2WithHighPrivilegeStack extends cdk.Stack {
             subnetType: ec2.SubnetType.PUBLIC
         }
     });
+    const alb0 = new elbv2.ApplicationLoadBalancer(this, 'publicALB0', {
+      vpc,
+      internetFacing: true,
+      securityGroup: securityGroup,
+    });
+    const listener0 = alb0.addListener('ec2Listener0', { port: 80 });
+    listener0.addTargets('instanceTarget', {
+        port: 80,
+        targets: [ new elbv2_targets.InstanceTarget(instance, 80) ],
+    });
+
 
     // Public EC2 without high
     new ec2.Instance(this, 'EC2NoHigh', {
@@ -113,12 +125,12 @@ export class PublicEc2WithHighPrivilegeStack extends cdk.Stack {
 
 
     // Public through ALB + no high
-    const alb = new elbv2.ApplicationLoadBalancer(this, 'publicALB', {
+    const alb1 = new elbv2.ApplicationLoadBalancer(this, 'publicALB1', {
         vpc,
         internetFacing: true,
         securityGroup: securityGroup,
     });
-    const listener = alb.addListener('ec2Listener', { port: 80 });
+    const listener1 = alb1.addListener('ec2Listener1', { port: 80 });
     const asg = new autoscaling.AutoScalingGroup(this, `asg`, {
         vpc: vpc,
         allowAllOutbound: false,
@@ -133,7 +145,7 @@ export class PublicEc2WithHighPrivilegeStack extends cdk.Stack {
         }),
         vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
     })
-    listener.addTargets('asgTarget', {
+    listener1.addTargets('asgTarget', {
         port: 80,
         targets: [ asg ],
     });
