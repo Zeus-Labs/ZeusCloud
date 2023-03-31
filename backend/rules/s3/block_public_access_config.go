@@ -30,9 +30,6 @@ func (BlockPublicAccessConfig) RiskCategories() types.RiskCategoryList {
 }
 
 func (BlockPublicAccessConfig) Execute(tx neo4j.Transaction) ([]types.Result, error) {
-	// TODO: Take into account the account-level public access blocks
-	// TODO: Add s.block_public_policy. Right now there's a typo in cartography
-	// where it is missing.
 	records, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(s:S3Bucket)
 		OPTIONAL MATCH (a)-[:RESOURCE]->(accountAccessBlock:S3AccountAccessBlock)
