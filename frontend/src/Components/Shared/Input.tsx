@@ -1,10 +1,13 @@
+import { ForwardedRef, forwardRef } from "react";
 
 export interface TextInputProps {
-    setSearchFilter: (value: string) => void; 
+    setSearchFilter: (value: string) => void;
+    searchFilter: string
+    title:string 
 }
 
-export const TextInput = ({ 
-        setSearchFilter}: TextInputProps) => {
+export const TextInput =({ 
+        setSearchFilter, title,searchFilter}: TextInputProps) => {
     
             
     const onChange = (e: React.FormEvent<HTMLInputElement>) => {
@@ -14,11 +17,12 @@ export const TextInput = ({
     return (
         <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            Rules
+            {title}
             </label>
             <div className="mt-1">
             <input
                 onChange={onChange}
+                value={searchFilter}
                 type="text"
                 name="email"
                 id="email"

@@ -515,7 +515,7 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
         <div className="flex flex-row grid grid-cols-6 gap-4">
                     <div key={"RuleInput"}>
                         <TextInput
-                            setSearchFilter={setSearchFilter}/>
+                            setSearchFilter={setSearchFilter} title={"Rules"} searchFilter={searchFilter}/>
                     </div>
                     <div key={"RiskFilter"}>
                         <SelectFilterDropdown

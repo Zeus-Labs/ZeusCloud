@@ -45,12 +45,11 @@ export const ResourceDisplay = ({text, type, maxTruncationLength, icon}: Resourc
         textWithToolTipNode = <TextWithTooltip key={text} text={text} maxTruncationLength={maxTruncationLength}/>
     } else {
         textWithToolTipNode = <TextWithTooltipIcon key={text} text={text} maxTruncationLength={maxTruncationLength}
-            icon={icon}/>
+            icon={icon} subText={displayType(type)}/>
     }
     return (
         <>
             {textWithToolTipNode}
-            <div className="text-gray-400">{displayType(type)}</div>
         </>
     )
 }
