@@ -97,12 +97,8 @@ type DisplayNode struct {
 	DisplayId string `json:"display_id"`
 }
 
-type DisplayPath struct {
-	DisplayNodes []DisplayNode `json:"display_nodes"`
-}
-
 type DisplayGraph struct {
-	CentralNode    DisplayNode   `json:"central_node"`
-	LeftSidePaths  []DisplayPath `json:"left_side_paths"`
-	RightSidePaths []DisplayPath `json:"right_side_paths"`
+	NodeInfo        map[int64]DisplayNode `json:"node_info"`
+	AdjacencyList   map[int64][]int64     `json:"adjacency_list"`
+	StartingNodeIds []int64               `json:"starting_node_ids"`
 }
