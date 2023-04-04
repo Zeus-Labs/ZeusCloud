@@ -10,6 +10,7 @@ import { InternetGateway } from "./Network/InternetGateway";
 import { SecurityGroup } from "./Network/SecurityGroup";
 import { VPC } from "./Network/VPC";
 import { KMSKey } from "./Security/KMSKeys";
+import { RDSInstance } from "./Storage/RDSInstance";
 import { S3Bucket } from "./Storage/S3Bucket";
 
 export enum assetCategoryMap {
@@ -40,7 +41,8 @@ export const assetToObjects = {
     internetGateways: new InternetGateway(),
     securityGroups: new SecurityGroup(),
     elasticLoadBalancersV2: new ELBV2(),
-    kmsKeys: new KMSKey()
+    kmsKeys: new KMSKey(),
+    rdsInstances: new RDSInstance()
 }
 
 export interface AssetCategoryInterface{
