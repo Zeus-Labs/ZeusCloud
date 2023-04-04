@@ -2,6 +2,7 @@ package processgraph
 
 import (
 	"fmt"
+
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -203,15 +204,19 @@ func ConvertToDisplayGraph(graphPathResult types.GraphPathResult) (types.Display
 		return types.DisplayGraph{}, nil
 	}
 
-	// Get the central display node.
-	centralDisplayNode, err := ConvertNodeToDisplayNode(graphPathResult.CompressedPaths[0].Nodes[0])
-	if err != nil {
-		return types.DisplayGraph{}, err
+	// Helper function
+	containsIdFunc := func(lst []int64, id int64) bool {
+		for _, elem := range lst {
+			if elem == id {
+				return true
+			}
+		}
+		return false
 	}
 
-	var leftSidePath []types.DisplayPath
-	var rightSidePath []types.DisplayPath
-
+	// Loop through paths to create graph representation
+	nodeInfo := make(map[int64]types.DisplayNode)
+	adjacencyList := make(map[int64][]int64)
 	for _, compressedPath := range graphPathResult.CompressedPaths {
 		var compressedDisplayNodes []types.DisplayNode
 		isLeftPath := false
@@ -224,22 +229,36 @@ func ConvertToDisplayGraph(graphPathResult types.GraphPathResult) (types.Display
 				return types.DisplayGraph{}, err
 			}
 			compressedDisplayNodes = append(compressedDisplayNodes, convertedNode)
-
-		}
-		displayPath := types.DisplayPath{
-			DisplayNodes: compressedDisplayNodes,
 		}
 
-		if isLeftPath {
-			leftSidePath = append(leftSidePath, displayPath)
-		} else {
-			rightSidePath = append(rightSidePath, displayPath)
+		for i, node := range compressedDisplayNodes {
+			// Add information of node at position i
+			nodeInfo[node.ResourceId] = node
+
+			// Deal with node in the last position
+			if i == len(compressedDisplayNodes)-1 {
+				break
+			}
+
+			// Add i to i + 1 edge to adjacency list
+			var sourceNodeId int64
+			var targetNodeId int64
+			if isLeftPath {
+				sourceNodeId = compressedDisplayNodes[i+1].ResourceId
+				targetNodeId = compressedDisplayNodes[i].ResourceId
+			} else {
+				sourceNodeId = compressedDisplayNodes[i].ResourceId
+				targetNodeId = compressedDisplayNodes[i+1].ResourceId
+			}
+			adjacentNodeIds := adjacencyList[sourceNodeId]
+			if !containsIdFunc(adjacentNodeIds, targetNodeId) {
+				adjacencyList[sourceNodeId] = append(adjacencyList[sourceNodeId], targetNodeId)
+			}
 		}
 	}
 
 	return types.DisplayGraph{
-		CentralNode:    centralDisplayNode,
-		LeftSidePaths:  leftSidePath,
-		RightSidePaths: rightSidePath,
+		NodeInfo:      nodeInfo,
+		AdjacencyList: adjacencyList,
 	}, nil
 }
