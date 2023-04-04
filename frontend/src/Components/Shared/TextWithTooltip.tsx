@@ -5,9 +5,13 @@ interface TextWithTooltipProps {
 
 interface TextWithTooltipIconProps extends TextWithTooltipProps{
     icon: React.ReactNode;
+    subText?: string
 };
 
 export const TextWithTooltip = ({text, maxTruncationLength}: TextWithTooltipProps) => {
+    if(text==="arn:aws:iam::315957380126:role/PublicLambdaWithPrivilegeEscala-lambdaRoleC844FDB1-B01XBJX5BT42"){
+        console.log(text.length,maxTruncationLength)
+    }
     if (text.length < maxTruncationLength) {
         return <div>{text}</div>
     }
@@ -24,11 +28,14 @@ export const TextWithTooltip = ({text, maxTruncationLength}: TextWithTooltipProp
 }
 
 
-export const TextWithTooltipIcon = ({text, maxTruncationLength, icon}: TextWithTooltipIconProps) => {
+export const TextWithTooltipIcon = ({text, maxTruncationLength, icon,subText}: TextWithTooltipIconProps) => {
     return (
         <div className="flex inline-flex items-center">
             {icon}
-            <TextWithTooltip text={text} maxTruncationLength={maxTruncationLength}/>
+            <div className="flex flex-col">
+                <TextWithTooltip text={text} maxTruncationLength={maxTruncationLength}/>
+                {subText && <div className="text-gray-400">{subText}</div>}
+            </div>
         </div>
     )
     // if (text.length < maxTruncationLength) {

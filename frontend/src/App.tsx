@@ -15,6 +15,7 @@ import Settings from './Pages/Settings';
 import { useEffect } from "react";
 
 import { getAccountDetails } from './Components/Settings/ConnectedAccounts';
+import AssetsInventory from "./Pages/AssetsInventory";
 
 const WithNavbar = () => {
   return (
@@ -60,6 +61,7 @@ const App = () => {
                 <Route path="/compliance" element={<Compliance />} />
                 <Route path="/compliance/report/:frameworkId" element={<ComplianceReport />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/asset-inventory" element={<AssetsInventory />} />
           </Route>
         </Routes>
       </BrowserRouter>
