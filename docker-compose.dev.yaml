@@ -59,11 +59,12 @@ services:
   cartography:
     build:
       context: ./cartography
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile.dev
     entrypoint: ["gunicorn", "--bind=0.0.0.0:6000", "cartography.wsgi:app"]
     environment:
       - CARTOGRAPHY_NEO4J_URI=${NEO4J_URI}
       - CARTOGRAPHY_VERBOSE=True
+      - CARTOGRAPHY_IAMSPY_DIRECTORY=/home/cartography/iamspy
     networks:
       - app_network
     user: cartography
@@ -75,6 +76,7 @@ services:
       - 6000:6000
     volumes:
       - ${AWS_DIRECTORY}:/home/cartography/.aws
+      - ./.compose/cartography/iamspy:/home/cartography/iamspy
 
   frontend:
     build:
