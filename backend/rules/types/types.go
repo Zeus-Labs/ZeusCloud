@@ -98,7 +98,6 @@ type DisplayNode struct {
 }
 
 type DisplayGraph struct {
-	NodeInfo        map[int64]DisplayNode `json:"node_info"`
-	AdjacencyList   map[int64][]int64     `json:"adjacency_list"`
-	StartingNodeIds []int64               `json:"starting_node_ids"`
+	NodeInfo      map[int64]DisplayNode `json:"node_info"`
+	AdjacencyList map[int64][]int64     `json:"adjacency_list"`
 }

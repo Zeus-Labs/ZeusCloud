@@ -204,12 +204,7 @@ func ConvertToDisplayGraph(graphPathResult types.GraphPathResult) (types.Display
 		return types.DisplayGraph{}, nil
 	}
 
-	// Get the central display node.
-	centralDisplayNode, err := ConvertNodeToDisplayNode(graphPathResult.CompressedPaths[0].Nodes[0])
-	if err != nil {
-		return types.DisplayGraph{}, err
-	}
-
+	// Helper function
 	containsIdFunc := func(lst []int64, id int64) bool {
 		for _, elem := range lst {
 			if elem == id {
@@ -218,9 +213,10 @@ func ConvertToDisplayGraph(graphPathResult types.GraphPathResult) (types.Display
 		}
 		return false
 	}
+
+	// Loop through paths to create graph representation
 	nodeInfo := make(map[int64]types.DisplayNode)
 	adjacencyList := make(map[int64][]int64)
-	startingNodeIds := make([]int64, 0)
 	for _, compressedPath := range graphPathResult.CompressedPaths {
 		var compressedDisplayNodes []types.DisplayNode
 		isLeftPath := false
@@ -241,9 +237,6 @@ func ConvertToDisplayGraph(graphPathResult types.GraphPathResult) (types.Display
 
 			// Deal with node in the last position
 			if i == len(compressedDisplayNodes)-1 {
-				if isLeftPath && !containsIdFunc(startingNodeIds, node.ResourceId) {
-					startingNodeIds = append(startingNodeIds, node.ResourceId)
-				}
 				break
 			}
 
@@ -265,8 +258,7 @@ func ConvertToDisplayGraph(graphPathResult types.GraphPathResult) (types.Display
 	}
 
 	return types.DisplayGraph{
-		NodeInfo:        nodeInfo,
-		AdjacencyList:   adjacencyList,
-		StartingNodeIds: startingNodeIds,
+		NodeInfo:      nodeInfo,
+		AdjacencyList: adjacencyList,
 	}, nil
 }
