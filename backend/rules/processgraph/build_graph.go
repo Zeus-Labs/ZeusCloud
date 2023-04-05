@@ -187,7 +187,7 @@ func ConvertNodeToDisplayNode(node types.Node) (types.DisplayNode, error) {
 		displayNodeLabel = "AWS Lambda"
 		displayId = nodeProps["id"].(string)
 	} else {
-		return types.DisplayNode{}, fmt.Errorf("Node %+v is unsupported", node)
+		return types.DisplayNode{}, fmt.Errorf("node %+v is unsupported", node)
 	}
 
 	return types.DisplayNode{
@@ -197,9 +197,37 @@ func ConvertNodeToDisplayNode(node types.Node) (types.DisplayNode, error) {
 	}, nil
 }
 
+func dfs(
+	adjacencyList map[int64][]int64,
+	nodeId int64,
+	newAdjacencyList map[int64][]int64,
+	status map[int64]int,
+) {
+	status[nodeId] = 1
+	for _, adjacentNodeId := range adjacencyList[nodeId] {
+		if status[adjacentNodeId] == 0 || status[adjacentNodeId] == 2 {
+			newAdjacencyList[nodeId] = append(newAdjacencyList[nodeId], adjacentNodeId)
+		}
+		if status[adjacentNodeId] == 0 {
+			dfs(adjacencyList, adjacentNodeId, newAdjacencyList, status)
+		}
+	}
+	status[nodeId] = 2
+}
+
+func removeCycles(adjacencyList map[int64][]int64, startingNodeIds []int64) map[int64][]int64 {
+	status := make(map[int64]int)
+	newAdjacencyList := make(map[int64][]int64)
+	for _, nodeId := range startingNodeIds {
+		if status[nodeId] == 0 {
+			dfs(adjacencyList, nodeId, newAdjacencyList, status)
+		}
+	}
+	return newAdjacencyList
+}
+
 // Assumes you have a valid input of a graph path result.
-func ConvertToDisplayGraph(graphPathResult types.GraphPathResult) (types.DisplayGraph,
-	error) {
+func ConvertToDisplayGraph(graphPathResult types.GraphPathResult) (types.DisplayGraph, error) {
 	if len(graphPathResult.CompressedPaths) == 0 {
 		return types.DisplayGraph{}, nil
 	}
@@ -217,6 +245,7 @@ func ConvertToDisplayGraph(graphPathResult types.GraphPathResult) (types.Display
 	// Loop through paths to create graph representation
 	nodeInfo := make(map[int64]types.DisplayNode)
 	adjacencyList := make(map[int64][]int64)
+	startingNodeIds := make([]int64, 0)
 	for _, compressedPath := range graphPathResult.CompressedPaths {
 		var compressedDisplayNodes []types.DisplayNode
 		isLeftPath := false
@@ -229,6 +258,18 @@ func ConvertToDisplayGraph(graphPathResult types.GraphPathResult) (types.Display
 				return types.DisplayGraph{}, err
 			}
 			compressedDisplayNodes = append(compressedDisplayNodes, convertedNode)
+		}
+
+		if len(compressedDisplayNodes) > 0 {
+			var candidateId int64
+			if isLeftPath {
+				candidateId = compressedDisplayNodes[len(compressedDisplayNodes)-1].ResourceId
+			} else {
+				candidateId = compressedDisplayNodes[0].ResourceId
+			}
+			if !containsIdFunc(startingNodeIds, candidateId) {
+				startingNodeIds = append(startingNodeIds, candidateId)
+			}
 		}
 
 		for i, node := range compressedDisplayNodes {
@@ -255,6 +296,10 @@ func ConvertToDisplayGraph(graphPathResult types.GraphPathResult) (types.Display
 				adjacencyList[sourceNodeId] = append(adjacencyList[sourceNodeId], targetNodeId)
 			}
 		}
+	}
+
+	if len(graphPathResult.CompressedPaths) > 0 && len(graphPathResult.CompressedPaths[0].Nodes) > 0 {
+		adjacencyList = removeCycles(adjacencyList, startingNodeIds)
 	}
 
 	return types.DisplayGraph{
