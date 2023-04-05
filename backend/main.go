@@ -90,6 +90,7 @@ func main() {
 	mux.HandleFunc("/api/getAccountScanInfo", handlers.GetAccountScanInfo())
 	mux.HandleFunc("/api/getAssetInventory", handlers.GetAssetInventory(driver))
 	mux.HandleFunc("/api/getRuleGraph", handlers.GetRuleGraph(driver))
+	mux.HandleFunc("/api/getAccessExplorerGraph", handlers.GetAccessExplorerGraph(driver))
 
 	log.Printf("serving on 8080...")
 	dLog := log.Default()
