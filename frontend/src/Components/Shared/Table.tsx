@@ -26,6 +26,7 @@ export interface TableRow {
     nestedComponent?: React.ReactNode;
     rowId: string;
     openRowState?: boolean;
+    handleRowClick?:()=>void;
     setOpenRowStateFn?: () => void;
 }
 
@@ -40,7 +41,7 @@ export interface TableProps   {
 
 // TableRowComp returns the table row component.
 const TableRowComp = ({rowId, columns, nestedComponent, 
-    openRowState, setOpenRowStateFn}: TableRow) => {
+    openRowState,handleRowClick ,setOpenRowStateFn}: TableRow) => {
 
     const onClickCallback = useCallback(() => {
         if (nestedComponent && setOpenRowStateFn) {
@@ -49,8 +50,8 @@ const TableRowComp = ({rowId, columns, nestedComponent,
     }, [nestedComponent, openRowState]);
     
     const currRow = (
-        <tr key={rowId}
-            className={nestedComponent ? 'cursor-pointer hover:bg-gray-100' : ''}>
+        <tr key={rowId} onClick={handleRowClick} 
+            className={(nestedComponent || handleRowClick) ? 'cursor-pointer hover:bg-gray-100' : ''}>
                 
                     {columns.map((column, idx) => {
                         if (idx != 0 || !nestedComponent) {
@@ -160,7 +161,8 @@ const TableComp = ({
                                 columns={tableRow.columns} 
                                 nestedComponent={tableRow.nestedComponent}
                                 openRowState={tableRow.openRowState}
-                                setOpenRowStateFn={tableRow.setOpenRowStateFn} />
+                                setOpenRowStateFn={tableRow.setOpenRowStateFn} 
+                                handleRowClick={tableRow.handleRowClick} />
                         )
                     })}
             </tbody>

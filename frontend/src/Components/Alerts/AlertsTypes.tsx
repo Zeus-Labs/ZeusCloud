@@ -50,9 +50,22 @@ export interface SlidoverStateData {
     rule_data: rule_info;
     alert_instance: alert_instance;
     open: boolean;
+    display_graph: DisplayGraph
 }
 
 export interface AlertSlideoverProps {
     slideoverData: SlidoverStateData;
     setOpen: () => void
+}
+
+export interface DisplayNode{
+    node_label: string;
+    resource_id: number;
+    display_id:string;
+}
+
+
+export interface DisplayGraph{
+    node_info: {[id:string]:DisplayNode};
+    adjacency_list: {[id:string]:Array<Number>};
 }
