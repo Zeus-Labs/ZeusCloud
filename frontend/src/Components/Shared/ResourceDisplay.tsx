@@ -1,6 +1,6 @@
 import { TextWithTooltip, TextWithTooltipIcon } from "./TextWithTooltip";
 
-function displayType(type: string): string {
+export function displayType(type: string): string {
     const displayMap: { [id: string]: string; } = {};
     displayMap["AccountPasswordPolicy"] = "Account Password Policy"
     displayMap["AWSAccount"] = "AWS Account"

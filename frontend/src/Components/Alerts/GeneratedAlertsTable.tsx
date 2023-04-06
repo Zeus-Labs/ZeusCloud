@@ -2,10 +2,12 @@ import { TableComp } from "../Shared/Table";
 import { alert_instance } from './AlertsTypes';
 import { GeneratedAlertsTableProps } from "./AlertsTypes";
 import { ToggleMuteButton } from "./ToggleMuteButton";
-import { ResourceDisplay } from "../Shared/ResourceDisplay";
+import { ResourceDisplay, displayType } from "../Shared/ResourceDisplay";
 import { InformationCircleIcon } from "@heroicons/react/20/solid";
 import moment from 'moment';
 import { TextWithTooltip } from "../Shared/TextWithTooltip";
+import { InlineIcon } from "../AssetsInventory/assetUtils";
+import { alertsResourceImageMap } from "./ResourceMappings";
 
 export const GeneratedAlertsTable = ({filterValueState, 
                                     ruleAlertsGroup: {alert_instances, rule_data},
@@ -111,12 +113,9 @@ export const GeneratedAlertsTable = ({filterValueState,
             {
               return {
                   columns: [
-                    {
-                         
+                    {    
                         content: <ResourceDisplay
-                            icon={<InformationCircleIcon
-                                onClick={() => setSlideoverFn(alert_instance)} 
-                                className="flex-none h-5 w-5 mr-1"/>}
+                            icon={<InlineIcon icon={alertsResourceImageMap[displayType(alert_instance.resource_type)].image} />}
                             key={alert_instance.resource_id} 
                             text={alert_instance.resource_id}
                             type={alert_instance.resource_type}
@@ -165,6 +164,7 @@ export const GeneratedAlertsTable = ({filterValueState,
                     },
                   ],
                   rowId: alert_instance.resource_id,
+                  handleRowClick:() => setSlideoverFn(alert_instance),
               }
           }
     );

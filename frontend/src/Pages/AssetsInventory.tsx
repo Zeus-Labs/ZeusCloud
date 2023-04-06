@@ -92,7 +92,7 @@ async function getAssetInfoData(setAssetInfo:any, assetCategory: string) {
 
 const AssetsInventory = () => {
     const [assetCategory, setAssetCategory] = useState<string>("iamUsers");
-    const [assetInfo,setAssetInfo] = useState({});
+    const [assetInfo,setAssetInfo] = useState<any>({});
     const [subMenu,setSubMenu] = useState<string>(assetCategoryMap[assetCategory as keyof typeof assetCategoryMap]);
 
     const [allTableRows,setAllRows] = useState<TableRow[]>([]);
@@ -114,7 +114,7 @@ const AssetsInventory = () => {
     },[assetCategory])
 
     useEffect(()=>{
-        setAllRows(assetInstance?.getAllRows(assetInfo,setAssetCategory,setSearchFilter));
+        assetInfo.data ? setAllRows(assetInstance?.getAllRows(assetInfo,setAssetCategory,setSearchFilter)) : setAllRows([]);
     },[assetInfo])
 
     useEffect(()=>{

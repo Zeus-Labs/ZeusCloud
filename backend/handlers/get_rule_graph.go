@@ -14,8 +14,8 @@ import (
 
 func GetRuleGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		resourceId := r.URL.Query().Get("resource")
-		ruleId := r.URL.Query().Get("ruleid")
+		resourceId := r.URL.Query().Get("resource_id")
+		ruleId := r.URL.Query().Get("rule_id")
 
 		var attackPathRuleDisplay types.Rule
 		var attackPathFound bool
