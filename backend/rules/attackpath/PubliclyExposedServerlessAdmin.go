@@ -2,6 +2,7 @@ package attackpath
 
 import (
 	"fmt"
+
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -128,8 +129,8 @@ func (PubliclyExposedServerlessAdmin) ProduceRuleGraph(tx neo4j.Transaction, res
 			(lambda)<-[:EXPOSE]-(elbv2)
 		WHERE listener.port >= perm.fromport AND listener.port <= perm.toport
 		OPTIONAL MATCH
-			indirectPath=(lambda)<-[:EXPOSE]-(elbv2)-[:MEMBER_OF_EC2_SECURITY_GROUP]->(elbv2_group)
-			<-[:MEMBER_OF_EC2_SECURITY_GROUP]-(perm)<-[:MEMBER_OF_IP_RULE]-(iprange)
+			indirectPath=(iprange)-[:MEMBER_OF_IP_RULE]->(perm)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
+			(elbv2_group)<-[:MEMBER_OF_EC2_SECURITY_GROUP]-(elbv2)-[:EXPOSE]->(lambda)
 		WITH a, lambda, collect(indirectPath) as indirectPaths
 		OPTIONAL MATCH
 			adminRolePath=

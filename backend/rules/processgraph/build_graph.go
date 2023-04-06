@@ -83,46 +83,6 @@ func ProcessGraphPathResult(records neo4j.Result, pathKeyStr string) (types.Grap
 	return processedGraphPathResult, nil
 }
 
-// GraphStartNodeCheck does a quick check that the labels of the first nodes
-// of every path match. Returns the paths that may not match the first nodes
-// labels.
-func GraphStartNodeCheck(graphPaths types.Graph) (
-	bool, []types.Path) {
-	pathResult := graphPaths.PathList
-
-	var incorrectPaths []types.Path
-	if len(pathResult) <= 1 {
-		return true, incorrectPaths
-	}
-
-	// Extract the first nodes labels.
-	var startNodesLabels []string
-	for idx := 0; idx < len(pathResult); idx++ {
-		nodesList := pathResult[idx].Nodes
-		if len(nodesList) > 0 {
-			startNodesLabels = nodesList[0].Labels
-			break
-		}
-	}
-
-	for _, path := range pathResult {
-		if len(path.Nodes) > 0 {
-			node := path.Nodes[0]
-			for _, startNodesLabel := range startNodesLabels {
-				if !CheckNodeLabel(node, startNodesLabel) {
-					incorrectPaths = append(incorrectPaths, path)
-					break
-				}
-			}
-		}
-	}
-
-	if len(incorrectPaths) > 0 {
-		return false, incorrectPaths
-	}
-	return true, incorrectPaths
-}
-
 func CompressPaths(graphPaths types.Graph) types.GraphPathResult {
 
 	var CompressedPaths []types.CompressedPath
