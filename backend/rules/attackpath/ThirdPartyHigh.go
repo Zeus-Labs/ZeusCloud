@@ -32,6 +32,7 @@ func (ThirdPartyHigh) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 		(role:AWSRole)-[r:TRUSTS_AWS_PRINCIPAL]->
 		(externalPrincipal:AWSPrincipal)<-[:RESOURCE]-(eAccount:AWSAccount)
 		WHERE externalPrincipal.arn ENDS WITH 'root' AND
+		NOT (role.arn ENDS WITH 'OrganizationAccountAccessRole') AND
 		(NOT eAccount.inscope OR NOT EXISTS(eAccount.inscope))
 		WITH a, eAccount, collect(CASE WHEN role.is_high THEN role.arn ELSE NULL END) as highRoleArnList
 		RETURN eAccount.id as resource_id,
@@ -103,6 +104,7 @@ func (ThirdPartyHigh) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) 
 		(eAccount:AWSAccount{id: $ExternalAccountId})-[:RESOURCE]->(externalPrincipal:AWSPrincipal)
 		<-[r:TRUSTS_AWS_PRINCIPAL]-(role:AWSRole)<-[:RESOURCE]-(a:AWSAccount{inscope: true})
 		WHERE externalPrincipal.arn ENDS WITH 'root' AND
+		NOT (role.arn ENDS WITH 'OrganizationAccountAccessRole') AND
 		(NOT eAccount.inscope OR NOT EXISTS(eAccount.inscope)) AND
 		role.is_high
 		WITH a, role, collect(externalPath) as externalPaths
