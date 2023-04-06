@@ -25,6 +25,7 @@ import { HighPrivilegeStack } from '../lib/high-privilege-stack';
 import { PublicEc2WithAdminStack } from '../lib/public-ec2-with-admin-stack';
 import { PublicEc2WithHighPrivilegeStack } from '../lib/public-ec2-with-high-privilege-stack';
 import { PublicEc2WithPrivilegeEscalationStack } from '../lib/public-ec2-with-privilege-escalation-stack';
+import { IamPrincipalsVersion1Stack } from '../lib/iam-principals-version-1-stack';
 
 const app = new cdk.App();
 new IamStack(app, 'IamStack', {
@@ -100,6 +101,9 @@ new PublicEc2WithHighPrivilegeStack(app, 'PublicEc2WithHighPrivilegeStack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 })
 new PublicEc2WithPrivilegeEscalationStack(app, 'PublicEc2WithPrivilegeEscalationStack', {
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+})
+new IamPrincipalsVersion1Stack(app, 'IamPrincipalsVersion1Stack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 })
 
