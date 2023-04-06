@@ -5,7 +5,7 @@ import { Risks  } from '../Shared/Risks';
 import { SelectFilterDropdown } from '../Shared/Select';
 import { alertNumberSortTypeFn, severitySortTypeFn, severityFilterFn, 
     searchFilterFn, risksFilterFn, zeroAlertFilter} from "../Shared/TableOpsUtils";
-import { RuleAlertsResponse, rulealerts_group, AlertId, SlidoverStateData, alert_instance } from './AlertsTypes';
+import { RuleAlertsResponse, rulealerts_group, AlertId, SlidoverStateData, alert_instance, DisplayNode} from './AlertsTypes';
 import { GeneratedAlertsTable } from './GeneratedAlertsTable';
 import { AlertSlideover } from './AlertsSlideover';
 import { TextInput } from "../Shared/Input";
@@ -39,6 +39,39 @@ async function getActiveAlertsInfoData(ruleCategory: string): Promise<RuleAlerts
 
         return {
             rule_alerts_group: [],
+            error: message,
+        };
+    }
+}
+
+async function getRuleGraph(resource_id:string,rule_id:string){
+    try {
+        // @ts-ignore
+        const ruleGraphEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/getRuleGraph";
+        const response = await axios.get(ruleGraphEndpoint,
+            { params: { resource_id: resource_id, rule_id: rule_id } }
+        );
+        
+        return {
+            rule_graph: response.data,
+            error: ''
+        };
+    }
+    catch (error) {
+       
+        let message = '';
+        if (axios.isAxiosError(error)) {
+            if (error.response && error.response.data) {
+                message = "Error: " + error.response.data
+            } else {
+                message = "Oops! Encountered an error..."
+            }
+        } else {
+            message = "Error in retrieving alerts information."
+        }
+
+        return {
+            rule_graph: {},
             error: message,
         };
     }
@@ -80,6 +113,10 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
             first_seen: new Date(),
             last_seen: new Date(),
             muted: false,
+        },
+        display_graph:{
+            node_info: {},
+            adjacency_list: {}
         },
         open: false,
     };
@@ -165,14 +202,18 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
         let alertTableList = activeAlertsInfo.rule_alerts_group.map(activeAlertInfo => {
             
             // Callback function to update open and set the alert instance variable.
-            const setSlideoverAlertInstanceFn = function(currAlertInstance: alert_instance) {
+            const setSlideoverAlertInstanceFn = async function(currAlertInstance: alert_instance) {
+                const ruleGraph = await getRuleGraph(currAlertInstance.resource_id,activeAlertInfo.rule_data.uid)
                 setSlideover(prevSlideover => {
                     return {
                         open: !prevSlideover.open,
                         rule_data: activeAlertInfo.rule_data,
                         alert_instance: currAlertInstance,
+                        display_graph: ruleGraph.rule_graph
                     }
                 });
+                console.log(ruleGraph);
+                
             }
             
             return (

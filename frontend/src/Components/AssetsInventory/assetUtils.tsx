@@ -54,7 +54,7 @@ type InlineIconProps = {
 }
 
 export const InlineIcon = ({ icon }: InlineIconProps) => {
-    return <img className="pr-1 mr-1 w-6" src={icon} />
+    return <img className="pr-1 mr-1 w-6" style={{filter:"invert(1)"}} src={icon} />
 }
 
 export function ToolTipForList({ content, text }: { content: React.ReactNode, text: string }) {
