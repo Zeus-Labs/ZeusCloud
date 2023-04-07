@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -75,12 +74,6 @@ func GetAccessExplorerGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *
 			graph, err := processgraph.ProcessGraphPathResult(records, "paths")
 			if err != nil {
 				return nil, err
-			}
-
-			// Check that all the paths start with the correct node.
-			pathCheckBool, pathsFailing := processgraph.GraphStartNodeCheck(graph)
-			if !pathCheckBool {
-				return nil, fmt.Errorf("error %v paths failing %+v", err.Error(), pathsFailing)
 			}
 
 			graphPathResult := processgraph.CompressPaths(graph)

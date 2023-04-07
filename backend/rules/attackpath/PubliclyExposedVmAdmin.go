@@ -2,6 +2,7 @@ package attackpath
 
 import (
 	"fmt"
+
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -137,9 +138,9 @@ func (PubliclyExposedVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId 
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(e:EC2Instance{id: $InstanceId})
 		OPTIONAL MATCH
 			directPublicPath=
-			(e)-[:MEMBER_OF_EC2_SECURITY_GROUP|NETWORK_INTERFACE*..2]->(instance_group:EC2SecurityGroup)
-			<-[:MEMBER_OF_EC2_SECURITY_GROUP]-(:IpPermissionInbound)
-			<-[:MEMBER_OF_IP_RULE]-(:IpRange{id: '0.0.0.0/0'})
+			(:IpRange{id: '0.0.0.0/0'})-[:MEMBER_OF_IP_RULE]->
+			(:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
+			(instance_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP|NETWORK_INTERFACE*..2]-(e)
 		WITH a, e, collect(directPublicPath) as directPublicPaths
 		OPTIONAL MATCH
 			(:IpRange{range:'0.0.0.0/0'})-[:MEMBER_OF_IP_RULE]->
@@ -150,8 +151,8 @@ func (PubliclyExposedVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId 
 			(e)<-[:EXPOSE]-(elbv2)
 		WHERE listener.port >= perm.fromport AND listener.port <= perm.toport
 		OPTIONAL MATCH
-			indirectPath=(e)<-[:EXPOSE]-(elbv2)-[:MEMBER_OF_EC2_SECURITY_GROUP]->(elbv2_group)
-			<-[:MEMBER_OF_EC2_SECURITY_GROUP]-(perm)<-[:MEMBER_OF_IP_RULE]-(iprange)
+			indirectPath=(iprange)-[:MEMBER_OF_IP_RULE]->(perm)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
+			(elbv2_group)<-[:MEMBER_OF_EC2_SECURITY_GROUP]-(elbv2)-[:EXPOSE]->(e)
 		WITH a, e, directPublicPaths, collect(indirectPath) as indirectPaths
 		OPTIONAL MATCH
 			adminRolePath=

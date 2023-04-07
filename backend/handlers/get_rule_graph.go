@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/Zeus-Labs/ZeusCloud/rules"
 	"github.com/Zeus-Labs/ZeusCloud/rules/processgraph"
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
-	"log"
-	"net/http"
 
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -50,12 +50,6 @@ func GetRuleGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Reque
 			graph, err := processgraph.ProcessGraphPathResult(records, "paths")
 			if err != nil {
 				return nil, err
-			}
-
-			// Check that all the paths start with the correct node.
-			pathCheckBool, pathsFailing := processgraph.GraphStartNodeCheck(graph)
-			if !pathCheckBool {
-				return nil, fmt.Errorf("Error %v Paths Failing %+v", err.Error(), pathsFailing)
 			}
 
 			graphPathResult := processgraph.CompressPaths(graph)

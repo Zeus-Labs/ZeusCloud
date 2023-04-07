@@ -2,6 +2,7 @@ package attackpath
 
 import (
 	"fmt"
+
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -113,17 +114,10 @@ func (PrivateVmAdmin) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) 
 	records, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(e:EC2Instance{id: $InstanceId})
 		OPTIONAL MATCH
-			directPath=
-			(e)-[:MEMBER_OF_EC2_SECURITY_GROUP|NETWORK_INTERFACE*..2]->(instance_group:EC2SecurityGroup)
-			<-[:MEMBER_OF_EC2_SECURITY_GROUP]-(:IpPermissionInbound)
-			<-[:MEMBER_OF_IP_RULE]-(:IpRange)
-		WITH e, collect(directPath) as directPaths
-		OPTIONAL MATCH
 			adminRolePath=
 			(e)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_admin: True})
-		WITH e, directPaths, collect(adminRolePath) as adminRolePaths
-		WITH directPaths + adminRolePaths AS paths
-		RETURN paths`,
+		WITH e, collect(adminRolePath) as adminRolePaths
+		RETURN adminRolePaths AS paths`,
 		params)
 	if err != nil {
 		return nil, err
