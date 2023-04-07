@@ -71,8 +71,8 @@ export default function RuleGraph({ruleGraph}:RuleGraphProps){
         if(!data.nodes.some(n=>n.id===node.resource_id.toString())){
           data.nodes.push({
             id: node.resource_id.toString(),
-            label: node.node_label,
-            display_id: labelDisplay(node.display_id),
+            label: labelDisplay(node.node_label),
+            display_id: node.display_id,
             style:{
                   fill:categoryToColor[labelCategory(node.node_label)],
                   stroke:categoryToColor[labelCategory(node.node_label)],
@@ -191,7 +191,7 @@ export default function RuleGraph({ruleGraph}:RuleGraphProps){
     //     }
     //   }
     // })
-    
+
     graph.data(data);
     graph.render();
     // addTreeGraphChild(left_side_paths,graph);

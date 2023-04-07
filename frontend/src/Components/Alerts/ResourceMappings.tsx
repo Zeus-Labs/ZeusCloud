@@ -60,7 +60,7 @@ const labelInfoMap: { [label: string]: { [dataType :string] : string } } = {
         "category": "Compute",
     },
     "EC2SecurityGroup": {
-        "display": "EC2 Security Group",
+        "display": "Security Group",
         "image": "/images/security-group.svg",
         "category": "Network",
     },
