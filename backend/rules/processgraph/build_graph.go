@@ -114,37 +114,36 @@ func CheckNodeLabel(node types.Node, checkLabel string) bool {
 	return false
 }
 
-// ConvertNodeToDisplayNode converts node from neo4 node to what we
+// ConvertNodeToDisplayNode converts node from neo4j node to what we
 // return to the frontend.
 func ConvertNodeToDisplayNode(node types.Node) (types.DisplayNode, error) {
-	displayNodeLabel := "No Label"
-	displayId := "No Display Id"
+	var displayNodeLabel string
+	var displayId string
 	nodeProps := node.Props
-
 	if CheckNodeLabel(node, "Instance") || CheckNodeLabel(node, "EC2Instance") {
-		displayNodeLabel = "EC2 Instance"
+		displayNodeLabel = "EC2Instance"
 		displayId = nodeProps["instanceid"].(string)
 	} else if CheckNodeLabel(node, "LoadBalancerV2") {
-		displayNodeLabel = "Load Balancer"
+		displayNodeLabel = "LoadBalancerV2"
 		displayId = nodeProps["id"].(string)
 	} else if CheckNodeLabel(node, "EC2SecurityGroup") {
-		displayNodeLabel = "Security Group"
+		displayNodeLabel = "EC2SecurityGroup"
 		displayId = nodeProps["id"].(string)
 	} else if CheckNodeLabel(node, "IpRange") {
-		displayNodeLabel = "Ip Range"
+		displayNodeLabel = "IpRange"
 		displayId = nodeProps["id"].(string)
 	} else if CheckNodeLabel(node, "AWSRole") && CheckNodeLabel(node, "AWSPrincipal") {
-		displayNodeLabel = "AWS Role"
+		displayNodeLabel = "AWSRole"
 		displayId = nodeProps["arn"].(string)
 	} else if CheckNodeLabel(node, "AWSPrincipal") {
 		// Could be a root account.
-		displayNodeLabel = "AWS Principal"
+		displayNodeLabel = "AWSPrincipal"
 		displayId = nodeProps["arn"].(string)
 	} else if CheckNodeLabel(node, "AWSAccount") {
-		displayNodeLabel = "AWS Account"
+		displayNodeLabel = "AWSAccount"
 		displayId = nodeProps["id"].(string)
 	} else if CheckNodeLabel(node, "AWSLambda") {
-		displayNodeLabel = "AWS Lambda"
+		displayNodeLabel = "AWSLambda"
 		displayId = nodeProps["id"].(string)
 	} else {
 		return types.DisplayNode{}, fmt.Errorf("node %+v is unsupported", node)
@@ -208,11 +207,7 @@ func ConvertToDisplayGraph(graphPathResult types.GraphPathResult) (types.Display
 	startingNodeIds := make([]int64, 0)
 	for _, compressedPath := range graphPathResult.CompressedPaths {
 		var compressedDisplayNodes []types.DisplayNode
-		isLeftPath := false
 		for _, node := range compressedPath.Nodes {
-			if CheckNodeLabel(node, "IpRange") {
-				isLeftPath = true
-			}
 			convertedNode, err := ConvertNodeToDisplayNode(node)
 			if err != nil {
 				return types.DisplayGraph{}, err
@@ -221,12 +216,7 @@ func ConvertToDisplayGraph(graphPathResult types.GraphPathResult) (types.Display
 		}
 
 		if len(compressedDisplayNodes) > 0 {
-			var candidateId int64
-			if isLeftPath {
-				candidateId = compressedDisplayNodes[len(compressedDisplayNodes)-1].ResourceId
-			} else {
-				candidateId = compressedDisplayNodes[0].ResourceId
-			}
+			var candidateId = compressedDisplayNodes[0].ResourceId
 			if !containsIdFunc(startingNodeIds, candidateId) {
 				startingNodeIds = append(startingNodeIds, candidateId)
 			}
@@ -242,15 +232,8 @@ func ConvertToDisplayGraph(graphPathResult types.GraphPathResult) (types.Display
 			}
 
 			// Add i to i + 1 edge to adjacency list
-			var sourceNodeId int64
-			var targetNodeId int64
-			if isLeftPath {
-				sourceNodeId = compressedDisplayNodes[i+1].ResourceId
-				targetNodeId = compressedDisplayNodes[i].ResourceId
-			} else {
-				sourceNodeId = compressedDisplayNodes[i].ResourceId
-				targetNodeId = compressedDisplayNodes[i+1].ResourceId
-			}
+			sourceNodeId := compressedDisplayNodes[i].ResourceId
+			targetNodeId := compressedDisplayNodes[i+1].ResourceId
 			adjacentNodeIds := adjacencyList[sourceNodeId]
 			if !containsIdFunc(adjacentNodeIds, targetNodeId) {
 				adjacencyList[sourceNodeId] = append(adjacencyList[sourceNodeId], targetNodeId)

@@ -4,7 +4,7 @@ import { log } from "console";
 import path, { relative } from "path";
 import { useEffect, useRef } from "react";
 import ReactDOM from 'react-dom';
-import { categoryToColor, graphResourceMap } from "./ResourceMappings";
+import { categoryToColor, labelCategory, labelImage } from "./ResourceMappings";
 
 type RuleGraphProps={
     ruleGraph: DisplayGraph
@@ -74,13 +74,13 @@ export default function RuleGraph({ruleGraph}:RuleGraphProps){
             label: node.node_label,
             display_id: node.display_id,
             style:{
-                  fill:categoryToColor[graphResourceMap[node.node_label].category],
-                  stroke:categoryToColor[graphResourceMap[node.node_label].category],
+                  fill:categoryToColor[labelCategory(node.node_label)],
+                  stroke:categoryToColor[labelCategory(node.node_label)],
                   lineWidth: 3,
                 },
             icon:{
               show:true,
-              img: graphResourceMap[node.node_label].image,
+              img: labelImage(node.node_label),
               width: 15,
               height: 15,
             }
@@ -96,7 +96,7 @@ export default function RuleGraph({ruleGraph}:RuleGraphProps){
               target: dest.toString(),
               style:{
                 lineWidth: 1,
-                stroke: `l(0) 0:${categoryToColor[graphResourceMap[node_info[src].node_label].category]} 1:${categoryToColor[graphResourceMap[node_info[dest.toString()].node_label].category]}`
+                stroke: `l(0) 0:${categoryToColor[labelCategory(node_info[src].node_label)]} 1:${categoryToColor[labelCategory(node_info[dest.toString()].node_label)]}`
               }
             })
           }

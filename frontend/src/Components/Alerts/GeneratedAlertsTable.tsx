@@ -2,12 +2,11 @@ import { TableComp } from "../Shared/Table";
 import { alert_instance } from './AlertsTypes';
 import { GeneratedAlertsTableProps } from "./AlertsTypes";
 import { ToggleMuteButton } from "./ToggleMuteButton";
-import { ResourceDisplay, displayType } from "../Shared/ResourceDisplay";
-import { InformationCircleIcon } from "@heroicons/react/20/solid";
+import { ResourceDisplay } from "../Shared/ResourceDisplay";
 import moment from 'moment';
 import { TextWithTooltip } from "../Shared/TextWithTooltip";
 import { InlineIcon } from "../AssetsInventory/assetUtils";
-import { alertsResourceImageMap } from "./ResourceMappings";
+import { labelImage } from "./ResourceMappings";
 
 export const GeneratedAlertsTable = ({filterValueState, 
                                     ruleAlertsGroup: {alert_instances, rule_data},
@@ -111,11 +110,12 @@ export const GeneratedAlertsTable = ({filterValueState,
         }).
         map((alert_instance, _) =>
             {
+              console.log(alert_instance.resource_type)
               return {
                   columns: [
                     {    
                         content: <ResourceDisplay
-                            icon={<InlineIcon icon={alertsResourceImageMap[displayType(alert_instance.resource_type)].image} />}
+                            icon={<InlineIcon icon={labelImage(alert_instance.resource_type)} />}
                             key={alert_instance.resource_id} 
                             text={alert_instance.resource_id}
                             type={alert_instance.resource_type}
