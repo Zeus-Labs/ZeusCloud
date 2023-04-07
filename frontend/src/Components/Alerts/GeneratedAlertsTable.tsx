@@ -110,7 +110,6 @@ export const GeneratedAlertsTable = ({filterValueState,
         }).
         map((alert_instance, _) =>
             {
-              console.log(alert_instance.resource_type)
               return {
                   columns: [
                     {    

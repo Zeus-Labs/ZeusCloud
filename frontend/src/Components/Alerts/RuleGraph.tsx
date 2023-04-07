@@ -4,7 +4,7 @@ import { log } from "console";
 import path, { relative } from "path";
 import { useEffect, useRef } from "react";
 import ReactDOM from 'react-dom';
-import { categoryToColor, labelCategory, labelImage } from "./ResourceMappings";
+import { categoryToColor, labelCategory, labelDisplay, labelImage } from "./ResourceMappings";
 
 type RuleGraphProps={
     ruleGraph: DisplayGraph
@@ -72,7 +72,7 @@ export default function RuleGraph({ruleGraph}:RuleGraphProps){
           data.nodes.push({
             id: node.resource_id.toString(),
             label: node.node_label,
-            display_id: node.display_id,
+            display_id: labelDisplay(node.display_id),
             style:{
                   fill:categoryToColor[labelCategory(node.node_label)],
                   stroke:categoryToColor[labelCategory(node.node_label)],
@@ -191,7 +191,7 @@ export default function RuleGraph({ruleGraph}:RuleGraphProps){
     //     }
     //   }
     // })
-
+    
     graph.data(data);
     graph.render();
     // addTreeGraphChild(left_side_paths,graph);
