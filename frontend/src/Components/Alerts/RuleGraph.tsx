@@ -89,7 +89,8 @@ export default function RuleGraph({ruleGraph}:RuleGraphProps){
       })
   
       Object.keys(adjacency_list)?.forEach(src=>{
-        adjacency_list[src].forEach(dest=>{
+        adjacency_list[src].forEach(edge=>{
+          const dest = edge.target_resource_id
           if(!data.edges.some(edge=>edge.source===src && edge.target===dest.toString())){
             data.edges.push({
               source:src,
