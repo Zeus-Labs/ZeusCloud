@@ -211,9 +211,7 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
                         alert_instance: currAlertInstance,
                         display_graph: ruleGraph.rule_graph
                     }
-                });
-                console.log(ruleGraph);
-                
+                });                
             }
             
             return (

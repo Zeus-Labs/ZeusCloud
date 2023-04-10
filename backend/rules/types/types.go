@@ -19,9 +19,15 @@ type GraphPathResult struct {
 	CompressedPaths []CompressedPath
 }
 
+type EdgeInfo struct {
+	Id   int64
+	Type string
+}
+
 // CompressedPath is a path represented by a list of nodes.
 type CompressedPath struct {
 	Nodes []Node
+	Edges []*EdgeInfo // entry i corresponds to edge between node i and i+1
 }
 
 type Graph struct {
@@ -97,7 +103,18 @@ type DisplayNode struct {
 	DisplayId string `json:"display_id"`
 }
 
+type DisplayEdge struct {
+	// SourceNodeId references the targe node id of the edge
+	SourceResourceId int64 `json:"source_resource_id"`
+	// TargetResourceId references the targe node id of the edge
+	TargetResourceId int64 `json:"target_resource_id"`
+	// Id is an identifier for the edge (may be nil)
+	Id *int64 `json:"id"`
+	// MakeDotted is a boolean for displaying dotted edge (may be nil)
+	MakeDotted *bool `json:"make_dotted"`
+}
+
 type DisplayGraph struct {
-	NodeInfo      map[int64]DisplayNode `json:"node_info"`
-	AdjacencyList map[int64][]int64     `json:"adjacency_list"`
+	NodeInfo      map[int64]DisplayNode   `json:"node_info"`
+	AdjacencyList map[int64][]DisplayEdge `json:"adjacency_list"`
 }

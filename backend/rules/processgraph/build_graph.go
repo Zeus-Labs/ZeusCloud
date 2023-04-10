@@ -94,9 +94,32 @@ func CompressPaths(graphPaths types.Graph) types.GraphPathResult {
 				nodesList = append(nodesList, node)
 			}
 		}
+		// Attempt to match the edges. This is a best effort match where we
+		// try to find an edge connecting node i and i+1 together.
+		var edgesList []*types.EdgeInfo
+		for i := range nodesList {
+			if i == len(nodesList)-1 {
+				break
+			}
+			idA := nodesList[i].Id
+			idB := nodesList[i+1].Id
+			var ei *types.EdgeInfo
+			for _, relationship := range path.Relationships {
+				if (relationship.StartId == idA && relationship.EndId == idB) ||
+					(relationship.StartId == idB && relationship.EndId == idA) {
+					ei = &types.EdgeInfo{
+						Id:   relationship.Id,
+						Type: relationship.Type,
+					}
+					break
+				}
+			}
+			edgesList = append(edgesList, ei)
+		}
 
 		CompressedPaths = append(CompressedPaths, types.CompressedPath{
 			Nodes: nodesList,
+			Edges: edgesList,
 		})
 	}
 
@@ -157,26 +180,29 @@ func ConvertNodeToDisplayNode(node types.Node) (types.DisplayNode, error) {
 }
 
 func dfs(
-	adjacencyList map[int64][]int64,
+	adjacencyList map[int64][]types.DisplayEdge,
 	nodeId int64,
-	newAdjacencyList map[int64][]int64,
+	newAdjacencyList map[int64][]types.DisplayEdge,
 	status map[int64]int,
 ) {
 	status[nodeId] = 1
-	for _, adjacentNodeId := range adjacencyList[nodeId] {
-		if status[adjacentNodeId] == 0 || status[adjacentNodeId] == 2 {
-			newAdjacencyList[nodeId] = append(newAdjacencyList[nodeId], adjacentNodeId)
+	for _, adjacentEdge := range adjacencyList[nodeId] {
+		if status[adjacentEdge.TargetResourceId] == 0 || status[adjacentEdge.TargetResourceId] == 2 {
+			newAdjacencyList[nodeId] = append(newAdjacencyList[nodeId], adjacentEdge)
 		}
-		if status[adjacentNodeId] == 0 {
-			dfs(adjacencyList, adjacentNodeId, newAdjacencyList, status)
+		if status[adjacentEdge.TargetResourceId] == 0 {
+			dfs(adjacencyList, adjacentEdge.TargetResourceId, newAdjacencyList, status)
 		}
 	}
 	status[nodeId] = 2
 }
 
-func removeCycles(adjacencyList map[int64][]int64, startingNodeIds []int64) map[int64][]int64 {
+func removeCycles(adjacencyList map[int64][]types.DisplayEdge, startingNodeIds []int64) map[int64][]types.DisplayEdge {
+	if adjacencyList == nil {
+		return nil
+	}
 	status := make(map[int64]int)
-	newAdjacencyList := make(map[int64][]int64)
+	newAdjacencyList := make(map[int64][]types.DisplayEdge)
 	for _, nodeId := range startingNodeIds {
 		if status[nodeId] == 0 {
 			dfs(adjacencyList, nodeId, newAdjacencyList, status)
@@ -185,65 +211,88 @@ func removeCycles(adjacencyList map[int64][]int64, startingNodeIds []int64) map[
 	return newAdjacencyList
 }
 
+// Helper function to check if node id is contained in nodeIdLst
+func nodeIdLstContainsId(nodeIdLst []int64, id int64) bool {
+	for _, nodeId := range nodeIdLst {
+		if nodeId == id {
+			return true
+		}
+	}
+	return false
+}
+
+// Helper function to check if node id is contained in edgesLst
+func edgesLstContainsNodeId(edgesLst []types.DisplayEdge, id int64) bool {
+	for _, edge := range edgesLst {
+		if edge.TargetResourceId == id {
+			return true
+		}
+	}
+	return false
+}
+
 // Assumes you have a valid input of a graph path result.
 func ConvertToDisplayGraph(graphPathResult types.GraphPathResult) (types.DisplayGraph, error) {
 	if len(graphPathResult.CompressedPaths) == 0 {
 		return types.DisplayGraph{}, nil
 	}
 
-	// Helper function
-	containsIdFunc := func(lst []int64, id int64) bool {
-		for _, elem := range lst {
-			if elem == id {
-				return true
-			}
-		}
-		return false
-	}
-
 	// Loop through paths to create graph representation
 	nodeInfo := make(map[int64]types.DisplayNode)
-	adjacencyList := make(map[int64][]int64)
+	adjacencyList := make(map[int64][]types.DisplayEdge)
 	startingNodeIds := make([]int64, 0)
 	for _, compressedPath := range graphPathResult.CompressedPaths {
-		var compressedDisplayNodes []types.DisplayNode
+		// Create displayNodes list
+		var displayNodes []types.DisplayNode
 		for _, node := range compressedPath.Nodes {
 			convertedNode, err := ConvertNodeToDisplayNode(node)
 			if err != nil {
 				return types.DisplayGraph{}, err
 			}
-			compressedDisplayNodes = append(compressedDisplayNodes, convertedNode)
+			displayNodes = append(displayNodes, convertedNode)
 		}
 
-		if len(compressedDisplayNodes) > 0 {
-			var candidateId = compressedDisplayNodes[0].ResourceId
-			if !containsIdFunc(startingNodeIds, candidateId) {
+		// Prepare startingNodeIds
+		if len(displayNodes) > 0 {
+			var candidateId = displayNodes[0].ResourceId
+			if !nodeIdLstContainsId(startingNodeIds, candidateId) {
 				startingNodeIds = append(startingNodeIds, candidateId)
 			}
 		}
 
-		for i, node := range compressedDisplayNodes {
-			// Add information of node at position i
-			nodeInfo[node.ResourceId] = node
-
-			// Deal with node in the last position
-			if i == len(compressedDisplayNodes)-1 {
-				break
+		// Create displayEdges list
+		var displayEdges []types.DisplayEdge
+		for i, edge := range compressedPath.Edges {
+			var id *int64
+			var makeDotted *bool
+			if edge != nil {
+				id = &edge.Id
+				makeDottedBool := edge.Type == "PRIVILEGE_ESCALATION"
+				makeDotted = &makeDottedBool
 			}
+			displayEdges = append(displayEdges, types.DisplayEdge{
+				SourceResourceId: displayNodes[i].ResourceId,
+				TargetResourceId: displayNodes[i+1].ResourceId,
+				Id:               id,
+				MakeDotted:       makeDotted,
+			})
+		}
 
-			// Add i to i + 1 edge to adjacency list
-			sourceNodeId := compressedDisplayNodes[i].ResourceId
-			targetNodeId := compressedDisplayNodes[i+1].ResourceId
-			adjacentNodeIds := adjacencyList[sourceNodeId]
-			if !containsIdFunc(adjacentNodeIds, targetNodeId) {
-				adjacencyList[sourceNodeId] = append(adjacencyList[sourceNodeId], targetNodeId)
+		// Prepare nodeInfo
+		for _, node := range displayNodes {
+			nodeInfo[node.ResourceId] = node
+		}
+
+		// Prepare adjacencyList
+		for _, edge := range displayEdges {
+			adjacentEdges := adjacencyList[edge.SourceResourceId]
+			if !edgesLstContainsNodeId(adjacentEdges, edge.TargetResourceId) {
+				adjacencyList[edge.SourceResourceId] = append(adjacencyList[edge.SourceResourceId], edge)
 			}
 		}
 	}
 
-	if len(graphPathResult.CompressedPaths) > 0 && len(graphPathResult.CompressedPaths[0].Nodes) > 0 {
-		adjacencyList = removeCycles(adjacencyList, startingNodeIds)
-	}
+	adjacencyList = removeCycles(adjacencyList, startingNodeIds)
 
 	return types.DisplayGraph{
 		NodeInfo:      nodeInfo,

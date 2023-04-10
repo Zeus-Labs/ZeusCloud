@@ -64,8 +64,15 @@ export interface DisplayNode{
     display_id:string;
 }
 
+export interface DisplayEdge{
+    source_resource_id: number;
+    target_resource_id: number;
+    id: number | null;
+    make_dotted: boolean | null;
+}
+
 
 export interface DisplayGraph{
     node_info: {[id:string]:DisplayNode};
-    adjacency_list: {[id:string]:Array<Number>};
+    adjacency_list: {[id:string]:Array<DisplayEdge>};
 }
