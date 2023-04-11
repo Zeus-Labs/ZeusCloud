@@ -79,7 +79,6 @@ func ProcessGraphPathResult(records neo4j.Result, pathKeyStr string) (types.Grap
 			processedGraphPathResult.PathList = append(processedGraphPathResult.PathList, processedPath...)
 		}
 	}
-
 	return processedGraphPathResult, nil
 }
 
@@ -122,7 +121,6 @@ func CompressPaths(graphPaths types.Graph) types.GraphPathResult {
 			Edges: edgesList,
 		})
 	}
-
 	return types.GraphPathResult{
 		CompressedPaths: CompressedPaths,
 	}
@@ -167,6 +165,9 @@ func ConvertNodeToDisplayNode(node types.Node) (types.DisplayNode, error) {
 		displayId = nodeProps["id"].(string)
 	} else if CheckNodeLabel(node, "AWSLambda") {
 		displayNodeLabel = "AWSLambda"
+		displayId = nodeProps["id"].(string)
+	} else if CheckNodeLabel(node, "AWSEffectiveAdmin") {
+		displayNodeLabel = "AWSEffectiveAdmin"
 		displayId = nodeProps["id"].(string)
 	} else {
 		return types.DisplayNode{}, fmt.Errorf("node %+v is unsupported", node)
@@ -247,6 +248,7 @@ func ConvertToDisplayGraph(graphPathResult types.GraphPathResult) (types.Display
 		for _, node := range compressedPath.Nodes {
 			convertedNode, err := ConvertNodeToDisplayNode(node)
 			if err != nil {
+				fmt.Errorf("Failure to convert display node %v", err)
 				return types.DisplayGraph{}, err
 			}
 			displayNodes = append(displayNodes, convertedNode)
