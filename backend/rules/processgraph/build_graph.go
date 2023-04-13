@@ -2,6 +2,7 @@ package processgraph
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -32,11 +33,12 @@ func ProcessGraphPathResult(records neo4j.Result, pathKeyStr string) (types.Grap
 
 	for records.Next() {
 		record := records.Record()
+		log.Printf("record=%+v/n", record)
 		paths, ok := record.Get(pathKeyStr)
 		if !ok {
 			return types.Graph{}, fmt.Errorf("Failed to get record.")
 		}
-
+		log.Printf("paths=%+v/n", paths)
 		pathsList, ok := paths.([]interface{})
 		if !ok {
 			return types.Graph{}, fmt.Errorf("Failed to cast to list of interfaces of paths")

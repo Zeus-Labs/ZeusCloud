@@ -44,7 +44,6 @@ async function getExploreAssetInfo(setExploreAssetInfo: any) {
         });
     }
     catch (error) {
-
         let message = '';
         if (axios.isAxiosError(error)) {
             if (error.response && error.response.data) {
@@ -55,7 +54,6 @@ async function getExploreAssetInfo(setExploreAssetInfo: any) {
         } else {
             message = "Error in retrieving rules information."
         }
-
         setExploreAssetInfo({
             data: [],
             error: message
@@ -76,7 +74,6 @@ async function getAssetRelationGraph(setGraph: any, resource_type: string, query
         })
     }
     catch (error) {
-
         let message = '';
         if (axios.isAxiosError(error)) {
             if (error.response && error.response.data) {
@@ -87,7 +84,6 @@ async function getAssetRelationGraph(setGraph: any, resource_type: string, query
         } else {
             message = "Error in retrieving rules information."
         }
-
         setGraph({
             data: [],
             error: message
@@ -174,7 +170,6 @@ async function getNodeInfoData(setAssetInfo: any, assetCategory: string, id: str
         });
     }
     catch (error) {
-
         let message = '';
         if (axios.isAxiosError(error)) {
             if (error.response && error.response.data) {
@@ -185,7 +180,6 @@ async function getNodeInfoData(setAssetInfo: any, assetCategory: string, id: str
         } else {
             message = "Error in retrieving rules information."
         }
-
         setAssetInfo({
             data: [],
             error: message

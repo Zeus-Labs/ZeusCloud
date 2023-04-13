@@ -179,6 +179,7 @@ func GetAccessExplorerGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *
 				http.Error(w, "failed to retrieve access explorer graph results", 500)
 				return nil, err
 			}
+			log.Printf("records=%+v/n", records)
 			graph, err := processgraph.ProcessGraphPathResult(records, "paths")
 			if err != nil {
 				return nil, err
