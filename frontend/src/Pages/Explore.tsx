@@ -67,8 +67,6 @@ async function getAssetRelationGraph(setGraph:any,resource_type:string,query_typ
     try {
         // @ts-ignore
         const assetRelationGraphEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/getAccessExplorerGraph";
-        console.log(`resource_id=${resource_id}, resourceType=${resource_type}, queryType=${query_type}, actionType=${action_type}`);
-
         const response = await axios.get(assetRelationGraphEndpoint,
             { params: { resource_type: resource_type, query_type: query_type,resource_id:resource_id,action_type:action_type } });
 
@@ -195,9 +193,9 @@ export default function Explore() {
         getExploreAssetInfo(setExploreAssetsInfo);
     },[])
 
-    useEffect(()=>{
-        console.log("graph=",graph);
-    },[graph])
+    // useEffect(()=>{
+    //     console.log("graph=",graph);
+    // },[graph])
 
     useEffect(()=>{
         asset.category!=="" && setAssetInstance(assetToObjects[asset.category]);
@@ -250,7 +248,6 @@ export default function Explore() {
             
             for(let assetObj of exploreAssetsInfo.data){            
                 if(assetObj.id === node?.display_id){
-                 console.log(assetObj);
                     getNodeInfoData(setNodeInfo,assetObj.category,node?.display_id);
                     break;
                 }
