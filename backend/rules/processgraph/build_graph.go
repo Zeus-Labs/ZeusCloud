@@ -27,7 +27,6 @@ func CompressNodeBool(node types.Node) bool {
 // ProcessGraphPathResult gets a raw neo4j result record and copies the data into
 // types.GraphPathResult.
 func ProcessGraphPathResult(records neo4j.Result, pathKeyStr string) (types.Graph, error) {
-
 	// Holds the list of paths that are processed.
 	var processedGraphPathResult types.Graph
 
@@ -169,6 +168,12 @@ func ConvertNodeToDisplayNode(node types.Node) (types.DisplayNode, error) {
 	} else if CheckNodeLabel(node, "AWSEffectiveAdmin") {
 		displayNodeLabel = "AWSEffectiveAdmin"
 		displayId = nodeProps["id"].(string)
+	} else if CheckNodeLabel(node, "GenericAwsAccount") {
+		displayNodeLabel = "GenericAwsAccount"
+		displayId = "Generic AWS Account"
+	} else if CheckNodeLabel(node, "S3Bucket") {
+		displayNodeLabel = "S3Bucket"
+		displayId = nodeProps["name"].(string)
 	} else {
 		return types.DisplayNode{}, fmt.Errorf("node %+v is unsupported", node)
 	}
