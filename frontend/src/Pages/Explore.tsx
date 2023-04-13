@@ -70,7 +70,7 @@ async function getAssetRelationGraph(setGraph:any,resource_type:string,query_typ
         console.log(`resource_id=${resource_id}, resourceType=${resource_type}, queryType=${query_type}, actionType=${action_type}`);
 
         const response = await axios.get(assetRelationGraphEndpoint,
-            { params: { resource_type: resource_type, query_type: query_type,resource_id:resource_id,actionType:action_type } });
+            { params: { resource_type: resource_type, query_type: query_type,resource_id:resource_id,action_type:action_type } });
 
         setGraph({
             data: response.data,

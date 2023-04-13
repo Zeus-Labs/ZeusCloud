@@ -97,6 +97,7 @@ func getS3EffectiveActionPrincipals(tx neo4j.Transaction, req AccessExplorerRequ
 		"BucketName": req.resourceId,
 		"ActionStr":  req.actionStr,
 	}
+	log.Printf("Bucket Name = %v, action str = %v \n", params["BucketName"], params["ActionStr"])
 	// TODO: acl.uri for public access.
 	records, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(s:S3Bucket{name: $BucketName})
