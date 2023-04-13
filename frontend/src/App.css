@@ -8,4 +8,21 @@
     box-shadow: rgb(174, 174, 174) 0px 0px 10px;
   }
 
-  
+  .g6-tooltip{
+    word-break: break-all;
+    max-width: 50%;
+  }
+
+  .autoCompleteDiv{
+    box-shadow: rgb(174, 174, 174) 0px 0px 10px;
+    margin-bottom: 4px;
+    overflow-y: scroll;
+    position: absolute;
+    max-height: 400px;
+    background: white;
+    top: 100%;
+  }
+
+  .searchCustomDisplay > div{
+    width:max-content
+  }

@@ -9,9 +9,6 @@ interface TextWithTooltipIconProps extends TextWithTooltipProps{
 };
 
 export const TextWithTooltip = ({text, maxTruncationLength}: TextWithTooltipProps) => {
-    if(text==="arn:aws:iam::315957380126:role/PublicLambdaWithPrivilegeEscala-lambdaRoleC844FDB1-B01XBJX5BT42"){
-        console.log(text.length,maxTruncationLength)
-    }
     if (text.length < maxTruncationLength) {
         return <div>{text}</div>
     }

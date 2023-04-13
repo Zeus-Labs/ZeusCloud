@@ -1,60 +1,53 @@
 import axios from "axios";
-import { log } from "console";
 import { useEffect, useRef, useState } from "react";
-import { TypeOfExpression } from "typescript";
 import assetCategoryMap, { assetToObjects } from "../Components/AssetsInventory/AssetCategoryMap";
 import { searchFilterFunction } from "../Components/AssetsInventory/assetUtils";
 import { Banner } from "../Components/Shared/Banner";
 import { TextInput } from "../Components/Shared/Input";
-import SideBarNav from "../Components/Shared/SideBarNav";
+import SideBarNav from "../Components/Shared/SideBarNav/SideBarNav";
 import { TableComp, TableRow } from "../Components/Shared/Table";
+import { navIndicesToItemName} from "../Components/Shared/SideBarNav/sideBarUtils";
 
 const navigation = [
     {
         name: 'IAM',
-        current: false,
         children: [
-            { name: assetCategoryMap.iamGroups, href: '#' },
-            { name: assetCategoryMap.iamPolicies, href: '#' },
-            { name: assetCategoryMap.iamRoles, href: '#' },
-            { name: assetCategoryMap.iamUsers, href: '#' },
+            { name: assetCategoryMap.iamGroups},
+            { name: assetCategoryMap.iamPolicies},
+            { name: assetCategoryMap.iamRoles},
+            { name: assetCategoryMap.iamUsers},
         ],
     },
     {
         name: 'Compute',
-        current: false,
         children: [
-            { name: assetCategoryMap.ec2Instances, href: '#' },
-            { name: assetCategoryMap.lambdaFunctions, href: '#' },
+            { name: assetCategoryMap.ec2Instances},
+            { name: assetCategoryMap.lambdaFunctions},
         ],
     },
     {
         name: 'Storage',
-        current: false,
         children: [
-            { name: assetCategoryMap.s3Buckets, href: '#' },
-            { name: assetCategoryMap.rdsInstances, href: '#' },
+            { name: assetCategoryMap.s3Buckets},
+            { name: assetCategoryMap.rdsInstances},
         ],
     },
     {
         name: 'Network',
-        current: false,
         children: [
-            { name: assetCategoryMap.vpcs, href: '#' },
-            { name: assetCategoryMap.internetGateways, href: '#' },
-            { name: assetCategoryMap.securityGroups, href: '#' },
-            { name: assetCategoryMap.elasticLoadBalancersV2, href: '#' }
+            { name: assetCategoryMap.vpcs},
+            { name: assetCategoryMap.internetGateways},
+            { name: assetCategoryMap.securityGroups},
+            { name: assetCategoryMap.elasticLoadBalancersV2}
         ],
     },
     {
         name: 'Security',
-        current: false,
         children: [
-            { name: assetCategoryMap.kmsKeys, href: '#' },
+            { name: assetCategoryMap.kmsKeys},
         ],
     },
 ]
-
 async function getAssetInfoData(setAssetInfo:any, assetCategory: string) {    
     try {
         // @ts-ignore
@@ -92,6 +85,7 @@ async function getAssetInfoData(setAssetInfo:any, assetCategory: string) {
 
 const AssetsInventory = () => {
     const [assetCategory, setAssetCategory] = useState<string>("iamUsers");
+    const [navIndices,setNavIndices]=useState({menuIdx: 0,subMenuIdx:3});
     const [assetInfo,setAssetInfo] = useState<any>({});
     const [subMenu,setSubMenu] = useState<string>(assetCategoryMap[assetCategory as keyof typeof assetCategoryMap]);
 
@@ -107,9 +101,18 @@ const AssetsInventory = () => {
 
     const searchRef = useRef<HTMLInputElement>(null); 
 
+    const handleSearchChange = (e: React.FormEvent<HTMLInputElement>) => {
+        setSearchFilter(e.currentTarget.value);
+    }
+
+    useEffect(()=>{
+        const itemName = navIndicesToItemName(navigation,navIndices);
+        setAssetCategory(Object.keys(assetCategoryMap).filter((k)=>assetCategoryMap[k as keyof typeof assetCategoryMap]===itemName)[0]);
+    },[navIndices])
+
     useEffect(()=>{
         assetCategory!="" && getAssetInfoData(setAssetInfo,assetCategory);
-        assetCategory!="" && setAssetInstance(assetToObjects[assetCategory as keyof typeof assetToObjects]);
+        assetCategory!="" && setAssetInstance(assetToObjects[assetCategory]);
         setSubMenu(assetCategoryMap[assetCategory as keyof typeof assetCategoryMap]);
     },[assetCategory])
 
@@ -135,16 +138,16 @@ const AssetsInventory = () => {
         <div className="min-h-full">
             <Banner bannerHeader='Asset Inventory' bannerDescription='Browse assets discovered in your cloud environments.' />
             <div className="px-4 sm:px-6 lg:px-8 py-2 sm:py-3 lg:py-4">
-                <div className="flex flex-row mx-auto w-11/12">
-                    <div className="flex min-w-[250px] h-screen sticky top-0 ">
-                        <SideBarNav navigation={navigation} setAssetCategory={setAssetCategory} subMenu={subMenu} setSearchFilter={setSearchFilter} />
+                <div className="flex flex-row pt-4 mx-auto w-11/12">
+                    <div className="flex min-w-[250px] h-screen sticky py-2 top-0 ">
+                        <SideBarNav navigation={navigation} setNavIndices={setNavIndices} subMenu={subMenu} setSearchFilter={setSearchFilter} />
                     </div>
                     {
                         assetInstance!=null &&
-                        <div className="flex flex-col items-start ml-4 pt-5 w-full overflow-hidden px-px">
+                        <div className="flex flex-col py-2 items-start ml-4 w-full overflow-hidden px-px">
                             <div key={"AssetInput"}>
                                 <TextInput
-                                    setSearchFilter={setSearchFilter} 
+                                    handleChange={handleSearchChange} 
                                     title={assetCategoryMap[assetCategory as keyof typeof assetCategoryMap]}
                                     searchFilter={searchFilter}
                                 />

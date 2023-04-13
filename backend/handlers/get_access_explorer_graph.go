@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/Zeus-Labs/ZeusCloud/rules/processgraph"
-	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"log"
 	"net/http"
+
+	"github.com/Zeus-Labs/ZeusCloud/rules/processgraph"
+	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -139,10 +140,10 @@ var producerMapping = map[string]map[string]AccessExplorerGraphProducer{
 		"reachableFrom": iamPrincipalReachableFrom,
 		"reachableTo":   iamPrincipalReachableTo,
 	},
-	"ec2Instance": {
+	"ec2Instances": {
 		"reachableFrom": ec2ReachableFrom,
 	},
-	"s3Bucket": {
+	"s3Buckets": {
 		"reachableAction": getS3EffectiveActionPrincipals,
 	},
 }
@@ -185,13 +186,14 @@ func GetAccessExplorerGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *
 				http.Error(w, "failed to retrieve access explorer graph results", 500)
 				return nil, err
 			}
+			log.Printf("records=%+v/n", records)
 			graph, err := processgraph.ProcessGraphPathResult(records, "paths")
 			if err != nil {
 				return nil, err
 			}
-
+			log.Printf("graph=%+v/n", graph)
 			graphPathResult := processgraph.CompressPaths(graph)
-
+			log.Println("graphPathResult=", graphPathResult)
 			displayGraph, err := processgraph.ConvertToDisplayGraph(graphPathResult)
 			return displayGraph, err
 		})

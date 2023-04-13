@@ -6,7 +6,8 @@ const navigation = [
   { name: 'Alerts', href: '/alerts', current: true },
   { name: 'Compliance', href: '/compliance', current: false },
   { name: 'Settings', href: '/settings', current: false },
-  {name: 'Asset Inventory',href:'/asset-inventory',current: false}
+  {name: 'Asset Inventory',href:'/asset-inventory',current: false},
+  {name: 'Explore',href:'/explore',current: false}
 ]
 
 const Nav = () => {

@@ -114,7 +114,7 @@ export class EC2Instance{
         },
     ]
 
-    getAllRows(assetCategoryInfo:any,setAssetCategory:any,setSearchFilter:any){
+    getAllRows(assetCategoryInfo:any,setAssetCategory?:any,setSearchFilter?:any){
         let allTableRows:TableRow[] = assetCategoryInfo.data.map((dataTableRow:EC2Fields,idx:number)=>{
             return {
                 columns: [

@@ -315,12 +315,16 @@ const RulesTableOps = ({ruleCategory}: RulesTableOpsProps) => {
         }
     ];
 
+    const handleSearchChange = (e: React.FormEvent<HTMLInputElement>) => {
+        setSearchFilter(e.currentTarget.value);
+    }
+
     return (
         <div className="pt-8 sm:pt-10">
             <div className="flex flex-row grid grid-cols-6 gap-4">
                 <div key={"RuleInput"}>
                     <TextInput
-                        setSearchFilter={setSearchFilter} title={"Rules"} searchFilter={searchFilter}/>
+                        handleChange={handleSearchChange} title={"Rules"} searchFilter={searchFilter}/>
                 </div>
             
                 <div key={"RiskFilter"}>
