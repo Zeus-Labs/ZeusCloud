@@ -5,7 +5,7 @@ RUN yarn install
 COPY . .
 RUN yarn build
 
-FROM nginx:1.23-alpine
+FROM nginx:1.24-alpine
 COPY --from=builder /usr/src/app/build /usr/share/nginx/html
 COPY --from=builder /usr/src/app/nginx/default.conf /etc/nginx/conf.d/default.conf
 EXPOSE 3000
