@@ -18,7 +18,7 @@ export default memo(function RuleGraph({ruleGraph,graphEventListner}:RuleGraphPr
 
     const data = {
       nodes:new Array<{id:string,label:string,display_id:string,style:any,icon:any}>,
-      edges:new Array<{source:string,target:string,style:any}>
+      edges:new Array<{edge_id:number | null,source:string,target:string,style:any}>
     }
 
     useEffect(()=>{
@@ -54,8 +54,10 @@ export default memo(function RuleGraph({ruleGraph,graphEventListner}:RuleGraphPr
         adjacency_list[src].forEach(edge=>{
           const dest = edge.target_resource_id
           const isDotted = edge.make_dotted
+          const edgeID = edge.id
           if(!data.edges.some(edge=>edge.source===src && edge.target===dest.toString())){
             data.edges.push({
+              edge_id:edgeID,
               source:src,
               target: dest.toString(),
               style:{
@@ -110,6 +112,11 @@ export default memo(function RuleGraph({ruleGraph,graphEventListner}:RuleGraphPr
           cursor: "pointer",
           fillOpacity:0.8,
           lineWidth:0
+        }
+      },
+      edgeStateStyles:{
+        hover:{
+          cursor:"pointer"
         }
       },
       defaultEdge: {
