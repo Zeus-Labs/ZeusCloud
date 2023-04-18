@@ -32,7 +32,6 @@ func ProcessGraphPathResult(records neo4j.Result, pathKeyStr string) (types.Grap
 
 	for records.Next() {
 		record := records.Record()
-
 		paths, ok := record.Get(pathKeyStr)
 		if !ok {
 			return types.Graph{}, fmt.Errorf("Failed to get record.")
