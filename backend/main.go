@@ -89,8 +89,10 @@ func main() {
 	mux.HandleFunc("/api/rescan", handlers.Rescan(postgresDb))
 	mux.HandleFunc("/api/getAccountScanInfo", handlers.GetAccountScanInfo())
 	mux.HandleFunc("/api/getAssetInventory", handlers.GetAssetInventory(driver))
+	mux.HandleFunc("/api/getExploreAssets", handlers.GetExploreAssets(driver))
 	mux.HandleFunc("/api/getRuleGraph", handlers.GetRuleGraph(driver))
 	mux.HandleFunc("/api/getAccessExplorerGraph", handlers.GetAccessExplorerGraph(driver))
+	mux.HandleFunc("/api/getEdgeInfo", handlers.GetEdgeInfo(driver))
 
 	log.Printf("serving on 8080...")
 	dLog := log.Default()

@@ -2,62 +2,24 @@ import { DisplayGraph} from "./AlertsTypes"
 import G6, { Graph, TreeGraph } from '@antv/g6';
 import { log } from "console";
 import path, { relative } from "path";
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import ReactDOM from 'react-dom';
 import { categoryToColor, labelCategory, labelDisplay, labelImage } from "./ResourceMappings";
 
 type RuleGraphProps={
-    ruleGraph: DisplayGraph
+    ruleGraph: DisplayGraph,
+    graphEventListner?:(graph:Graph)=>void
 }
 
-export default function RuleGraph({ruleGraph}:RuleGraphProps){
+export default memo(function RuleGraph({ruleGraph,graphEventListner}:RuleGraphProps){
     const {node_info,adjacency_list} = ruleGraph;
-    // const data = {
-    //     id: central_node.display_id,
-    //     label: central_node.node_label,
-    //     resource_id: central_node.resource_id,
-    //     icon:{
-    //       show: true,
-    //       img: "https://gw.alipayobjects.com/zos/basement_prod/012bcf4f-423b-4922-8c24-32a89f8c41ce.svg"
-    //     },
-    //     style:{
-    //       fill:categoryToColor[resourceMap[central_node.node_label].category]
-    //     }
-    // };
+   
     const canvasRef = useRef(null);
 
     const data = {
       nodes:new Array<{id:string,label:string,display_id:string,style:any,icon:any}>,
-      edges:new Array<{source:string,target:string,style:any}>
+      edges:new Array<{edge_id:number | null,source:string,target:string,style:any}>
     }
-   
-    
-
-
-    // function addGraphNodesEdges(paths:DisplayPath[],graph:Graph){
-    //   paths?.forEach(path)
-    // }
-
-    // function addTreeGraphChild(paths:DisplayPath[],graph:TreeGraph){
-    //     paths?.forEach(path=>{
-    //         let root = central_node.display_id;
-    //         path.display_nodes.forEach(node=>{
-    //             const foundNode = graph.findDataById(node.display_id);
-    //             if(!foundNode){
-    //                 const childData={
-    //                     id: node.display_id,
-    //                     label: node.node_label,
-    //                     resource_id: node.resource_id,
-    //                     style:{
-    //                       fill:categoryToColor[resourceMap[node.node_label]?.category],
-    //                     }
-    //                 }
-    //                 graph.addChild(childData,root);
-    //             }
-    //             root = node.display_id;
-    //         })
-    //     })
-    // }
 
     useEffect(()=>{
       if(!node_info || !adjacency_list){
@@ -65,7 +27,7 @@ export default function RuleGraph({ruleGraph}:RuleGraphProps){
       }
       const container = ReactDOM.findDOMNode(canvasRef.current) as HTMLElement;
       const width = container?.scrollWidth || 500;
-      const height = container?.scrollHeight || 300;
+      const height = container?.scrollHeight || 400;
 
       Object.values(node_info)?.forEach((node)=>{
         if(!data.nodes.some(n=>n.id===node.resource_id.toString())){
@@ -81,8 +43,8 @@ export default function RuleGraph({ruleGraph}:RuleGraphProps){
             icon:{
               show:true,
               img: labelImage(node.node_label),
-              width: 15,
-              height: 15,
+              width: 20,
+              height: 20,
             }
           });
         }
@@ -91,13 +53,17 @@ export default function RuleGraph({ruleGraph}:RuleGraphProps){
       Object.keys(adjacency_list)?.forEach(src=>{
         adjacency_list[src].forEach(edge=>{
           const dest = edge.target_resource_id
+          const isDotted = edge.make_dotted
+          const edgeID = edge.id
           if(!data.edges.some(edge=>edge.source===src && edge.target===dest.toString())){
             data.edges.push({
+              edge_id:edgeID,
               source:src,
               target: dest.toString(),
               style:{
                 lineWidth: 1,
-                stroke: `l(0) 0:${categoryToColor[labelCategory(node_info[src].node_label)]} 1:${categoryToColor[labelCategory(node_info[dest.toString()].node_label)]}`
+                stroke: `l(0) 0:${categoryToColor[labelCategory(node_info[src].node_label)]} 1:${categoryToColor[labelCategory(node_info[dest.toString()].node_label)]}`,
+                lineDash: isDotted ? [6,4] : null
               }
             })
           }
@@ -108,17 +74,11 @@ export default function RuleGraph({ruleGraph}:RuleGraphProps){
       container: container,
       width,
       height,
-      fitView:true,
+      // fitView:true,
+      fitCenter:true,
+      
       modes: {
         default: [
-          // {
-          //   type: 'collapse-expand',
-          //   onChange: function onChange(item:any, collapsed:any) {
-          //     const data = item?.get('model');
-          //     data.collapsed = collapsed;
-          //     return true;
-          //   },
-          // },
           {
             type: 'tooltip',
             offset: 20,
@@ -134,7 +94,7 @@ export default function RuleGraph({ruleGraph}:RuleGraphProps){
       // plugins:[tooltip],
       
       defaultNode: {
-        size: 26,
+        size: 40,
         anchorPoints: [
           [0, 0.5],
           [1, 0.5],
@@ -142,7 +102,21 @@ export default function RuleGraph({ruleGraph}:RuleGraphProps){
         labelCfg:{
             position: "bottom",
             offset: 5,
-            
+            style:{
+              fonntSize: 20
+            }
+        }
+      },
+      nodeStateStyles:{
+        hover:{
+          cursor: "pointer",
+          fillOpacity:0.8,
+          lineWidth:0
+        }
+      },
+      edgeStateStyles:{
+        hover:{
+          cursor:"pointer"
         }
       },
       defaultEdge: {
@@ -159,59 +133,21 @@ export default function RuleGraph({ruleGraph}:RuleGraphProps){
         nodesep: 30,
         ranksep: 30
       }
-      // layout: {
-      //   type: 'mindmap',
-      //   direction: 'H',
-      //   getHeight: () => {
-      //     return 30;
-      //   },
-      //   getWidth: () => {
-      //     return 16;
-      //   },
-      //   getVGap: () => {
-      //     return 40;
-      //   },
-      //   getHGap: () => {
-      //     return 50;
-      //   },
-      //   getSide: (d:any) => {
-      //       if (left_side_paths && left_side_paths.length>0 && left_side_paths.some((path)=>path.display_nodes[1]?.display_id===d.id)) {
-      //         return 'left';
-      //       } 
-            
-      //       return 'right';
-      //     },
-      // },
     });
-
-    // graph.node((node)=>{
-    //   return {
-    //     icon:{
-    //       show: true,
-    //       img: "/logo192.png",
-    //     }
-    //   }
-    // })
 
     graph.data(data);
     graph.render();
+    console.log("Graph rendered");
+    
     // addTreeGraphChild(left_side_paths,graph);
     // addTreeGraphChild(right_side_paths,graph);
 
     // graph.fitView();
     // graph.refresh();
     // graph.refreshPositions();
+    
 
-    // graph.on('node:mouseenter', (e:any) => {
-    //   graph.setItemState(e.item, 'active', true);
-    //   // const tooltipDiv = container.querySelector(".g6-component-tooltip") as HTMLDivElement;
-    //   // tooltipDiv.style.top ="100px!important";
-    //   // tooltipDiv.style.left =`${e.item.getModel().x}px!important`;
-    //   // console.log(tooltipDiv.style.top);
-    // });
-    // graph.on('node:mouseleave', (e:any) => {
-    //   graph.setItemState(e.item, 'active', false);
-    // });
+    graphEventListner && graphEventListner(graph)
 
     if (typeof window !== 'undefined')
       window.onresize = () => {
@@ -220,12 +156,17 @@ export default function RuleGraph({ruleGraph}:RuleGraphProps){
         console.log("resized");
         graph.changeSize(container.scrollWidth, container.scrollHeight);
       };
-    },[])
+      return ()=>{
+        graph.destroy();
+        console.log("Graph destroyed");
+      }
+      
+    })
 
     if(!node_info || !adjacency_list){
       return null
     }
     return(
-        <div style={{position:"relative"}} ref={canvasRef}></div>
+        <div className="relative grow" ref={canvasRef}></div>
     )
-}
+})

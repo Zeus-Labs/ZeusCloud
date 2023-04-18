@@ -145,7 +145,7 @@ export function labelImage(label: string): string {
         return labelInfoMap[label]["image"]
     }
     // TODO: Put a default image
-    return "/images/aws-ec2.svg"
+    return "/images/question-mark.svg"
 }
 
 export function labelCategory(label: string): string {

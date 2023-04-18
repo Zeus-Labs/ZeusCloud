@@ -4,7 +4,7 @@ import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
 import { classNames } from '../../utils/utils'
 
 type SelectFilterProps = {
-    title: string; 
+    title?: string; 
     setFilter: (value: string) => void
     filterOptions: Array<string>;
     selectedFilterValue: string;
@@ -18,7 +18,7 @@ const SelectFilterDropdown = ({title, setFilter, filterOptions,
       <Listbox value={selectedFilterValue} onChange={setFilter}>
       {({ open }) => (
         <>
-        <Listbox.Label className="block text-sm font-medium text-gray-700">{title}</Listbox.Label>
+        {title && <Listbox.Label className="block text-sm font-medium text-gray-700">{title}</Listbox.Label>}
           <div className="relative mt-1">
             <Listbox.Button className="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm">
               <span className="block truncate">{selectedFilterValue}</span>

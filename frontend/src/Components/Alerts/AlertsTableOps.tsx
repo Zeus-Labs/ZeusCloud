@@ -10,6 +10,14 @@ import { GeneratedAlertsTable } from './GeneratedAlertsTable';
 import { AlertSlideover } from './AlertsSlideover';
 import { TextInput } from "../Shared/Input";
 import { extractServiceName } from "../../utils/utils";
+import ColoredBgSpan from '../Shared/ColoredBgSpan';
+
+const severityColorMap:{[label:string]:string}={
+    "Critical":"red",
+    "High":"orange",
+    "Moderate":"yellow",
+    "Low":"gray"
+}
 
 async function getActiveAlertsInfoData(ruleCategory: string): Promise<RuleAlertsResponse> {
     try {
@@ -211,7 +219,8 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
                         alert_instance: currAlertInstance,
                         display_graph: ruleGraph.rule_graph
                     }
-                });                
+                });
+                console.log(ruleGraph.rule_graph)                
             }
             
             return (
@@ -277,7 +286,9 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
                             ignoreComponentExpansion: false,
                         },
                         {
-                            content: rulealerts_group.rule_data.severity,
+                            content: <ColoredBgSpan value={rulealerts_group.rule_data.severity} 
+                                                    bgColor={`bg-${severityColorMap[rulealerts_group.rule_data.severity]}-100`} 
+                                                    textColor={`text-${severityColorMap[rulealerts_group.rule_data.severity]}-800`}/>,
                             accessor_key: "severity",
                             value: rulealerts_group.rule_data.severity,
                             ignoreComponentExpansion: false,
@@ -329,7 +340,9 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
                             ignoreComponentExpansion: false,
                         },
                         {
-                            content: rulealerts_group.rule_data.severity,
+                            content: <ColoredBgSpan value={rulealerts_group.rule_data.severity} 
+                                                    bgColor={`bg-${severityColorMap[rulealerts_group.rule_data.severity]}-100`} 
+                                                    textColor={`text-${severityColorMap[rulealerts_group.rule_data.severity]}-800`}/>,
                             accessor_key: "severity",
                             value: rulealerts_group.rule_data.severity,
                             ignoreComponentExpansion: false,
@@ -547,6 +560,10 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
         });
     }
 
+    const handleSearchChange = (e: React.FormEvent<HTMLInputElement>) => {
+        setSearchFilter(e.currentTarget.value);
+    }
+
     // These divs are used to build the table and filters.
     return (
     <div className="pt-8 sm:pt-10">
@@ -554,7 +571,7 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
         <div className="flex flex-row grid grid-cols-6 gap-4">
                     <div key={"RuleInput"}>
                         <TextInput
-                            setSearchFilter={setSearchFilter} title={"Rules"} searchFilter={searchFilter}/>
+                            handleChange={handleSearchChange} title={"Rules"} searchFilter={searchFilter}/>
                     </div>
                     <div key={"RiskFilter"}>
                         <SelectFilterDropdown

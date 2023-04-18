@@ -79,8 +79,8 @@ export class IAMRoles implements AssetCategoryInterface{
         }
     ]
    
-   getAllRows(assetCategoryInfo:any,setAssetCategory:React.Dispatch<React.SetStateAction<string>>,
-    setSearchFilter:React.Dispatch<React.SetStateAction<string>>){
+   getAllRows(assetCategoryInfo:any,setAssetCategory?:React.Dispatch<React.SetStateAction<string>>,
+    setSearchFilter?:React.Dispatch<React.SetStateAction<string>>){
        let allTableRows:TableRow[] = assetCategoryInfo.data.map((dataTableRow:IAMRolesFields,idx:number)=>{
            return {
                columns: [

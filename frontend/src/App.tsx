@@ -16,6 +16,7 @@ import { useEffect } from "react";
 
 import { getAccountDetails } from './Components/Settings/ConnectedAccounts';
 import AssetsInventory from "./Pages/AssetsInventory";
+import Explore from "./Pages/Explore";
 
 const WithNavbar = () => {
   return (
@@ -62,6 +63,7 @@ const App = () => {
                 <Route path="/compliance/report/:frameworkId" element={<ComplianceReport />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/asset-inventory" element={<AssetsInventory />} />
+                <Route path="/explore" element={<Explore />} />
           </Route>
         </Routes>
       </BrowserRouter>

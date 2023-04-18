@@ -83,18 +83,23 @@ export function AssetModal({ children, text }: { children: React.ReactNode, text
 
 type ModalWrapperProps = {
     children: React.ReactNode,
-    setAssetCategory: React.Dispatch<React.SetStateAction<string>>,
+    setAssetCategory?: React.Dispatch<React.SetStateAction<string>>,
     assetCategory: string,
-    setSearchFilter: React.Dispatch<React.SetStateAction<string>>,
+    setSearchFilter?: React.Dispatch<React.SetStateAction<string>>,
     searchFilter: string
 }
 
 export function AssetsModalWrapper({ children, setAssetCategory, assetCategory, setSearchFilter, searchFilter }:ModalWrapperProps) {
     return(
+        (setAssetCategory && setSearchFilter) ?
+    
         <div className="cursor-pointer w-fit" onClick={()=>{
-            setAssetCategory(assetCategory);
-            setSearchFilter(searchFilter);
+            setAssetCategory && setAssetCategory(assetCategory);
+            setSearchFilter && setSearchFilter(searchFilter);
         }}>
+            {children}
+        </div>
+        : <div>
             {children}
         </div>
     )

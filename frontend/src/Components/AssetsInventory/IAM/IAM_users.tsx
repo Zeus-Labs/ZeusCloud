@@ -103,7 +103,7 @@ export class IAMUsers{
         }
     ]
 
-    getAllRows(assetCategoryInfo:any,setAssetCategory:any,setSearchFilter:any){
+    getAllRows(assetCategoryInfo:any,setAssetCategory?:any,setSearchFilter?:any){
         let allTableRows:TableRow[] = assetCategoryInfo.data.map((dataTableRow:IAMUsersFields,idx:number)=>{
             return {
                 columns: [

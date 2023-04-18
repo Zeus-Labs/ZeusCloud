@@ -172,9 +172,9 @@ export const GeneratedAlertsTable = ({filterValueState,
     // Outside div tag as a ml-10 to keep the tables clear.
     return (
         <div className="ml-10 mb-5 flex flex-col">
-            <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div className="-my-2 -mx-4 overflow-x-visible sm:-mx-6 lg:-mx-8">
                 <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-                    <div className="overflow-hidden md:rounded-lg">
+                    <div className="md:rounded-lg">
                         <TableComp
                             key={rule_data.uid+"_alerts_table"}
                             tableFixed={true}

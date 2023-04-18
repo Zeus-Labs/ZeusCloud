@@ -29,7 +29,7 @@ export enum assetCategoryMap {
     kmsKeys = "KMS Keys"
 }
 
-export const assetToObjects = {
+export const assetToObjects:{[category:string]:any} = {
     iamRoles: new IAMRoles(),
     iamUsers: new IAMUsers(),
     iamPolicies: new IAMPolicies(),
