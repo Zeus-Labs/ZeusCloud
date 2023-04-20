@@ -12,7 +12,7 @@ import { TextInput } from "../Shared/Input";
 import { extractServiceName } from "../../utils/utils";
 import ColoredBgSpan from '../Shared/ColoredBgSpan';
 
-const severityColorMap:{[label:string]:string}={
+export const severityColorMap:{[label:string]:string}={
     "Critical":"red",
     "High":"orange",
     "Moderate":"yellow",
@@ -286,8 +286,8 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
                         },
                         {
                             content: <ColoredBgSpan value={rulealerts_group.rule_data.severity} 
-                                                    bgColor={`bg-${severityColorMap[rulealerts_group.rule_data.severity]}-100`} 
-                                                    textColor={`text-${severityColorMap[rulealerts_group.rule_data.severity]}-800`}/>,
+                                                    bgColor={severityColorMap[rulealerts_group.rule_data.severity]}
+                                                    textColor={severityColorMap[rulealerts_group.rule_data.severity]}/>,
                             accessor_key: "severity",
                             value: rulealerts_group.rule_data.severity,
                             ignoreComponentExpansion: false,
@@ -340,8 +340,8 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
                         },
                         {
                             content: <ColoredBgSpan value={rulealerts_group.rule_data.severity} 
-                                                    bgColor={`bg-${severityColorMap[rulealerts_group.rule_data.severity]}-100`} 
-                                                    textColor={`text-${severityColorMap[rulealerts_group.rule_data.severity]}-800`}/>,
+                                                    bgColor={severityColorMap[rulealerts_group.rule_data.severity]}
+                                                    textColor={severityColorMap[rulealerts_group.rule_data.severity]}/>,
                             accessor_key: "severity",
                             value: rulealerts_group.rule_data.severity,
                             ignoreComponentExpansion: false,
