@@ -375,7 +375,7 @@ export default function Explore() {
                                 handleChange={handleSearchChange}
                                 title={""}
                                 onFocus={onFocus}
-                                placeholder="Search for a resource (IAM users, IAM roles, EC2s, or S3 buckets"
+                                placeholder="Search for a resource (IAM users, IAM roles, EC2s, or S3 buckets)"
                                 searchFilter={searchFilter}
                                 inputHeight={isSelected ? "h-12" : ""}
                             />

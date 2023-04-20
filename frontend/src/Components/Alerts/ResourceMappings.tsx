@@ -46,7 +46,7 @@ const labelInfoMap: { [label: string]: { [dataType :string] : string } } = {
     },
     "AWSEffectiveAdmin": {
         "display": "Effective Admin",
-        "image": "/images/iam-role.svg",
+        "image": "/images/aws-admin.svg",
         "category": "IAM",
     },
     "AWSVpc": {
