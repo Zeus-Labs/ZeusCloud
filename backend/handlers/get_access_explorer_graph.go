@@ -16,21 +16,19 @@ type AccessExplorerRequest struct {
 	actionStr  string
 }
 
-func iamPrincipalReachableTo(tx neo4j.Transaction, req AccessExplorerRequest) (neo4j.Result, error) {
+func iamPrincipalInboundPaths(tx neo4j.Transaction, req AccessExplorerRequest) (neo4j.Result, error) {
 	var params = make(map[string]interface{})
 	params["PrincipalId"] = req.resourceId
 	records, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(p:AWSPrincipal{arn: $PrincipalId})
 		OPTIONAL MATCH
 			genEffectivePath=
-			(aPrincipal:AWSPrincipal)-[:STS_ASSUME_ROLE_ALLOW|PRIVILEGE_ESCALATION*0..5]->(p)
+			(startNode)-[:STS_ASSUME_ROLE_ALLOW|PRIVILEGE_ESCALATION|IS_EFFECTIVE_ADMIN|
+			EFFECTIVE_ADMIN_ACCESS*0..7]->(p) 
+		WHERE SIZE(apoc.coll.toSet(NODES(genEffectivePath))) = LENGTH(genEffectivePath) + 1 AND
+		(startNode:AWSUser OR startNode:AWSRole)
 		WITH p, collect(genEffectivePath) as genEffectivePaths
-		OPTIONAL MATCH
-			effectiveAdminPath=
-			(:AWSPrincipal)-[:STS_ASSUME_ROLE_ALLOW|PRIVILEGE_ESCALATION*0..5]->
-			(:AWSPrincipal)-[:IS_EFFECTIVE_ADMIN]->(eAdmin:AWSEffectiveAdmin)
-		WITH p, genEffectivePaths, collect(effectiveAdminPath) as effectiveAdminPaths
-		WITH genEffectivePaths + effectiveAdminPaths as paths
+		WITH genEffectivePaths as paths
 		RETURN paths
 		`,
 		params)
@@ -41,21 +39,16 @@ func iamPrincipalReachableTo(tx neo4j.Transaction, req AccessExplorerRequest) (n
 }
 
 // Iam principals reachable from given resource id.
-func iamPrincipalReachableFrom(tx neo4j.Transaction, req AccessExplorerRequest) (neo4j.Result, error) {
+func iamPrincipalOutboundPaths(tx neo4j.Transaction, req AccessExplorerRequest) (neo4j.Result, error) {
 	var params = make(map[string]interface{})
 	params["PrincipalId"] = req.resourceId
 	records, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(p:AWSPrincipal{arn: $PrincipalId})
 		OPTIONAL MATCH
 			genEffectivePath=
-			(p)-[:STS_ASSUME_ROLE_ALLOW|PRIVILEGE_ESCALATION*0..5]->(aPrincipal:AWSPrincipal)
+			(p)-[:STS_ASSUME_ROLE_ALLOW|PRIVILEGE_ESCALATION|IS_EFFECTIVE_ADMIN*0..6]->(endNode)
 		WITH p, collect(genEffectivePath) as genEffectivePaths
-		OPTIONAL MATCH
-			effectiveAdminPath=
-			(p)-[:STS_ASSUME_ROLE_ALLOW|PRIVILEGE_ESCALATION*0..5]->(:AWSPrincipal)
-			-[:IS_EFFECTIVE_ADMIN]->(:AWSEffectiveAdmin)
-		WITH p, genEffectivePaths, collect(effectiveAdminPath) as effectiveAdminPaths
-		WITH genEffectivePaths + effectiveAdminPaths as paths
+		WITH genEffectivePaths as paths
 		RETURN paths`,
 		params)
 	if err != nil {
@@ -65,7 +58,7 @@ func iamPrincipalReachableFrom(tx neo4j.Transaction, req AccessExplorerRequest) 
 }
 
 // Principals reachable from VM's attached role
-func ec2ReachableFrom(tx neo4j.Transaction, req AccessExplorerRequest) (neo4j.Result, error) {
+func ec2ReachableOutboundPaths(tx neo4j.Transaction, req AccessExplorerRequest) (neo4j.Result, error) {
 	var params = make(map[string]interface{})
 	params["InstanceId"] = req.resourceId
 	records, err := tx.Run(
@@ -75,14 +68,9 @@ func ec2ReachableFrom(tx neo4j.Transaction, req AccessExplorerRequest) (neo4j.Re
 		WITH role, collect(vmRolePath) as vmRolePaths
 		OPTIONAL MATCH
 			genEffectivePath=
-			(role)-[:STS_ASSUME_ROLE_ALLOW|PRIVILEGE_ESCALATION*0..5]->(aPrincipal:AWSPrincipal)
+			(role)-[:STS_ASSUME_ROLE_ALLOW|PRIVILEGE_ESCALATION|IS_EFFECTIVE_ADMIN*0..6]->(endNode)
 		WITH role, vmRolePaths, collect(genEffectivePath) as genEffectivePaths
-		OPTIONAL MATCH
-			effectiveAdminPath=
-			(role)-[:STS_ASSUME_ROLE_ALLOW|PRIVILEGE_ESCALATION*0..5]->(AWSPrincipal)
-			-[:IS_EFFECTIVE_ADMIN]->(d)
-		WITH vmRolePaths, genEffectivePaths, collect(effectiveAdminPath) as effectiveAdminPaths
-		WITH vmRolePaths + genEffectivePaths + effectiveAdminPaths as paths
+		WITH vmRolePaths + genEffectivePaths as paths
 		RETURN paths`,
 		params)
 	if err != nil {
@@ -133,15 +121,15 @@ type AccessExplorerGraphProducer func(tx neo4j.Transaction, req AccessExplorerRe
 
 var producerMapping = map[string]map[string]AccessExplorerGraphProducer{
 	"iamUsers": {
-		"reachableFrom": iamPrincipalReachableFrom,
-		"reachableTo":   iamPrincipalReachableTo,
+		"reachableFrom": iamPrincipalOutboundPaths,
+		"reachableTo":   iamPrincipalInboundPaths,
 	},
 	"iamRoles": {
-		"reachableFrom": iamPrincipalReachableFrom,
-		"reachableTo":   iamPrincipalReachableTo,
+		"reachableFrom": iamPrincipalOutboundPaths,
+		"reachableTo":   iamPrincipalInboundPaths,
 	},
 	"ec2Instances": {
-		"reachableFrom": ec2ReachableFrom,
+		"reachableFrom": ec2ReachableOutboundPaths,
 	},
 	"s3Buckets": {
 		"reachableAction": getS3EffectiveActionPrincipals,
@@ -191,7 +179,6 @@ func GetAccessExplorerGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *
 				return nil, err
 			}
 			graphPathResult := processgraph.CompressPaths(graph)
-			log.Println("graphPathResult=", graphPathResult)
 			displayGraph, err := processgraph.ConvertToDisplayGraph(graphPathResult)
 			return displayGraph, err
 		})

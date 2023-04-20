@@ -220,7 +220,6 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
                         display_graph: ruleGraph.rule_graph
                     }
                 });
-                console.log(ruleGraph.rule_graph)                
             }
             
             return (

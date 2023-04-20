@@ -40,28 +40,12 @@ export const S3ActionList = [
     "s3:DeleteBucketPolicy"
 ]
 
-// const S3BucketNavigation = [
-//     {
-//         name: <div><span>Show how IAM Principals can effectively perform</span> <span></span>  <span>on this S3 Bucket</span></div>,
-//         data:"reachableAction",
-//     }
-// ]
-
 const EC2Navigation = [
     {
         name: "Show Outbound Paths",
         data: "reachableFrom"
     },
-    // {
-    //     name: "Show how IAM Principals can effectively perform these [AWS actions] on the [selected__resource]",
-    //     children:[
-    //         {name: "Launching the instance"},
-    //         {name: "Stopping the instance"},
-    //     ]
-    // }
 ]
-
-
 
 export const exploreNavMap:{[category:string]:{
     name:React.ReactNode,
