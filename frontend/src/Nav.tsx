@@ -5,9 +5,9 @@ const navigation = [
   { name: 'Rules', href: '/rules', current: false },
   { name: 'Alerts', href: '/alerts', current: true },
   { name: 'Compliance', href: '/compliance', current: false },
-  { name: 'Settings', href: '/settings', current: false },
   {name: 'Asset Inventory',href:'/asset-inventory',current: false},
-  {name: 'Access Explorer',href:'/access-explorer',current: false}
+  {name: 'Access Explorer',href:'/access-explorer',current: false},
+  { name: 'Settings', href: '/settings', current: false },
 ]
 
 const Nav = () => {
