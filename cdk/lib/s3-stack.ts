@@ -22,18 +22,12 @@ export class S3Stack extends cdk.Stack {
             removalPolicy: cdk.RemovalPolicy.DESTROY,
             autoDeleteObjects: true,
             publicReadAccess: true,
-        });
-
-        new s3.Bucket(this, 'bucketPublicReadThroughACL', {
-            removalPolicy: cdk.RemovalPolicy.DESTROY,
-            autoDeleteObjects: true,
             blockPublicAccess: new s3.BlockPublicAccess({
-                blockPublicAcls: false,
-                ignorePublicAcls: false,
-                blockPublicPolicy: true,
-                restrictPublicBuckets: true,
+                blockPublicAcls: true,
+                ignorePublicAcls: true,
+                blockPublicPolicy: false,
+                restrictPublicBuckets: false,
             }),
-            accessControl: s3.BucketAccessControl.PUBLIC_READ,
         });
 
         new s3.Bucket(this, 'bucketS3ManagedEncryption', {
