@@ -19,6 +19,11 @@ type ComplianceFrameworkStats struct {
 
 func GetComplianceFrameworkStats(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		// Validate framework name
 		frameworkID := r.URL.Query().Get("framework_id")
 		spec, ok := compliance.FrameworkIDToSpec[frameworkID]

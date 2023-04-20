@@ -138,6 +138,11 @@ var producerMapping = map[string]map[string]AccessExplorerGraphProducer{
 
 func GetAccessExplorerGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		resourceType := r.URL.Query().Get("resource_type")
 		queryType := r.URL.Query().Get("query_type")
 		resourceId := r.URL.Query().Get("resource_id")

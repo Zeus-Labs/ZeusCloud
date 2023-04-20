@@ -21,6 +21,11 @@ type ToggleAlertMutedData struct {
 
 func ToggleAlertMuted(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		var trad ToggleAlertMutedData
 		if err := json.NewDecoder(r.Body).Decode(&trad); err != nil {
 			log.Printf("failed to decode json body: %v", err)

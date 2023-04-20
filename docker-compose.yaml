@@ -125,5 +125,3 @@ volumes:
     driver: local
   neo4j_plugins:
     driver: local
-
-
