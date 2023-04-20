@@ -155,6 +155,9 @@ func ConvertNodeToDisplayNode(node types.Node) (types.DisplayNode, error) {
 	} else if CheckNodeLabel(node, "AWSRole") && CheckNodeLabel(node, "AWSPrincipal") {
 		displayNodeLabel = "AWSRole"
 		displayId = nodeProps["arn"].(string)
+	} else if CheckNodeLabel(node, "AWSUser") && CheckNodeLabel(node, "AWSPrincipal") {
+		displayNodeLabel = "AWSUser"
+		displayId = nodeProps["arn"].(string)
 	} else if CheckNodeLabel(node, "AWSPrincipal") {
 		// Could be a root account.
 		displayNodeLabel = "AWSPrincipal"
