@@ -61,9 +61,9 @@ const App = () => {
                 <Route path="/alerts" element={<Alerts />} />
                 <Route path="/compliance" element={<Compliance />} />
                 <Route path="/compliance/report/:frameworkId" element={<ComplianceReport />} />
-                <Route path="/settings" element={<Settings />} />
                 <Route path="/asset-inventory" element={<AssetsInventory />} />
-                <Route path="/explore" element={<Explore />} />
+                <Route path="/access-explorer" element={<Explore />} />
+                <Route path="/settings" element={<Settings />} />
           </Route>
         </Routes>
       </BrowserRouter>

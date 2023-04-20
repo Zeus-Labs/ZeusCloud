@@ -340,7 +340,7 @@ export default function Explore() {
 
     return (
         <div className="min-h-full">
-            <Banner bannerHeader='Explore' bannerDescription='Browse assets discovered in your cloud environments.' />
+            <Banner bannerHeader='Explore' bannerDescription='Select a resource and visualize its access relationships.' />
             <div className="px-4 sm:px-6 lg:px-8 py-2 sm:py-3 lg:py-4">
                 <div className="flex flex-col mx-auto w-11/12">
                     <div className="flex flex-row justify-between items-center">
