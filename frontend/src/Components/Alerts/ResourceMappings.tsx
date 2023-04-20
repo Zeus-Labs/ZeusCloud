@@ -9,6 +9,11 @@ const labelInfoMap: { [label: string]: { [dataType :string] : string } } = {
         "image": "/images/aws-account.svg",
         "category": "IAM",
     },
+    "GenericAwsAccount": {
+        "display": "All AWS Accounts",
+        "image": "/images/ip.svg",
+        "category": "IAM",
+    },
     "AWSGroup": {
         "display": "IAM Group",
         "image": "/images/iam-group.svg",
@@ -36,6 +41,11 @@ const labelInfoMap: { [label: string]: { [dataType :string] : string } } = {
     },
     "AWSRole": {
         "display": "IAM Role",
+        "image": "/images/iam-role.svg",
+        "category": "IAM",
+    },
+    "AWSEffectiveAdmin": {
+        "display": "Effective Admin",
         "image": "/images/iam-role.svg",
         "category": "IAM",
     },
