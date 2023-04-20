@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
 
-	"github.com/Zeus-Labs/ZeusCloud/constants"
 	"github.com/Zeus-Labs/ZeusCloud/control"
 	"github.com/Zeus-Labs/ZeusCloud/models"
 	"gorm.io/gorm"
@@ -15,6 +13,11 @@ import (
 
 func GetAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		var accountDetailsLst []models.AccountDetails
 		tx := postgresDb.Select("account_name", "connection_method", "profile", "default_region", "last_scan_completed").Find(&accountDetailsLst)
 		if tx.Error != nil {
@@ -34,6 +37,11 @@ func GetAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.
 
 func AddAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		// Only allow 1 account details row for now
 		var accountDetailsLst []models.AccountDetails
 		if tx := postgresDb.Find(&accountDetailsLst); tx.Error != nil {
@@ -110,6 +118,11 @@ func AddAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.
 
 func DeleteAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		var ad models.AccountDetails
 		if err := json.NewDecoder(r.Body).Decode(&ad); err != nil {
 			log.Printf("failed to decode json body: %v", err)
@@ -132,6 +145,11 @@ func DeleteAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *ht
 
 func Rescan(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		if err := control.TriggerScan(postgresDb); err != nil {
 			log.Printf("failed to trigger scan: %v", err)
 			http.Error(w, "failed to trigger scan", 500)
@@ -142,25 +160,21 @@ func Rescan(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 
 func GetAccountScanInfo() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var sr control.StatusResponse
-		var err error
-		if os.Getenv("MODE") != constants.DemoEnvModeStr {
-			sr, err = control.GetScanStatus()
-			if err != nil {
-				log.Printf("failed to determine if scan is running: %v", err)
-				http.Error(w, "failed to determine if scan is running", 500)
-				return
-			}
-			control.ExecuteRulesMutex.Lock()
-			if sr.Status != "RUNNING" && control.ExecuteRules {
-				sr.Status = "RULES_RUNNING"
-			}
-			control.ExecuteRulesMutex.Unlock()
-		} else {
-			sr = control.StatusResponse{
-				Status: "READY",
-			}
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
 		}
+		sr, err := control.GetScanStatus()
+		if err != nil {
+			log.Printf("failed to determine if scan is running: %v", err)
+			http.Error(w, "failed to determine if scan is running", 500)
+			return
+		}
+		control.ExecuteRulesMutex.Lock()
+		if sr.Status != "RUNNING" && control.ExecuteRules {
+			sr.Status = "RULES_RUNNING"
+		}
+		control.ExecuteRulesMutex.Unlock()
 		retDataBytes, err := json.Marshal(sr)
 		if err != nil {
 			log.Printf("failed to marshal status response: %v", err)
@@ -173,19 +187,15 @@ func GetAccountScanInfo() func(w http.ResponseWriter, r *http.Request) {
 
 func GetAwsProfiles() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var apr control.AwsProfilesResponse
-		var err error
-		if os.Getenv("MODE") != constants.DemoEnvModeStr {
-			apr, err = control.GetAwsProfiles()
-			if err != nil {
-				log.Printf("failed to get aws profiles: %v", err)
-				http.Error(w, "failed to get aws profiles", 500)
-				return
-			}
-		} else {
-			apr = control.AwsProfilesResponse{
-				AwsProfiles: make([]string, 0),
-			}
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		apr, err := control.GetAwsProfiles()
+		if err != nil {
+			log.Printf("failed to get aws profiles: %v", err)
+			http.Error(w, "failed to get aws profiles", 500)
+			return
 		}
 		retDataBytes, err := json.Marshal(apr)
 		if err != nil {

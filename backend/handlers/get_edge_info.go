@@ -117,6 +117,11 @@ func getAssumeRoleInfo(tx neo4j.Transaction, edgeID int) (interface{}, error) {
 
 func GetEdgeInfo(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		edge_id := r.URL.Query().Get("edge_id")
 		edgeID, err := strconv.Atoi(edge_id)
 		if err != nil {

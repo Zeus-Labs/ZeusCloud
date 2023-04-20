@@ -34,6 +34,11 @@ type AlertInstance struct {
 
 func GetAllAlerts(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		ruleCategory := r.URL.Query().Get("rulecategory")
 
 		// Check if rule category is valid.

@@ -29,6 +29,11 @@ var assetCategoryMap = map[string]AssetRetriever{
 
 func GetAssetInventory(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		// Check if asset category is valid.
 		assetCategory := r.URL.Query().Get("asset_category")
 		if _, ok := assetCategoryMap[assetCategory]; !ok {
