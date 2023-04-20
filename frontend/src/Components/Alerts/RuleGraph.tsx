@@ -11,14 +11,23 @@ type RuleGraphProps={
     graphEventListner?:(graph:Graph)=>void
 }
 
+export type GraphNodeType={
+  id:string,
+  label:string,
+  display_id:string,
+  style:any,
+  icon:any,
+  stateStyles:any
+}
+
 export default memo(function RuleGraph({ruleGraph,graphEventListner}:RuleGraphProps){
     const {node_info,adjacency_list} = ruleGraph;
    
     const canvasRef = useRef(null);
 
     const data = {
-      nodes:new Array<{id:string,label:string,display_id:string,style:any,icon:any}>,
-      edges:new Array<{edge_id:number | null,source:string,target:string,style:any}>
+      nodes:new Array<GraphNodeType>,
+      edges:new Array<{edge_id:number | null,source:string,target:string,style:any,stateStyles:any}>
     }
 
     useEffect(()=>{
@@ -45,6 +54,19 @@ export default memo(function RuleGraph({ruleGraph,graphEventListner}:RuleGraphPr
               img: labelImage(node.node_label),
               width: 20,
               height: 20,
+            },
+            stateStyles:{
+              selected:{
+                fill:categoryToColor[labelCategory(node.node_label)],
+                stroke: null,
+                shadowBlur: 20,
+                shadowColor: categoryToColor[labelCategory(node.node_label)],
+              },
+              hover:{
+                cursor: "pointer",
+                fillOpacity:0.8,
+                lineWidth:0
+              },
             }
           });
         }
@@ -63,7 +85,18 @@ export default memo(function RuleGraph({ruleGraph,graphEventListner}:RuleGraphPr
               style:{
                 lineWidth: 1,
                 stroke: `l(0) 0:${categoryToColor[labelCategory(node_info[src].node_label)]} 1:${categoryToColor[labelCategory(node_info[dest.toString()].node_label)]}`,
-                lineDash: isDotted ? [6,4] : null
+                lineDash: isDotted ? [6,4] : null,
+              },
+              stateStyles:{
+                hover:{
+                  cursor:"pointer"
+                },
+                selected:{
+                  shadowColor: "grey",
+                  stroke: `l(0) 0:${categoryToColor[labelCategory(node_info[src].node_label)]} 1:${categoryToColor[labelCategory(node_info[dest.toString()].node_label)]}`,
+                  shadowBlur:20,
+                  lineWidth: 2
+                }
               }
             })
           }
@@ -105,24 +138,15 @@ export default memo(function RuleGraph({ruleGraph,graphEventListner}:RuleGraphPr
             style:{
               fonntSize: 20
             }
-        }
-      },
-      nodeStateStyles:{
-        hover:{
-          cursor: "pointer",
-          fillOpacity:0.8,
-          lineWidth:0
-        }
-      },
-      edgeStateStyles:{
-        hover:{
-          cursor:"pointer"
-        }
-      },
+        },
+      }, 
       defaultEdge: {
         type: 'polyline',
+        linkCenter:true,
         style:{
-          radius:20
+          radius:20,
+          lineAppendWidth:8,
+          
         }
       },
       layout:{

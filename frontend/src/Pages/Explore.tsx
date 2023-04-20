@@ -298,6 +298,23 @@ export default function Explore() {
         // setSelected(false);
         // setAsset(emptyAsset);
     }
+    const onFocus = ()=>{
+        setFilteredAssets(exploreAssetsInfo.data)
+    }
+    const removeSelectedStyle = (graph: Graph,e:any)=>{
+        graph.getNodes().forEach(node=>{
+            if(e.item.getID()!==node.getID()){
+                node.setState("selected",false)
+            }
+        })
+
+        graph.getEdges().forEach(edge=>{
+            if(e.item.getID()!==edge.getID()){
+                edge.setState("selected",false)
+            }
+        })
+    }
+
     const graphEventListner = useCallback((graph: Graph) => {
         graph.on('node:mouseenter', (e: any) => {
             graph.setItemState(e.item, 'hover', true);
@@ -313,8 +330,12 @@ export default function Explore() {
             graph.setItemState(e.item, 'hover', false);
         });
 
-        graph.on('node:click', (e) => {
+        graph.on('node:click', (e:any) => {
             const node = e.item?.getModel();
+
+            removeSelectedStyle(graph,e);
+            graph.setItemState(e.item,"selected",true)
+
             setEdgeInfo(initEdgeInfo);
             for (let assetObj of exploreAssetsInfo.data) {
                 if (assetObj.id === node?.display_id) {
@@ -324,19 +345,24 @@ export default function Explore() {
                 }
             }
         })
-        graph.on('edge:click', (e) => {
+        graph.on('edge:click', (e:any) => {
             const edge = e.item?.getModel();
             let srcNode
             let targetNode
+
+            removeSelectedStyle(graph,e)
+            graph.setItemState(e.item,"selected",true)
+
             setNodeInfo(initNodeInfo);
             if (e.item && 'getSource' in e.item){
                  srcNode = e.item?.getSource().getModel()
                  targetNode = e.item?.getTarget().getModel()
             }
-            console.log(srcNode,targetNode)
             getSelectedEdgeInfo(edge?.edge_id as number|null,setEdgeInfo,srcNode?.display_id as string,targetNode?.display_id as string)
+
         })
     }, [exploreAssetsInfo])
+
 
     return (
         <div className="min-h-full">
@@ -347,12 +373,14 @@ export default function Explore() {
                         <div className="relative w-4/12">
                             <TextInput
                                 handleChange={handleSearchChange}
-                                title={"Resource"}
+                                title={""}
+                                onFocus={onFocus}
+                                placeholder="Search for a resource (IAM users, IAM roles, EC2s, or S3 buckets"
                                 searchFilter={searchFilter}
                                 inputHeight={isSelected ? "h-12" : ""}
                             />
                             {isSelected &&
-                                <div className="absolute flex bottom-2.5 top-7 left-1 right-1 bg-white">
+                                <div className="absolute flex bottom-2.5 top-2.5 left-1 right-1 bg-white">
                                     <div className="searchCustomDisplay pl-1 text-sm overflow-x-scroll overflow-y-hidden w-[90%]">
                                         <AssetTextIconDisplay assetObj={asset} />
                                     </div>
@@ -428,7 +456,7 @@ export default function Explore() {
 
                     <div className="flex flex-col items-start pt-5 w-full overflow-hidden px-px">
 
-                        <div className="mt-1 mb-4 overflow-scroll w-full min-h-[400px] flex flex-col shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                        <div className="mt-1 mb-4 overflow-scroll w-full min-h-[400px] h-[70vh] flex flex-col shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
                             {
                                 (graph.data.node_info && Object.keys(graph.data.node_info).length > 0) &&
                                 <RuleGraph ruleGraph={graph.data} graphEventListner={graphEventListner} />

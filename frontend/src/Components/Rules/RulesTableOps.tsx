@@ -9,6 +9,8 @@ import { SelectFilterDropdown } from "../Shared/Select";
 import { TextInput } from "../Shared/Input";
 import { risksFilterFn, severityFilterFn, searchFilterFn, severitySortTypeFn } from "../Shared/TableOpsUtils";
 import { extractServiceName } from "../../utils/utils";
+import ColoredBgSpan from '../Shared/ColoredBgSpan';
+import { severityColorMap } from '../Alerts/AlertsTableOps';
 
 async function getRulesInfoData(setRulesInfo: React.Dispatch<React.SetStateAction<RuleInfoData>>, ruleCategory: string) {    
     try {
@@ -111,7 +113,11 @@ const RulesTableOps = ({ruleCategory}: RulesTableOpsProps) => {
                             ignoreComponentExpansion: false,
                         },
                         {
-                            content: dataTableRow.severity,
+                            content: <ColoredBgSpan 
+                                        value={dataTableRow.severity} 
+                                        bgColor={severityColorMap[dataTableRow.severity]}
+                                        textColor={severityColorMap[dataTableRow.severity]}
+                                    />,
                             accessor_key: "severity",
                             value: dataTableRow.severity,
                             ignoreComponentExpansion: false,
@@ -147,7 +153,11 @@ const RulesTableOps = ({ruleCategory}: RulesTableOpsProps) => {
                             ignoreComponentExpansion: false,
                         },
                         {
-                            content: dataTableRow.severity,
+                            content: <ColoredBgSpan 
+                                        value={dataTableRow.severity} 
+                                        bgColor={severityColorMap[dataTableRow.severity]}
+                                        textColor={severityColorMap[dataTableRow.severity]}
+                                    />,
                             accessor_key: "severity",
                             value: dataTableRow.severity,
                             ignoreComponentExpansion: false,
