@@ -66,7 +66,7 @@ services:
       - neo4j
     volumes:
       - ${AWS_DIRECTORY}:/home/cartography/.aws
-      - iamspy:/home/cartography/iamspy
+      - ./.compose/cartography/iamspy:/home/cartography/iamspy
 
   frontend:
     image: zeuscloudhq/zeuscloud-frontend:${PULL_VERSION}
@@ -124,6 +124,4 @@ volumes:
   neo4j_logs:
     driver: local
   neo4j_plugins:
-    driver: local
-  iamspy:
     driver: local
