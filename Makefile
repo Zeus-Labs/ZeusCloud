@@ -17,3 +17,4 @@ clean:
 	docker volume rm zeuscloud_neo4j_logs || true
 	docker volume rm zeuscloud_neo4j_plugins || true
 	docker volume rm zeuscloud_postgres || true
+	docker volume rm zeuscloud_iamspy || true
