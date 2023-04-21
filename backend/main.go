@@ -1,14 +1,13 @@
 package main
 
 import (
-	"log"
-	"net/http"
-	"os"
-
 	"github.com/Zeus-Labs/ZeusCloud/control"
 	"github.com/Zeus-Labs/ZeusCloud/models"
 	"github.com/Zeus-Labs/ZeusCloud/rules"
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
+	"log"
+	"net/http"
+	"os"
 
 	"github.com/Zeus-Labs/ZeusCloud/constants"
 	"github.com/Zeus-Labs/ZeusCloud/db"
@@ -59,6 +58,18 @@ func main() {
 		ruleDataList = append(ruleDataList, rd)
 	}
 	log.Println("Finished inserting postgres rules.")
+
+	// For demo environment, attempt to add account to kick of cartography.
+	if os.Getenv("MODE") == constants.DemoEnvModeStr {
+		accountError := handlers.ManualAddAccountDetails(postgresDb, models.AccountDetails{
+			AccountName:      "ZeusCloudDemo",
+			ConnectionMethod: "profile",
+			Profile:          "default",
+		})
+		if accountError.ErrorCode != 200 || accountError.Error != nil {
+			log.Printf("Adding account error %+v", accountError)
+		}
+	}
 
 	// TODO: Check RulesToExecute have unique names
 
