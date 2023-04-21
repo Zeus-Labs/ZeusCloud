@@ -19,7 +19,7 @@ import (
 func demoMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if os.Getenv("MODE") == constants.DemoEnvModeStr {
-			if r.Method == "POST" || r.Method == "PUT" {
+			if r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete {
 				http.Error(w, "Demo Mode Not Allowed", http.StatusForbidden)
 				return
 			}
