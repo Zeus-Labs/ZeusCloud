@@ -91,6 +91,7 @@ services:
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - CARTOGRAPHY_URI=${CARTOGRAPHY_URI}
+      - MODE=${MODE}
     networks:
       - app_network
     depends_on:
