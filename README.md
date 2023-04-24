@@ -55,6 +55,10 @@ more details.
 
 A cloud-hosted version is available on special request - email founders@zeuscloud.io to get access!
 
+## Sandbox
+
+Play around with our sandbox environment at [demo.zeuscloud.io](https://demo.zeuscloud.io).
+
 ## Features
 
 ![ZeusCloud](https://user-images.githubusercontent.com/20483346/233917373-fbaf6651-c446-4e3a-b23d-9eb1133e49ac.gif)
