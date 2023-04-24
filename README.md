@@ -26,10 +26,11 @@
 Discover, prioritize, and remediate your risks in the cloud. 
 
 - Build an asset inventory of your AWS accounts.
-- Continuously monitor your environments for misconfigurations and attack paths.
+- Discover attack paths based on public exposure, IAM, vulnerabilities, and more.
+- Prioritize findings with graphical context. 
+- Remediate findings with step by step instructions.
 - Customize security and compliance controls to fit your needs. 
-- Contextually prioritize and remediate security findings
-- Meet compliance standards PCI DSS, CIS, and more!
+- Meet compliance standards PCI DSS, CIS, SOC 2, and more!
 
 <!-- omit in toc -->
 ## Table of Contents
@@ -56,12 +57,12 @@ A cloud-hosted version is available on special request - email founders@zeusclou
 
 ## Features
 
-![ZeusCloud](https://user-images.githubusercontent.com/20483346/228135412-5eefe13b-0037-474c-9b8b-407b37ab14eb.gif)
+![ZeusCloud](https://user-images.githubusercontent.com/20483346/233917373-fbaf6651-c446-4e3a-b23d-9eb1133e49ac.gif)
 
 * **Discover Attack Paths** - Discover toxic risk combinations an attacker can use to penetrate your environment.
+* **Graphical Context** - Understand context behind security findings with graphical visualizations.
+* **Access Explorer** - Visualize who has access to what with an IAM visualization engine.
 * **Identify Misconfigurations** - Discover the highest risk-of-exploit misconfigurations in your environments.
-* **Fast Prioritization** - Filter, sort, and fast search to zoom in on your important risks.
-* **Helpful Context** - Understand the surrounding context behind why security rules have passed or failed.
 * **Configurability** - Configure which security rules are active, which alerts should be muted, and more.
 * **Security as Code** - Modify rules or write your own with our extensible security as code approach.
 * **Remediation** - Follow step by step guides to remediate security findings.
@@ -81,7 +82,6 @@ We had to take action.
 ## Future Roadmap
 - Integrations with vulnerability scanners
 - Integrations with secret scanners
-- Identity and network access graph visualizations
 - Shift-left: Remediate risks earlier in the SDLC with context from your deployments
 - Support for Azure and GCP environments
 
