@@ -58,7 +58,7 @@ A cloud-hosted version is available on special request - email founders@zeusclou
 
 ## Sandbox
 
-Play around with [our sandbox environment](https://demo.zeuscloud.io).
+Play around with [our sandbox environment](https://demo.zeuscloud.io) to see how ZeusCloud identifies, prioritizes, and remediates risks in the cloud!
 
 ## Features
 
