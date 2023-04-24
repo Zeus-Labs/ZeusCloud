@@ -36,6 +36,7 @@ Discover, prioritize, and remediate your risks in the cloud.
 ## Table of Contents
 
 - [Quick Start](#quick-start)
+- [Sandbox](#sandbox)
 - [Features](#features)
 - [Why ZeusCloud?](#why-zeuscloud)
 - [Future Roadmap](#future-roadmap)
@@ -57,7 +58,7 @@ A cloud-hosted version is available on special request - email founders@zeusclou
 
 ## Sandbox
 
-Play around with our sandbox environment at [demo.zeuscloud.io](https://demo.zeuscloud.io).
+Play around with [our sandbox environment](https://demo.zeuscloud.io).
 
 ## Features
 
