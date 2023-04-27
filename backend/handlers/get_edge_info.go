@@ -152,7 +152,10 @@ func castLabelLst(labels interface{}) ([]string, error) {
 		return nil, fmt.Errorf("labels must be a slice of strings")
 	}
 	for _, label := range labelLst {
-		labelStr, _ := label.(string)
+		labelStr, ok := label.(string)
+		if !ok {
+			return nil, fmt.Errorf("label of a node must be of type string")
+		}
 		resutLabelLst = append(resutLabelLst, labelStr)
 	}
 	return resutLabelLst, nil
