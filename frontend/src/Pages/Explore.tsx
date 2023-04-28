@@ -5,19 +5,18 @@ import SideBarNav from "../Components/Shared/SideBarNav/SideBarNav";
 import { AutoCompleteInlineIcon, S3ActionList, assetsImageMap, exploreNavMap } from "../Components/Explore/exploreUtils";
 import axios from "axios";
 import { InlineIcon, parseArn } from "../Components/AssetsInventory/assetUtils";
-import { AssetsModalWrapper } from "../Components/AssetsInventory/assetUtils";
-import { TextWithTooltipIcon } from "../Components/Shared/TextWithTooltip";
 import AssetTextIconDisplay from "../Components/Explore/assetTextIconDisplay";
 import { navIndicesToData, navIndicesToItemName } from "../Components/Shared/SideBarNav/sideBarUtils";
 import { DisplayGraph } from "../Components/Alerts/AlertsTypes";
-import RuleGraph from "../Components/Alerts/RuleGraph";
+import RuleGraph, { GraphNodeType } from "../Components/Alerts/RuleGraph";
 import { Graph } from "@antv/g6";
 import { log } from "console";
-import RadioComp from "../Components/Shared/RadioList";
+
 import { SelectFilterDropdown } from "../Components/Shared/Select";
 import { TableComp, TableRow } from "../Components/Shared/Table";
 import { assetToObjects } from "../Components/AssetsInventory/AssetCategoryMap";
-import DisplayEdgeInfo from "../Components/Explore/displayEdgeInfo";
+import DisplayEdgeInfo from "../Components/Explore/EdgeInfo/displayEdgeInfo";
+import RadioComp from "../Components/Shared/RadioComp";
 
 async function getExploreAssetInfo(setExploreAssetInfo: any) {
     try {
@@ -44,7 +43,6 @@ async function getExploreAssetInfo(setExploreAssetInfo: any) {
         });
     }
     catch (error) {
-
         let message = '';
         if (axios.isAxiosError(error)) {
             if (error.response && error.response.data) {
@@ -55,7 +53,6 @@ async function getExploreAssetInfo(setExploreAssetInfo: any) {
         } else {
             message = "Error in retrieving rules information."
         }
-
         setExploreAssetInfo({
             data: [],
             error: message
@@ -76,7 +73,6 @@ async function getAssetRelationGraph(setGraph: any, resource_type: string, query
         })
     }
     catch (error) {
-
         let message = '';
         if (axios.isAxiosError(error)) {
             if (error.response && error.response.data) {
@@ -87,7 +83,6 @@ async function getAssetRelationGraph(setGraph: any, resource_type: string, query
         } else {
             message = "Error in retrieving rules information."
         }
-
         setGraph({
             data: [],
             error: message
@@ -95,16 +90,17 @@ async function getAssetRelationGraph(setGraph: any, resource_type: string, query
     }
 }
 
-async function getSelectedEdgeInfo(edgeID: number | null,setEdgeInfo:any,srcNode:string,targetNode:string) {
+async function getSelectedEdgeInfo(edgeID: number | null,setEdgeInfo:any,srcNode:GraphNodeType,targetNode:GraphNodeType) {
     try {
+        console.log(`edgeid=${edgeID}, source=${srcNode.display_id}`)
         if (edgeID == null) {
             setEdgeInfo(
                 {
                     data: {},
                     edgeID: edgeID,
                     error: "",
-                    source:"",
-                    target:""
+                    source:null,
+                    target:null
                 }
             )
         }
@@ -138,43 +134,47 @@ async function getSelectedEdgeInfo(edgeID: number | null,setEdgeInfo:any,srcNode
             data: {},
             edgeID:undefined,
             error: "",
-            source:"",
-            target:""
+            source:null,
+            target:null
         });
     }
 }
 
-async function getNodeInfoData(setAssetInfo: any, assetCategory: string, id: string) {
+async function getNodeInfoData(setAssetInfo: any, assetCategory: string, display_id: string,graphID:string) {
     try {
         // @ts-ignore
         const assetCategoryEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/getAssetInventory";
         const response = await axios.get(assetCategoryEndpoint,
             { params: { asset_category: assetCategory } }
         );
-        let assetInfoData = response.data.filter((assetObj: any) => {
+        let assetInfoData:Array<any> = response.data.filter((assetObj: any) => {
             switch (assetCategory) {
                 case "iamUsers":
                 case "iamRoles":
-                    return assetObj.arn === id;
+                    return assetObj.arn === display_id;
                     break;
                 case "s3Buckets":
-                    return assetObj.name === id;
+                    return assetObj.name === display_id;
                     break;
                 case "ec2Instances":
-                    return assetObj.instance_id === id;
+                    return assetObj.instance_id === display_id;
                     break;
                 default:
                     return false;
             }
         });
 
+        if(assetInfoData.length>0){
+            assetInfoData[0]["graphID"]=graphID
+        }
+
         setAssetInfo({
             data: assetInfoData,
+            assetInstance: assetToObjects[assetCategory],
             error: ''
         });
     }
     catch (error) {
-
         let message = '';
         if (axios.isAxiosError(error)) {
             if (error.response && error.response.data) {
@@ -185,9 +185,9 @@ async function getNodeInfoData(setAssetInfo: any, assetCategory: string, id: str
         } else {
             message = "Error in retrieving rules information."
         }
-
         setAssetInfo({
             data: [],
+            assetInstance:null,
             error: message
         });
     }
@@ -232,23 +232,25 @@ export default function Explore() {
     const defaultActionStr = S3ActionList[0];
     const [actionStr, setActionStr] = useState(defaultActionStr);
 
-    const initNodeInfo = { data: [], error: "" }
+    const initNodeInfo:{
+        data: [],
+        assetInstance: any,
+        error: string
+    } = { data: [],assetInstance:null,  error: "" }
     const [selectedNodeInfo, setNodeInfo] = useState(initNodeInfo);
     const [allTableRows, setAllRows] = useState<TableRow[]>([]);
-    const [assetInstance, setAssetInstance] = useState<any>(null);     // clicked node asset instance
-
     const initEdgeInfo:{
         data:{[property:string]:string},
         edgeID: number|null|undefined,
         error:string,
-        source: string,
-        target: string
+        source: GraphNodeType|null,
+        target: GraphNodeType|null
     } = {
         data: {},
         edgeID: undefined,
         error: "",
-        source:"",
-        target:""
+        source:null,
+        target:null
     }
     const [selectedEdgeInfo, setEdgeInfo] = useState(initEdgeInfo)
 
@@ -258,9 +260,9 @@ export default function Explore() {
         getExploreAssetInfo(setExploreAssetsInfo);
     }, [])
 
-    // useEffect(() => {
-    //     console.log("graph=", graph);
-    // }, [graph])
+    useEffect(() => {
+        console.log("graph=", graph);
+    }, [graph])
 
 
     useEffect(() => {
@@ -286,8 +288,9 @@ export default function Explore() {
     }, [searchFilter, exploreAssetsInfo, isSelected])
 
     useEffect(() => {
-        (assetInstance && selectedNodeInfo.data.length > 0) ? setAllRows(assetInstance?.getAllRows(selectedNodeInfo)) : setAllRows([]);
-    }, [selectedNodeInfo, assetInstance])
+        
+        (selectedNodeInfo.assetInstance && selectedNodeInfo.data.length > 0) ? setAllRows(selectedNodeInfo.assetInstance?.getAllRows(selectedNodeInfo)) : setAllRows([]);
+    }, [selectedNodeInfo])
 
     useEffect(() => {
         (selectedEdgeInfo.edgeID!==undefined || allTableRows.length > 0) && tableScrollRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -339,8 +342,7 @@ export default function Explore() {
             setEdgeInfo(initEdgeInfo);
             for (let assetObj of exploreAssetsInfo.data) {
                 if (assetObj.id === node?.display_id) {
-                    setAssetInstance(assetToObjects[assetObj.category])
-                    getNodeInfoData(setNodeInfo, assetObj.category, node?.display_id);
+                    getNodeInfoData(setNodeInfo, assetObj.category, node?.display_id,node.id);
                     break;
                 }
             }
@@ -358,8 +360,7 @@ export default function Explore() {
                  srcNode = e.item?.getSource().getModel()
                  targetNode = e.item?.getTarget().getModel()
             }
-            getSelectedEdgeInfo(edge?.edge_id as number|null,setEdgeInfo,srcNode?.display_id as string,targetNode?.display_id as string)
-
+            getSelectedEdgeInfo(edge?.edge_id as number|null,setEdgeInfo,srcNode,targetNode)
         })
     }, [exploreAssetsInfo])
 
@@ -388,7 +389,6 @@ export default function Explore() {
                                         <button type="button" onClick={() => {
                                             setSelected(false);
                                             setAsset(emptyAsset);
-                                            setAssetInstance(null);
                                             setQueryType("");
                                             setActionStr(defaultActionStr);
                                             setGraph(initDisplayGraph);
@@ -466,12 +466,12 @@ export default function Explore() {
 
                     <div ref={tableScrollRef} className="mt-8 mb-4" >
                             <DisplayEdgeInfo edgeInfo={selectedEdgeInfo} />
-                        {assetInstance !== null && allTableRows.length > 0 &&
+                        {selectedNodeInfo.assetInstance !== null && allTableRows.length > 0 &&
                             <div  className="mt-3 overflow-scroll w-full shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
                                 <TableComp
                                     tableFixed={true}
-                                    tableColumnHeaders={assetInstance?.tableColumnHeaders}
-                                    tableHeaderCSS={assetInstance?.tableHeaderCSS}
+                                    tableColumnHeaders={selectedNodeInfo.assetInstance?.tableColumnHeaders}
+                                    tableHeaderCSS={selectedNodeInfo.assetInstance?.tableHeaderCSS}
                                     tableRows={allTableRows}
                                 />
                             </div>
