@@ -256,8 +256,7 @@ func ConvertToDisplayGraph(graphPathResult types.GraphPathResult) (types.Display
 		for _, node := range compressedPath.Nodes {
 			convertedNode, err := ConvertNodeToDisplayNode(node)
 			if err != nil {
-				fmt.Errorf("Failure to convert display node %v", err)
-				return types.DisplayGraph{}, err
+				return types.DisplayGraph{}, fmt.Errorf("Failure to convert display node %v", err)
 			}
 			displayNodes = append(displayNodes, convertedNode)
 		}
