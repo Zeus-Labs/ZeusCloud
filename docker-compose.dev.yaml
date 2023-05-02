@@ -86,6 +86,9 @@ services:
     environment: 
       - REACT_APP_API_DOMAIN=${REACT_APP_API_DOMAIN}
       - REACT_APP_ENVIRONMENT=${MODE}
+      - REACT_APP_POSTHOG_API_KEY=${POSTHOG_API_KEY}
+      - REACT_APP_POSTHOG_HOST=${POSTHOG_HOST}
+      - REACT_APP_TELEMETRY_ENABLED=${TELEMETRY_ENABLED}
     volumes:
       - ./frontend:/usr/src/app
     networks:

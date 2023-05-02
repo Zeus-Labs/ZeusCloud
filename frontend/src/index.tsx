@@ -6,11 +6,11 @@ import reportWebVitals from './reportWebVitals';
 import posthog from 'posthog-js'
 
 // @ts-ignore
-if(window._env_.TELEMETRY_ENABLED!="false"){
+if(window._env_.REACT_APP_TELEMETRY_ENABLED!="false"){
   // @ts-ignore
-  posthog.init(window._env_.POSTHOG_API_KEY, 
+  posthog.init(window._env_.REACT_APP_POSTHOG_API_KEY, 
     // @ts-ignore
-    { api_host: window._env_.POSTHOG_HOST,
+    { api_host: window._env_.REACT_APP_POSTHOG_HOST,
       autocapture: false
   })
 }
