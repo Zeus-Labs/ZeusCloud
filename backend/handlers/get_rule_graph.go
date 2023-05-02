@@ -22,17 +22,18 @@ func GetRuleGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Reque
 		resourceId := r.URL.Query().Get("resource_id")
 		ruleId := r.URL.Query().Get("rule_id")
 
-		var attackPathRuleDisplay types.Rule
-		var attackPathFound bool
-		for _, attackpathRule := range rules.AttackPathsRulesToExecute {
-			if attackpathRule.UID() == ruleId {
-				attackPathFound = true
-				attackPathRuleDisplay = attackpathRule
+		var ruleDisplay types.Rule
+		var ruleFound bool
+		rulesToExecute := append(rules.AttackPathsRulesToExecute, rules.MisconfigurationRulesToExecute...)
+		for _, rule := range rulesToExecute {
+			if rule.UID() == ruleId {
+				ruleFound = true
+				ruleDisplay = rule
 				break
 			}
 		}
 
-		if !attackPathFound {
+		if !ruleFound {
 			log.Println("Invalid rule to graph provided")
 			http.Error(w, "Invalid rule to graph provided", 500)
 			return
@@ -46,9 +47,9 @@ func GetRuleGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Reque
 
 		results, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 
-			records, err := attackPathRuleDisplay.ProduceRuleGraph(tx, resourceId)
+			records, err := ruleDisplay.ProduceRuleGraph(tx, resourceId)
 			if err != nil {
-				log.Printf("failed to retrieve rule graph results")
+				log.Printf("failed to retrieve rule graph results %v", err)
 				http.Error(w, "failed to retrieve rule graph results", 500)
 				return nil, err
 			}
@@ -63,7 +64,7 @@ func GetRuleGraph(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Reque
 			return displayGraph, err
 		})
 		if err != nil {
-			log.Printf("failed to retrieve rule graph results")
+			log.Printf("failed to retrieve rule graph results %v", err)
 			http.Error(w, "failed to retrieve rule graph results", 500)
 			return
 		}

@@ -92,5 +92,27 @@ func (BlockPublicServerAdminIngressIpv4) Execute(tx neo4j.Transaction) ([]types.
 }
 
 func (BlockPublicServerAdminIngressIpv4) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (neo4j.Result, error) {
-	return nil, nil
+	params := map[string]interface{}{
+		"resourceId": resourceId,
+	}
+
+	records, err := tx.Run(
+		`MATCH sg = (s:EC2SecurityGroup{id: $resourceId})
+		Optional MATCH vpcPath = (s)-[:MEMBER_OF_EC2_SECURITY_GROUP]->(:AWSVpc)
+		with s,sg,collect(vpcPath) as vpcPaths
+		Optional MATCH ec2Path = (:EC2Instance)-[:MEMBER_OF_EC2_SECURITY_GROUP]->(s)
+		with s,sg,vpcPaths,collect(ec2Path) as ec2Paths
+		Optional MATCH rdsPath = (:RDSInstance)-[:MEMBER_OF_EC2_SECURITY_GROUP]->(s)
+		with s,sg,vpcPaths,ec2Paths,collect(rdsPath) as rdsPaths
+		Optional MATCH lbPath = (:LoadBalancerV2)-[:MEMBER_OF_EC2_SECURITY_GROUP]->(s)
+		with s,sg,vpcPaths,ec2Paths,rdsPaths,collect(lbPath) as lbPaths
+		with vpcPaths+ec2Paths+rdsPaths+lbPaths+sg as paths
+		return paths;`,
+		params)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return records, nil
 }

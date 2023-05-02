@@ -33,7 +33,9 @@ export function PolicyInfoDisplay({edgeInfo,src,target}:PolicyInfoProps){
             ?           
             <Tabs tabs={tabs} current={current} setCurrent={setCurrent}/>
             :
-            <ResourcePolicyView edgeInfo={edgeInfo} />
+            (edgeInfo.resource_policy!==undefined 
+                ? <ResourcePolicyView edgeInfo={edgeInfo} /> 
+                : "No policies are defined for this edge")
             }
         </div>
     )
