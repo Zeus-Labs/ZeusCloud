@@ -1,22 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Banner } from "../Components/Shared/Banner";
 import { TextInput } from "../Components/Shared/Input";
-import SideBarNav from "../Components/Shared/SideBarNav/SideBarNav";
 import { AutoCompleteInlineIcon, S3ActionList, assetsImageMap, exploreNavMap } from "../Components/Explore/exploreUtils";
 import axios from "axios";
 import { InlineIcon, parseArn } from "../Components/AssetsInventory/assetUtils";
 import AssetTextIconDisplay from "../Components/Explore/assetTextIconDisplay";
-import { navIndicesToData, navIndicesToItemName } from "../Components/Shared/SideBarNav/sideBarUtils";
 import { DisplayGraph } from "../Components/Alerts/AlertsTypes";
 import RuleGraph, { GraphNodeType } from "../Components/Alerts/RuleGraph";
 import { Graph } from "@antv/g6";
-import { log } from "console";
-
 import { SelectFilterDropdown } from "../Components/Shared/Select";
 import { TableComp, TableRow } from "../Components/Shared/Table";
 import { assetToObjects } from "../Components/AssetsInventory/AssetCategoryMap";
 import DisplayEdgeInfo from "../Components/Explore/EdgeInfo/displayEdgeInfo";
 import RadioComp from "../Components/Shared/RadioComp";
+import posthog from 'posthog-js'
 
 async function getExploreAssetInfo(setExploreAssetInfo: any) {
     try {
@@ -410,6 +407,8 @@ export default function Explore() {
                                             <li key={assetObj.id} className="p-2.5 cursor-pointer hover:bg-gray-50 border-b border-gray-100">
                                                 <div className="text-sm"
                                                     onClick={() => {
+                                                        // @ts-ignore
+                                                        posthog.capture(`${window._env_.REACT_APP_ENVIRONMENT} Asset Selected in Access Explorer`,{environment: window._env_.REACT_APP_ENVIRONMENT})
                                                         setSearchFilter("");
                                                         setAsset(assetObj);
                                                         setSelected(true);

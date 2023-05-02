@@ -11,7 +11,7 @@ import { AlertSlideover } from './AlertsSlideover';
 import { TextInput } from "../Shared/Input";
 import { extractServiceName } from "../../utils/utils";
 import ColoredBgSpan from '../Shared/ColoredBgSpan';
-
+import posthog from 'posthog-js'
 export const severityColorMap:{[label:string]:string}={
     "Critical":"red",
     "High":"orange",
@@ -212,6 +212,9 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
             // Callback function to update open and set the alert instance variable.
             const setSlideoverAlertInstanceFn = async function(currAlertInstance: alert_instance) {
                 const ruleGraph = await getRuleGraph(currAlertInstance.resource_id,activeAlertInfo.rule_data.uid)
+                // @ts-ignore
+                posthog.capture(`${window._env_.REACT_APP_ENVIRONMENT} Alert Row Clicked`,{environment: window._env_.REACT_APP_ENVIRONMENT})
+
                 setSlideover(prevSlideover => {
                     return {
                         open: !prevSlideover.open,

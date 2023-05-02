@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import moment from 'moment';
 import { stringify } from 'querystring';
+import { posthog } from 'posthog-js';
 
 export interface account_details {
     account_name: string,
@@ -54,7 +55,13 @@ async function rescan(): Promise<string> {
         // @ts-ignore
         const rescanEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/rescan";
         await axios.post(rescanEndpoint);
+        // @ts-ignore
+        posthog.capture(`${window._env_.REACT_APP_ENVIRONMENT} Account Rescanned`,{status:"Successful",environment: window._env_.REACT_APP_ENVIRONMENT})
+
     } catch (error) {
+        // @ts-ignore
+        posthog.capture(`${window._env_.REACT_APP_ENVIRONMENT} Account Rescanned`,{status:"Unsuccessful",environment: window._env_.REACT_APP_ENVIRONMENT})
+
         if (axios.isAxiosError(error)) {
             if (error.response && error.response.data) {
                 return message = "Encountered an error in rescanning account: " + error.response.data
@@ -212,6 +219,8 @@ const RemoveAccount = ({ account_name, is_scan_running, setAccountDetailsList }:
                                 await deleteAccountDetails({
                                     accountName: account_name
                                 });
+                                // @ts-ignore
+                                posthog.capture(`${window._env_.REACT_APP_ENVIRONMENT} Account Removed`,{environment: window._env_.REACT_APP_ENVIRONMENT})
                                 setAccountDetailsList(await getAccountDetails());
                                 setModalOpen(false);
                                 setTimeout(() => {setLoading(false)}, 500);
@@ -256,7 +265,11 @@ const AccountActions = ({ account_name, is_scan_running, setAccountDetailsList }
             <button
                 type="submit"
                 disabled={is_scan_running}
-                onClick={() => {navigate('/alerts');}}
+                onClick={() => {
+                    // @ts-ignore
+                    posthog.capture(`${window._env_.REACT_APP_ENVIRONMENT} Viewed Results`,{environment: window._env_.REACT_APP_ENVIRONMENT})
+                    navigate('/alerts');
+                }}
                 className='bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ml-3 inline-flex justify-center rounded-md border border-transparent py-2 px-4 text-sm font-medium text-white shadow-sm disabled:opacity-50'
             >
                 View Results
