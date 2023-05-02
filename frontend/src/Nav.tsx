@@ -1,3 +1,4 @@
+import { posthog } from 'posthog-js';
 import './Nav.css';
 import { NavLink } from 'react-router-dom';
 
@@ -27,6 +28,10 @@ const Nav = () => {
                       <NavLink
                         key={item.name}
                         to={item.href}
+                        onClick={()=>{
+                          // @ts-ignore
+                          posthog.capture(`${window._env_.REACT_APP_ENVIRONMENT} Viewed ${item.name}`,{environment: window._env_.REACT_APP_ENVIRONMENT})
+                        }}
                         className={({ isActive }) => isActive
                               ? "bg-neutral-900 text-white px-3 py-2 rounded-md text-sm font-medium"
                               : "text-neutral-300 hover:bg-neutral-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"

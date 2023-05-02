@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { classNames } from '../../utils/utils'
 
 import axios from 'axios';
+import posthog from 'posthog-js'
 
 interface AccountDetailsSubmission {
     accountName: string;
@@ -29,7 +30,11 @@ async function addAccountDetails({accountName, connectionMethod, profile, awsAcc
             default_region: defaultRegion,
         }
         await axios.post(addAccountDetailsEndpoint, accountDetails);
+        // @ts-ignore
+        posthog.capture(`${window._env_.REACT_APP_ENVIRONMENT} Add Account`,{status:"Successful",environment: window._env_.REACT_APP_ENVIRONMENT})
     } catch (error) {
+         // @ts-ignore
+        posthog.capture(`${window._env_.REACT_APP_ENVIRONMENT} Add Account`,{status:"Unsuccessful",environment: window._env_.REACT_APP_ENVIRONMENT})
         if (axios.isAxiosError(error)) {
             if (error.response && error.response.data) {
                 return message = "Encountered an error in submitting account details: " + error.response.data

@@ -3,6 +3,22 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import posthog from 'posthog-js'
+
+// @ts-ignore
+if(window._env_.TELEMETRY_ENABLED!="false"){
+  // @ts-ignore
+  posthog.init(window._env_.POSTHOG_API_KEY, 
+    // @ts-ignore
+    { api_host: window._env_.POSTHOG_HOST,
+      autocapture: false
+  })
+}
+
+// posthog.opt_out_capturing()
+// posthog.identify("tushar")
+// posthog.opt_in_capturing()
+//console.log("is opted in = ",posthog.has_opted_out_capturing());
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
