@@ -15,11 +15,6 @@ if(window._env_.REACT_APP_TELEMETRY_ENABLED!="false"){
   })
 }
 
-// posthog.opt_out_capturing()
-// posthog.identify("tushar")
-// posthog.opt_in_capturing()
-//console.log("is opted in = ",posthog.has_opted_out_capturing());
-
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
