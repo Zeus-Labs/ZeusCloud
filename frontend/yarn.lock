@@ -2435,10 +2435,10 @@
   resolved "https://registry.npmjs.org/@types/node/-/node-18.13.0.tgz"
   integrity sha512-gC3TazRzGoOnoKAhUx+Q0t8S9Tzs74z7m0ipwGpSqQrleP14hKxP4/JUeEQcD3W1/aIpnWl8pHowI7WokuZpXg==
 
-"@types/node@^16.18.13":
-  version "16.18.16"
-  resolved "https://registry.npmjs.org/@types/node/-/node-16.18.16.tgz"
-  integrity sha512-ZOzvDRWp8dCVBmgnkIqYCArgdFOO9YzocZp8Ra25N/RStKiWvMOXHMz+GjSeVNe5TstaTmTWPucGJkDw0XXJWA==
+"@types/node@^16.18.23":
+  version "16.18.26"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-16.18.26.tgz#a18b88726a67bc6a8a5bdac9a40c093ecb03ccd0"
+  integrity sha512-pCNBzNQqCXE4A6FWDmrn/o1Qu+qBf8tnorBlNoPNSBQJF+jXzvTKNI/aMiE+hGJbK5sDAD65g7OS/YwSHIEJdw==
 
 "@types/parse-json@^4.0.0":
   version "4.0.0"
