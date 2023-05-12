@@ -14,4 +14,7 @@ type RuleData struct {
 	Severity       string         `json:"severity"`
 	RuleCategory   string         `json:"rule_category"`
 	RiskCategories pq.StringArray `json:"risk_categories" gorm:"type:text[]"`
+	CvssScore      float64        `json:"cvss_score,omitempty"`
+	Name           string         `json:"name,omitempty"`
+	YamlTemplate   string         `json:"yaml_template,omitempty"`
 }

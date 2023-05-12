@@ -88,6 +88,7 @@ import { PubliclyExposedVmPrivilegeEscalation } from "./AttackPathComponents/Pub
 import { PrivateServerlessAdminPermissions } from "./AttackPathComponents/PrivateServerlessAdminPermissions";
 import { PubliclyExposedVmHighIMDSv1Enabled } from "./AttackPathComponents/PubliclyExposedVmHighIMDSv1Enabled";
 import { PubliclyExposedVmAdminIMDSv1Enabled } from "./AttackPathComponents/PubliclyExposedVmAdminIMDSv1Enabled";
+import { PubliclyExposedVmHighPermissionsCriticalCve } from "./AttackPathComponents/PubliclyExposedVmHighPermissionsCriticalCve";
 
 
 export const Remediate = ({rule_data} : RemediateProps) => {
@@ -265,6 +266,8 @@ export const Remediate = ({rule_data} : RemediateProps) => {
          return <PubliclyExposedServerlessAdminPermissions/>
       case "attackpath/publicly_exposed_serverless_high_permissions":
          return <PubliclyExposedServerlessHighPermissions/>
+      case "attackpath/publicly_exposed_vm_high_permissions_critical_cve":
+         return <PubliclyExposedVmHighPermissionsCriticalCve />
       case "attackpath/publicly_exposed_serverless_priv_escalation":
          return <PubliclyExposedServerlessPrivilegeEscalation/>
       case "attackpath/publicly_exposed_vm_priv_escalation":

@@ -41,10 +41,11 @@ async function getAllAlertsInfo(): Promise<RuleAlertsResponse> {
 }
 
 
-// TODO: add vulnerablity when nuclei is merged
+
 const ruleCategoryParamToTabMap = {
     attackpath: "Attack Paths",
     misconfiguration: "Misconfigurations",
+    vulnerability: "Vulnerabilities",
 }
 
 const Alerts = () => {
@@ -163,6 +164,16 @@ const Alerts = () => {
                     isSlideover={isSlideOver}
                    />
         },
+        {
+            name: "Vulnerabilities",
+            body: <AlertsTableOps 
+                    key={"vulnerability"} 
+                    ruleCategory={"vulnerability"} 
+                    selectedAlertInstance={alertInstance}
+                    selectedRuleAlertGroup={ruleAlertGroup}
+                    isSlideover={isSlideOver}
+                    />
+        }
     ]
 
     const navigateOnTabClick = (tabName:string)=>{

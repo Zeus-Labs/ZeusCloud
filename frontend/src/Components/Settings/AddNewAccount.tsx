@@ -12,9 +12,10 @@ interface AccountDetailsSubmission {
     awsAccessKeyId: string;
     awsSecretAccessKey: string;
     regionNames: string[];
+    vulnerabilityScan: string;
 }
 
-async function addAccountDetails({accountName, connectionMethod, profile, awsAccessKeyId, awsSecretAccessKey,regionNames}: AccountDetailsSubmission): Promise<string> {
+async function addAccountDetails({accountName, connectionMethod, profile, awsAccessKeyId, awsSecretAccessKey,regionNames,vulnerabilityScan}: AccountDetailsSubmission): Promise<string> {
     let message = '';
     try {
         // @ts-ignore
@@ -23,13 +24,15 @@ async function addAccountDetails({accountName, connectionMethod, profile, awsAcc
             account_name: accountName,
             connection_method: connectionMethod,
             profile: profile,
-            region_names: regionNames
+            region_names: regionNames,
+            vulnerability_scan:vulnerabilityScan
         } : {
             account_name: accountName,
             connection_method: connectionMethod,
             aws_access_key_id: awsAccessKeyId,
             aws_secret_access_key: awsSecretAccessKey,
-            region_names: regionNames
+            region_names: regionNames,
+            vulnerability_scan:vulnerabilityScan
         }
         await axios.post(addAccountDetailsEndpoint, accountDetails);
         // @ts-ignore
@@ -124,6 +127,7 @@ const AddNewAccount = (props: AddNewAccountProps) => {
     const [awsAccessKeyId, setAwsAccessKeyId] = useState("");
     const [awsSecretAccessKey, setAwsSecretAccessKey] = useState("");
     const [regions,setRegions] = useState<Array<RegionOption>>([regionOptions[0]])
+    const [vulnerabilityScan, setVulnerabilityScan] = useState("None")
 
     const [awsProfiles, setAwsProfiles] = useState<string[]>([]);
     const [ready, setReady] = useState(false)
@@ -161,7 +165,8 @@ const AddNewAccount = (props: AddNewAccountProps) => {
             profile: profile,
             awsAccessKeyId: awsAccessKeyId,
             awsSecretAccessKey: awsSecretAccessKey,
-            regionNames: regions.map(region=>region.value) 
+            regionNames: regions.map(region=>region.value),
+            vulnerabilityScan:vulnerabilityScan 
         });
         if (message.length > 0) {
             setSubmissionState({
@@ -305,26 +310,42 @@ const AddNewAccount = (props: AddNewAccountProps) => {
                                     
                                     className="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm"
                                 />
-                                    
                             </div>
                         </div>
-                    </div>
-                    <div className="pt-5">
-                        <div className="flex justify-end">
-                            <p className="mt-1 max-w-2xl text-sm text-red-600">
-                                {submissionState.message}
-                            </p>
-                            <button
-                                type="submit"
-                                disabled={submissionState.loading}
-                                onClick={onSubmit}
-                                className={classNames(
-                                    submissionState.loading ? 'bg-indigo-300' : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2',
-                                    "ml-3 inline-flex justify-center rounded-md border border-transparent py-2 px-4 text-sm font-medium text-white shadow-sm"
-                                )}
-                            >
-                                Add Account
-                            </button>
+                        <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
+                            <label htmlFor="vulnerabilityScan" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
+                                Vulnerability Scan
+                            </label>
+                            <div className="mt-1 sm:col-span-2 sm:mt-0">
+                                <select
+                                    id="vulnerabilityScan"
+                                    name="vulnerabilityScan"
+                                    onChange = {(event) => setVulnerabilityScan(event.target.value)}
+                                    value = {vulnerabilityScan}
+                                    className="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm"
+                                >
+                                    <option>None</option>
+                                    <option>Nuclei</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="pt-5">
+                            <div className="flex justify-end">
+                                <p className="mt-1 max-w-2xl text-sm text-red-600">
+                                    {submissionState.message}
+                                </p>
+                                <button
+                                    type="submit"
+                                    disabled={submissionState.loading}
+                                    onClick={onSubmit}
+                                    className={classNames(
+                                        submissionState.loading ? 'bg-indigo-300' : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2',
+                                        "ml-3 inline-flex justify-center rounded-md border border-transparent py-2 px-4 text-sm font-medium text-white shadow-sm"
+                                    )}
+                                >
+                                    Add Account
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </>)
