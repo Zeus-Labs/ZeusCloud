@@ -10,10 +10,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Zeus-Labs/ZeusCloud/rules"
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 
 	"github.com/Zeus-Labs/ZeusCloud/models"
-	"github.com/Zeus-Labs/ZeusCloud/rules"
+
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"gorm.io/gorm"
 )
@@ -32,6 +33,7 @@ type CartographyJobRequest struct {
 	AwsAccessKeyId     string `json:"aws_access_key_id,omitempty"`
 	AwsSecretAccessKey string `json:"aws_secret_access_key,omitempty"`
 	DefaultRegion      string `json:"default_region,omitempty"`
+	VulnerabilityScan  string `json:"vulnerability_scan,omitempty"`
 }
 
 // RuleExecutionLoop tries to execute rules when
@@ -131,6 +133,10 @@ func TriggerScan(postgresDb *gorm.DB) error {
 	}
 	if len(accountDetailsLst) == 0 {
 		// No account details found, so skip cartography scanning
+		log.Printf("No account details found, skipping cartography")
+		ExecuteRulesMutex.Lock()
+		ExecuteRules = true
+		ExecuteRulesMutex.Unlock()
 		return nil
 	}
 	if len(accountDetailsLst) > 1 {
@@ -140,8 +146,9 @@ func TriggerScan(postgresDb *gorm.DB) error {
 	var cjr CartographyJobRequest
 	if accountDetailsLst[0].ConnectionMethod == "profile" {
 		cjr = CartographyJobRequest{
-			AccountName: accountDetailsLst[0].AccountName,
-			Profile:     accountDetailsLst[0].Profile,
+			AccountName:       accountDetailsLst[0].AccountName,
+			Profile:           accountDetailsLst[0].Profile,
+			VulnerabilityScan: accountDetailsLst[0].VulnerabilityScan,
 		}
 	} else if accountDetailsLst[0].ConnectionMethod == "access_key" {
 		cjr = CartographyJobRequest{
@@ -149,6 +156,7 @@ func TriggerScan(postgresDb *gorm.DB) error {
 			AwsAccessKeyId:     accountDetailsLst[0].AwsAccessKeyId,
 			AwsSecretAccessKey: accountDetailsLst[0].AwsSecretAccessKey,
 			DefaultRegion:      accountDetailsLst[0].DefaultRegion,
+			VulnerabilityScan:  accountDetailsLst[0].VulnerabilityScan,
 		}
 	} else {
 		return fmt.Errorf("invalid connection method: %v", accountDetailsLst[0].ConnectionMethod)
@@ -160,6 +168,7 @@ func TriggerScan(postgresDb *gorm.DB) error {
 		return err
 	}
 	resp, err := http.Post(os.Getenv("CARTOGRAPHY_URI")+"/start_job", "application/json", bytes.NewBuffer(cjrJSON))
+	log.Printf("response cartography = %v", resp)
 	if err != nil {
 		return err
 	}
@@ -208,4 +217,25 @@ func GetAwsProfiles() (AwsProfilesResponse, error) {
 		return AwsProfilesResponse{}, err
 	}
 	return apr, nil
+}
+
+type VulnRuleInfo struct {
+	CveIdentifier string  `json:"id,omitempty"`
+	Name          string  `json:"name,omitempty"`
+	Description   string  `json:"description,omitempty"`
+	CvssScore     float64 `json:"cvss_score,omitempty"`
+	YamlTemplate  string  `json:"yaml_template,omitempty"`
+}
+
+func GetVulnRuleInfo() ([]VulnRuleInfo, error) {
+	resp, err := http.Get(os.Getenv("CARTOGRAPHY_URI") + "/get_templates_info")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	var vri []VulnRuleInfo
+	if err := json.NewDecoder(resp.Body).Decode(&vri); err != nil {
+		return nil, err
+	}
+	return vri, nil
 }

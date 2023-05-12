@@ -82,6 +82,7 @@ const (
 	UnusedResource         RiskCategory = "Unused Resource"
 	DataAccess             RiskCategory = "Data Access"
 	PoorBackup             RiskCategory = "Poor Backup"
+	Vulnerability          RiskCategory = "Vulnerability"
 )
 
 type RiskCategoryList []RiskCategory

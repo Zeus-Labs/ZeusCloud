@@ -55,7 +55,8 @@ export interface SlidoverStateData {
 
 export interface AlertSlideoverProps {
     slideoverData: SlidoverStateData;
-    setOpen: () => void
+    setOpen: () => void;
+    ruleCategory: string;
 }
 
 export interface DisplayNode{

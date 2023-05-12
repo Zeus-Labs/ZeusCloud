@@ -2,8 +2,10 @@ package rules
 
 import (
 	"fmt"
-	"github.com/Zeus-Labs/ZeusCloud/rules/attackpath"
 	"time"
+
+	"github.com/Zeus-Labs/ZeusCloud/rules/attackpath"
+	"github.com/Zeus-Labs/ZeusCloud/rules/vulnerability"
 
 	"github.com/Zeus-Labs/ZeusCloud/models"
 	"github.com/Zeus-Labs/ZeusCloud/rules/cloudtrail"
@@ -118,7 +120,11 @@ var AttackPathsRulesToExecute = []types.Rule{
 	attackpath.PrivateVmAdmin{},
 	attackpath.ThirdPartyHigh{},
 	attackpath.ThirdPartyAdmin{},
+	attackpath.PubliclyExposedVmHighCVECritical{},
+	attackpath.PubliclyExposedVmAdminCVECritical{},
 }
+
+var VulnerabilityRulesToExecute = []types.Rule{}
 
 func IsRuleActive(postgresDb *gorm.DB, r types.Rule) (bool, error) {
 	tx := postgresDb.Limit(1).Where("uid = ? AND active = false", r.UID()).Find(&models.RuleData{})
@@ -130,6 +136,7 @@ func IsRuleActive(postgresDb *gorm.DB, r types.Rule) (bool, error) {
 
 // ExecuteRule executes rule logic
 func ExecuteRule(driver neo4j.Driver, r types.Rule) ([]types.Result, error) {
+
 	session := driver.NewSession(neo4j.SessionConfig{
 		AccessMode:   neo4j.AccessModeRead,
 		DatabaseName: "neo4j",
@@ -151,15 +158,33 @@ func ExecuteRule(driver neo4j.Driver, r types.Rule) ([]types.Result, error) {
 
 // UpsertRuleData inserts / replaces rule data struct
 func UpsertRuleData(postgresDb *gorm.DB, r types.Rule, ruleCategory string) (models.RuleData, error) {
-	rd := models.RuleData{
-		UID:            r.UID(),
-		Description:    r.Description(),
-		Active:         true,
-		LastRun:        time.Now(),
-		Severity:       string(r.Severity()),
-		RuleCategory:   ruleCategory,
-		RiskCategories: r.RiskCategories().AsStringArray(),
+	vulnRule, ok := r.(vulnerability.Vulnerability)
+	var rd models.RuleData
+	if ok {
+		rd = models.RuleData{
+			UID:            vulnRule.UID(),
+			Description:    vulnRule.Description(),
+			Active:         true,
+			LastRun:        time.Now(),
+			Severity:       string(vulnRule.Severity()),
+			RuleCategory:   ruleCategory,
+			RiskCategories: vulnRule.RiskCategories().AsStringArray(),
+			Name:           vulnRule.Name,
+			CvssScore:      vulnRule.CvssScore,
+			YamlTemplate:   vulnRule.YamlTemplate,
+		}
+	} else {
+		rd = models.RuleData{
+			UID:            r.UID(),
+			Description:    r.Description(),
+			Active:         true,
+			LastRun:        time.Now(),
+			Severity:       string(r.Severity()),
+			RuleCategory:   ruleCategory,
+			RiskCategories: r.RiskCategories().AsStringArray(),
+		}
 	}
+
 	tx := postgresDb.Clauses(clause.OnConflict{
 		UpdateAll: true,
 	}).Create(rd)

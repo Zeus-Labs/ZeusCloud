@@ -15,6 +15,10 @@ const Alerts = () => {
             name: "Attack Paths",
             body: <AlertsTableOps key={"attackpath"} ruleCategory={"attackpath"} />
         },
+        {
+            name: "Vulnerabilities",
+            body: <AlertsTableOps key={"vulnerability"} ruleCategory={"vulnerability"} />
+        }
     ]
 
 

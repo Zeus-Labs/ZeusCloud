@@ -3,6 +3,9 @@ export interface rule_info {
     description: string;
     severity: string;
     risk_categories: Array<string>;
+    name?: string;
+    cvss_score?:number;
+    yaml_template?:string;
     active: boolean;
 }
 

@@ -16,6 +16,10 @@ const Rules = () => {
             name: "Attack Paths",
             body: <RulesTableOps key={"attackpath"} ruleCategory={"attackpath"} />
         },
+        {
+            name: "Vulnerabilities",
+            body: <RulesTableOps key={"vulnerability"} ruleCategory={"vulnerability"} />
+        }
     ]
 
     return (
