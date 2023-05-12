@@ -10,10 +10,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Zeus-Labs/ZeusCloud/rules"
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 
 	"github.com/Zeus-Labs/ZeusCloud/models"
-	"github.com/Zeus-Labs/ZeusCloud/rules"
+
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"gorm.io/gorm"
 )
@@ -38,6 +39,7 @@ type CartographyJobRequest struct {
 	AwsAccessKeyId     string `json:"aws_access_key_id,omitempty"`
 	AwsSecretAccessKey string `json:"aws_secret_access_key,omitempty"`
 	DefaultRegion      string `json:"default_region,omitempty"`
+	VulnerabilityScan  string `json:"vulnerability_scan,omitempty"`
 }
 
 // ExecuteRules attempts to
@@ -121,8 +123,9 @@ func StartCartographyJob(account models.AccountDetails) error {
 	var cjr CartographyJobRequest
 	if account.ConnectionMethod == "profile" {
 		cjr = CartographyJobRequest{
-			AccountName: account.AccountName,
-			Profile:     account.Profile,
+			AccountName:       account.AccountName,
+			Profile:           account.Profile,
+			VulnerabilityScan: account.VulnerabilityScan,
 		}
 	} else if account.ConnectionMethod == "access_key" {
 		cjr = CartographyJobRequest{
@@ -130,6 +133,7 @@ func StartCartographyJob(account models.AccountDetails) error {
 			AwsAccessKeyId:     account.AwsAccessKeyId,
 			AwsSecretAccessKey: account.AwsSecretAccessKey,
 			DefaultRegion:      account.DefaultRegion,
+			VulnerabilityScan:  account.VulnerabilityScan,
 		}
 	} else {
 		// Invalid Connection Method
@@ -142,6 +146,7 @@ func StartCartographyJob(account models.AccountDetails) error {
 		return fmt.Errorf("Error marshalling cartography job request: %v", err)
 	}
 	resp, err := http.Post(os.Getenv("CARTOGRAPHY_URI")+"/start_job", "application/json", bytes.NewBuffer(cjrJSON))
+	log.Printf("response cartography = %v", resp)
 	if err != nil {
 		return err
 	}
@@ -303,4 +308,25 @@ func GetAwsProfiles() (AwsProfilesResponse, error) {
 		return AwsProfilesResponse{}, err
 	}
 	return apr, nil
+}
+
+type VulnRuleInfo struct {
+	CveIdentifier string  `json:"id,omitempty"`
+	Name          string  `json:"name,omitempty"`
+	Description   string  `json:"description,omitempty"`
+	CvssScore     float64 `json:"cvss_score,omitempty"`
+	YamlTemplate  string  `json:"yaml_template,omitempty"`
+}
+
+func GetVulnRuleInfo() ([]VulnRuleInfo, error) {
+	resp, err := http.Get(os.Getenv("CARTOGRAPHY_URI") + "/get_templates_info")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	var vri []VulnRuleInfo
+	if err := json.NewDecoder(resp.Body).Decode(&vri); err != nil {
+		return nil, err
+	}
+	return vri, nil
 }

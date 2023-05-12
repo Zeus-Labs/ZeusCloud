@@ -138,6 +138,11 @@ const labelInfoMap: { [label: string]: { [dataType :string] : string } } = {
         "display": "SQS Queue",
         "image": "/images/sqs-queue.svg",
         "category": "Storage",
+    },
+    "CVE":{
+        "display": "CVE",
+        "image": "/images/cve.svg",
+        "category": "Network",
     }
 };
 

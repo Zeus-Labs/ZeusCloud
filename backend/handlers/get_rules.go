@@ -19,7 +19,7 @@ func GetRules(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) 
 		ruleCategory := r.URL.Query().Get("rulecategory")
 
 		// Check if rule category is valid.
-		var ruleCategoryMap = map[string]bool{"attackpath": true, "all": true, "misconfiguration": true}
+		var ruleCategoryMap = map[string]bool{"attackpath": true, "all": true, "misconfiguration": true, "vulnerability": true}
 		if _, ok := ruleCategoryMap[ruleCategory]; !ok {
 			log.Println("Invalid rule category provided")
 			http.Error(w, "Invalid rule category provided provided", 500)
