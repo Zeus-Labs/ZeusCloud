@@ -24,7 +24,8 @@ type ToggleMuteButtonProps = {
 };
 
 const ToggleMuteButton = ({ muted, resource_id, ruleDataId, toggleAlertMuteState }: ToggleMuteButtonProps) => { 
-  async function onClickToggleFn() {
+  async function onClickToggleFn(event:React.MouseEvent) {
+    event.stopPropagation()
     var alertId: AlertId = {resource_id: resource_id, rule_data_uid: ruleDataId}
     toggleAlertMuteState(alertId, !muted);
     updateAlertMuteState({alertId: alertId, newMutedValue: !muted});
@@ -33,7 +34,7 @@ const ToggleMuteButton = ({ muted, resource_id, ruleDataId, toggleAlertMuteState
   if (muted) {
     return (
       <div className="relative flex flex-col group">
-        <SpeakerXMarkIcon onClick={() => onClickToggleFn()} className="w-5 h-5 "/> 
+        <SpeakerXMarkIcon onClick={(e) => onClickToggleFn(e)} className="w-5 h-5 "/> 
         <div className="absolute bottom-0 flex flex-col items-center hidden mb-6 group-hover:flex">
             <span className="relative z-10 p-2 text-xs leading-none text-white whitespace-no-wrap bg-black shadow-lg">Unmute</span>
             <div className="w-3 h-3 -mt-2 rotate-45 bg-black"></div>
@@ -43,7 +44,7 @@ const ToggleMuteButton = ({ muted, resource_id, ruleDataId, toggleAlertMuteState
   }
   return (
       <div className="relative flex flex-col group">
-        <SpeakerWaveIcon onClick={() => onClickToggleFn()} className="w-5 h-5 "/> 
+        <SpeakerWaveIcon onClick={(e) => onClickToggleFn(e)} className="w-5 h-5 "/> 
         <div className="absolute bottom-0 flex flex-col items-center hidden mb-6 group-hover:flex tooltip">
             Mute
         </div>

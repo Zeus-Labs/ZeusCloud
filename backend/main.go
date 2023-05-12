@@ -4,11 +4,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/Zeus-Labs/ZeusCloud/control"
 	"github.com/Zeus-Labs/ZeusCloud/models"
 	"github.com/Zeus-Labs/ZeusCloud/rules"
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
+	"github.com/Zeus-Labs/ZeusCloud/rules/vulnerability"
 
 	"github.com/Zeus-Labs/ZeusCloud/constants"
 	"github.com/Zeus-Labs/ZeusCloud/db"
@@ -55,6 +57,35 @@ func main() {
 			continue
 		}
 	}
+
+	for {
+		if _, err := control.GetScanStatus(); err != nil {
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		break
+	}
+	vriList, err := control.GetVulnRuleInfo()
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, vri := range vriList {
+		vulnRule := vulnerability.Vulnerability{
+			Name:           vri.Name,
+			CveDescription: vri.Description,
+			CvssScore:      vri.CvssScore,
+			CveIdentifier:  vri.CveIdentifier,
+			YamlTemplate:   vri.YamlTemplate,
+		}
+		rules.VulnerabilityRulesToExecute = append(rules.VulnerabilityRulesToExecute, vulnRule)
+
+		err := rules.UpsertRuleData(postgresDb, vulnRule, "vulnerability")
+		if err != nil {
+			log.Printf("Unexpected error upserting rule_data %v", err)
+			continue
+		}
+	}
+
 	log.Println("Finished inserting postgres rules.")
 
 	// For demo environment, attempt to add account to kick of cartography.
@@ -73,6 +104,7 @@ func main() {
 
 	// Kick of rule execution loop and try to trigger a scan successfully.
 	rulesToExecute := append(append([]types.Rule{}, rules.AttackPathsRulesToExecute...), rules.MisconfigurationRulesToExecute...)
+	rulesToExecute = append(rulesToExecute, rules.VulnerabilityRulesToExecute...)
 	if err := control.ResetCartographyStatus(postgresDb); err != nil {
 		log.Printf("Error in resetting cartography job status on startup")
 	}

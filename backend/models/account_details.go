@@ -12,4 +12,5 @@ type AccountDetails struct {
 	LastScanCompleted  *time.Time `json:"last_scan_completed"`
 	ScanStatus         string     `json:"scan_status"`
 	RunningTime        float64    `json:"running_time,omitempty"`
+	VulnerabilityScan  string     `json:"vulnerability_scan"`
 }
