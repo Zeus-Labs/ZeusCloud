@@ -122,6 +122,8 @@ var AttackPathsRulesToExecute = []types.Rule{
 	attackpath.ThirdPartyAdmin{},
 	attackpath.PubliclyExposedVmHighCVECritical{},
 	attackpath.PubliclyExposedVmAdminCVECritical{},
+	attackpath.PubliclyExposedServerlessHighCVECritical{},
+	attackpath.PubliclyExposedServerlessAdminCriticalCVE{},
 }
 
 var VulnerabilityRulesToExecute = []types.Rule{}
@@ -136,7 +138,6 @@ func IsRuleActive(postgresDb *gorm.DB, r types.Rule) (bool, error) {
 
 // ExecuteRule executes rule logic
 func ExecuteRule(driver neo4j.Driver, r types.Rule) ([]types.Result, error) {
-
 	session := driver.NewSession(neo4j.SessionConfig{
 		AccessMode:   neo4j.AccessModeRead,
 		DatabaseName: "neo4j",

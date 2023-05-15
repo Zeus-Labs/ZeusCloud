@@ -133,10 +133,6 @@ func TriggerScan(postgresDb *gorm.DB) error {
 	}
 	if len(accountDetailsLst) == 0 {
 		// No account details found, so skip cartography scanning
-		log.Printf("No account details found, skipping cartography")
-		ExecuteRulesMutex.Lock()
-		ExecuteRules = true
-		ExecuteRulesMutex.Unlock()
 		return nil
 	}
 	if len(accountDetailsLst) > 1 {
@@ -168,7 +164,6 @@ func TriggerScan(postgresDb *gorm.DB) error {
 		return err
 	}
 	resp, err := http.Post(os.Getenv("CARTOGRAPHY_URI")+"/start_job", "application/json", bytes.NewBuffer(cjrJSON))
-	log.Printf("response cartography = %v", resp)
 	if err != nil {
 		return err
 	}
