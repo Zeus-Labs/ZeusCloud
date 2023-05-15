@@ -146,7 +146,6 @@ func StartCartographyJob(account models.AccountDetails) error {
 		return fmt.Errorf("Error marshalling cartography job request: %v", err)
 	}
 	resp, err := http.Post(os.Getenv("CARTOGRAPHY_URI")+"/start_job", "application/json", bytes.NewBuffer(cjrJSON))
-	log.Printf("response cartography = %v", resp)
 	if err != nil {
 		return err
 	}
