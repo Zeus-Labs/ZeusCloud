@@ -86,7 +86,10 @@ import { PubliclyExposedServerlessHighPermissions } from "./AttackPathComponents
 import { PubliclyExposedServerlessPrivilegeEscalation } from "./AttackPathComponents/PubliclyExposedServerlessPrivilegeEscalation";
 import { PubliclyExposedVmPrivilegeEscalation } from "./AttackPathComponents/PubliclyExposedVmPrivilegeEscalation";
 import { PrivateServerlessAdminPermissions } from "./AttackPathComponents/PrivateServerlessAdminPermissions";
-import { PubliclyExposedVmHighPermissionsCriticalCve } from "./AttackPathComponents/PubliclyExposedVmHighPermissionsCriticalCve";
+import { PubliclyExposedVmHighPermissionsCriticalCVE} from "./AttackPathComponents/PubliclyExposedVmHighPermissionsCriticalCve";
+import { PubliclyExposedVmAdminPermissionsCriticalCVE } from "./AttackPathComponents/PubliclyExposedVmAdminPermissionsCriticalCVE";
+import { PubliclyExposedServerlessHighPermissionsCriticalCVE } from "./AttackPathComponents/PubliclyExposedServerlessHighPermissionsCriticalCVE";
+import { PubliclyExposedServerlessAdminPermissionsCriticalCVE } from "./AttackPathComponents/PubliclyExposedServerlessAdminPermissionsCriticalCVE";
 
 
 export const Remediate = ({rule_data} : RemediateProps) => {
@@ -258,20 +261,26 @@ export const Remediate = ({rule_data} : RemediateProps) => {
          return <ThirdPartyHighPermissions/>
       case "attackpath/publicly_exposed_vm_admin_permissions": 
          return <PubliclyExposedVmAdminPermissions/>
+      case "attackpath/publicly_exposed_vm_admin_permissions_critical_cve":
+         return <PubliclyExposedVmAdminPermissionsCriticalCVE />
       case "attackpath/publicly_exposed_vm_high_permissions":
          return <PubliclyExposedVmHighPermissions/>
       case "attackpath/publicly_exposed_serverless_admin_permissions": 
          return <PubliclyExposedServerlessAdminPermissions/>
       case "attackpath/publicly_exposed_serverless_high_permissions":
          return <PubliclyExposedServerlessHighPermissions/>
+      case "attackpath/publicly_exposed_serverless_high_permissions_critical_cve":
+         return <PubliclyExposedServerlessHighPermissionsCriticalCVE />
       case "attackpath/publicly_exposed_vm_high_permissions_critical_cve":
-         return <PubliclyExposedVmHighPermissionsCriticalCve />
+         return <PubliclyExposedVmHighPermissionsCriticalCVE />
       case "attackpath/publicly_exposed_serverless_priv_escalation":
          return <PubliclyExposedServerlessPrivilegeEscalation/>
       case "attackpath/publicly_exposed_vm_priv_escalation":
          return <PubliclyExposedVmPrivilegeEscalation/>
       case "attackpath/private_serverless_admin_permissions": 
          return <PrivateServerlessAdminPermissions/>
+      case "attackpath/publicly_exposed_serverless_admin_permissions_critical_cve":
+         return <PubliclyExposedServerlessAdminPermissionsCriticalCVE />
 
    }
    return (<></>)
