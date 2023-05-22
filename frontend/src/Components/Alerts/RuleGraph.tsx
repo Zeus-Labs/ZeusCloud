@@ -161,7 +161,6 @@ export default memo(function RuleGraph({ruleGraph,graphEventListner}:RuleGraphPr
 
     graph.data(data);
     graph.render();
-    console.log("Graph rendered");
     
     // addTreeGraphChild(left_side_paths,graph);
     // addTreeGraphChild(right_side_paths,graph);
@@ -177,12 +176,10 @@ export default memo(function RuleGraph({ruleGraph,graphEventListner}:RuleGraphPr
       window.onresize = () => {
         if (!graph || graph.get('destroyed')) return;
         if (!container || !container.scrollWidth || !container.scrollHeight) return;
-        console.log("resized");
         graph.changeSize(container.scrollWidth, container.scrollHeight);
       };
       return ()=>{
         graph.destroy();
-        console.log("Graph destroyed");
       }
       
     })
