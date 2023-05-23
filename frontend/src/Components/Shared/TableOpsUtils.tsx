@@ -5,24 +5,25 @@ export const searchFilterFn = (allRows: Array<TableRow>, filterValue: string): A
         return allRows;
     }
 
+    filterValue = filterValue.toLowerCase()
     return allRows.filter(row => {
         for (var col of row.columns) {
             if (col.accessor_key === "description" && typeof(col.value) === "string"&&
-                col.value.includes(filterValue)) {
+                col.value.toLowerCase().includes(filterValue)) {
                 return true;
             }
 
             if (col.accessor_key === "service" && typeof(col.value) === "string" &&
-                col.value.includes(filterValue)) {
+                col.value.toLowerCase().includes(filterValue)) {
                 return true;
             }
 
-            if (col.accessor_key === "risk_categories" && col.value instanceof Array && 
-                col.value.some(v => v.includes(filterValue))) {
+            if (col.accessor_key === "risk_categories" && col.value instanceof Array<string> && 
+                col.value.some(v => v.toLowerCase().includes(filterValue))) {
                 return true;
             }
 
-            if (col.accessor_key === "severity" && col.value === filterValue) {
+            if (col.accessor_key === "severity" && typeof(col.value) === "string" && col.value.toLowerCase() === filterValue) {
                 return true;
             }
         }

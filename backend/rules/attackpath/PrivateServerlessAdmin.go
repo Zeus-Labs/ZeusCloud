@@ -2,6 +2,7 @@ package attackpath
 
 import (
 	"fmt"
+
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -17,7 +18,7 @@ func (PrivateServerlessAdmin) Description() string {
 }
 
 func (PrivateServerlessAdmin) Severity() types.Severity {
-	return types.Critical
+	return types.High
 }
 
 func (PrivateServerlessAdmin) RiskCategories() types.RiskCategoryList {

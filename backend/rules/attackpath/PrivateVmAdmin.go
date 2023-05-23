@@ -18,7 +18,7 @@ func (PrivateVmAdmin) Description() string {
 }
 
 func (PrivateVmAdmin) Severity() types.Severity {
-	return types.High
+	return types.Moderate
 }
 
 func (PrivateVmAdmin) RiskCategories() types.RiskCategoryList {

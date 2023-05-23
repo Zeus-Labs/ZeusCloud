@@ -18,7 +18,7 @@ func (PubliclyExposedVmAdmin) Description() string {
 }
 
 func (PubliclyExposedVmAdmin) Severity() types.Severity {
-	return types.Critical
+	return types.High
 }
 
 func (PubliclyExposedVmAdmin) RiskCategories() types.RiskCategoryList {

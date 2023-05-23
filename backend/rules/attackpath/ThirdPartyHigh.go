@@ -18,7 +18,7 @@ func (ThirdPartyHigh) Description() string {
 }
 
 func (ThirdPartyHigh) Severity() types.Severity {
-	return types.High
+	return types.Moderate
 }
 
 func (ThirdPartyHigh) RiskCategories() types.RiskCategoryList {
