@@ -19,6 +19,7 @@ export interface account_details {
     last_scan_completed: Date | null,
     is_scan_running: boolean,
     is_rules_running: boolean,
+    scan_status: string,
     running_time: number,
 }
 
@@ -27,10 +28,7 @@ export async function getAccountDetails(): Promise<account_details[]> {
     // @ts-ignore
     const getAccountDetailsEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/getAccountDetails";
     const response = await axios.get(getAccountDetailsEndpoint);   
-    // @ts-ignore
-    const getAccountScanInfoEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/getAccountScanInfo";
-    const responseAccountScanInfo = await axios.get(getAccountScanInfoEndpoint);
-    
+    // @ts-ignore    
     var accountDetailsList = new Array<account_details>();
     response.data.forEach((curElement: account_details) => {
         accountDetailsList.push({
@@ -41,20 +39,21 @@ export async function getAccountDetails(): Promise<account_details[]> {
             aws_secret_access_key: curElement.aws_secret_access_key,
             default_region: curElement.default_region,
             last_scan_completed: curElement.last_scan_completed,
-            is_scan_running: responseAccountScanInfo.data.status === "RUNNING" || responseAccountScanInfo.data.status === "RULES_RUNNING",
-            is_rules_running: responseAccountScanInfo.data.status === "RULES_RUNNING",
-            running_time: responseAccountScanInfo.data.running_time,
+            is_scan_running: curElement.scan_status === "RUNNING" || curElement.scan_status === "RULES_RUNNING" || curElement.scan_status === "CARTOGRAPHY_PASSED",
+            is_rules_running: curElement.scan_status === "RULES_RUNNING",
+            scan_status: curElement.scan_status,
+            running_time: curElement.running_time,
         });
     });
     return accountDetailsList;
 }
 
-async function rescan(): Promise<string> {
+async function rescan(accountName:string): Promise<string> {
     let message = '';
     try {
         // @ts-ignore
         const rescanEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/rescan";
-        await axios.post(rescanEndpoint);
+        await axios.post(rescanEndpoint,{account_name: accountName});
         // @ts-ignore
         posthog.capture(`${window._env_.REACT_APP_ENVIRONMENT} Account Rescanned`,{status:"Successful",environment: window._env_.REACT_APP_ENVIRONMENT})
 
@@ -79,11 +78,15 @@ interface ScanStatusProps {
     is_rules_running: boolean,
     running_time: number,
     last_scan_completed: Date | null,
+    scan_status: string,
 }
 
-const ScanStatus = ({ is_scan_running, is_rules_running, running_time, last_scan_completed }: ScanStatusProps) => {
+const ScanStatus = ({ is_scan_running, is_rules_running, running_time, last_scan_completed, scan_status }: ScanStatusProps) => {
     function runningTimeToPercentage(runningTime: number): string {
         return ((3 + Math.min(670, runningTime)) * 100 / 700.).toFixed(1);
+    }
+    if (scan_status === "READY") {
+        return <>Queued</>
     }
     if (is_rules_running) {
         running_time = 670
@@ -92,7 +95,14 @@ const ScanStatus = ({ is_scan_running, is_rules_running, running_time, last_scan
         return <>In Progress: {runningTimeToPercentage(running_time)}% completed...</>
     }
     return (
-        <>Completed {moment.duration(moment().diff(moment(last_scan_completed))).humanize()} ago</>
+        <div className='flex'>
+            <span>
+                <img className='w-5 mr-1' src={scan_status=="PASSED" ? "images/check.svg" : "images/cross.svg"} />
+            </span>
+            <span>
+                {`${scan_status=="PASSED" ? "Completed" : "Failed"} ${moment.duration(moment().diff(moment(last_scan_completed))).humanize()} ago`}
+            </span>
+        </div>
     )
 }
 
@@ -154,7 +164,7 @@ const TriggerScan = ({ account_name, is_scan_running, setAccountDetailsList }: T
                             )}
                             onClick={async function () {
                                 setLoading(true);
-                                await rescan();
+                                await rescan(account_name);
                                 setAccountDetailsList(await getAccountDetails());
                                 setModalOpen(false);
                                 setTimeout(() => {setLoading(false)}, 500);
@@ -313,13 +323,17 @@ const ConnectedAccounts = () => {
             setAccountDetailsList(await getAccountDetails());
         }
         asyncSetAccountDetails();
+        const timeout = setTimeout(()=>asyncSetAccountDetails(),2000)
         // No need to poll in read-only demo environment
         // @ts-ignore
         if (window._env_.REACT_APP_ENVIRONMENT === "Demo") {
             return
         }
         const interval = setInterval(() => { asyncSetAccountDetails(); }, 10 * 1000);
-        return () => clearInterval(interval);
+        return () => {
+            clearInterval(interval);
+            clearTimeout(timeout);
+        }
     }, []);
 
     // Set all table rows.
@@ -341,7 +355,7 @@ const ConnectedAccounts = () => {
                           ignoreComponentExpansion: false,
                       },
                       {
-                          content: <ScanStatus is_scan_running={accountDetails.is_scan_running} is_rules_running={accountDetails.is_rules_running} running_time={accountDetails.running_time} last_scan_completed={accountDetails.last_scan_completed} />,
+                          content: <ScanStatus is_scan_running={accountDetails.is_scan_running} is_rules_running={accountDetails.is_rules_running} running_time={accountDetails.running_time} last_scan_completed={accountDetails.last_scan_completed} scan_status={accountDetails.scan_status} />,
                           accessor_key: "scan_status",
                           value: accountDetails.is_scan_running,
                           ignoreComponentExpansion: false,

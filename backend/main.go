@@ -1,13 +1,14 @@
 package main
 
 import (
+	"log"
+	"net/http"
+	"os"
+
 	"github.com/Zeus-Labs/ZeusCloud/control"
 	"github.com/Zeus-Labs/ZeusCloud/models"
 	"github.com/Zeus-Labs/ZeusCloud/rules"
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
-	"log"
-	"net/http"
-	"os"
 
 	"github.com/Zeus-Labs/ZeusCloud/constants"
 	"github.com/Zeus-Labs/ZeusCloud/db"
@@ -75,11 +76,10 @@ func main() {
 
 	// Kick of rule execution loop and try to trigger a scan successfully.
 	rulesToExecute := append(append([]types.Rule{}, rules.AttackPathsRulesToExecute...), rules.MisconfigurationRulesToExecute...)
-	go control.RuleExecutionLoop(postgresDb, driver, ruleDataList, rulesToExecute)
-	if err := control.TriggerScan(postgresDb); err != nil {
-		log.Printf("Tried triggering scan but failed: %v", err)
+	if err := control.ResetStatusOnStartup(postgresDb); err != nil {
+		log.Printf("Error in resetting cartography job status on startup")
 	}
-	log.Println("Completed triggering scan.")
+	go control.CartographyExecutionLoop(postgresDb, driver, ruleDataList, rulesToExecute)
 
 	// Set up routing
 	mux := http.NewServeMux()
@@ -94,7 +94,7 @@ func main() {
 	mux.HandleFunc("/api/deleteAccountDetails", handlers.DeleteAccountDetails(postgresDb))
 	mux.HandleFunc("/api/getAccountDetails", handlers.GetAccountDetails(postgresDb))
 	mux.HandleFunc("/api/rescan", handlers.Rescan(postgresDb))
-	mux.HandleFunc("/api/getAccountScanInfo", handlers.GetAccountScanInfo())
+	// mux.HandleFunc("/api/getAccountScanInfo", handlers.GetAccountScanInfo())
 	mux.HandleFunc("/api/getAssetInventory", handlers.GetAssetInventory(driver))
 	mux.HandleFunc("/api/getExploreAssets", handlers.GetExploreAssets(driver))
 	mux.HandleFunc("/api/getRuleGraph", handlers.GetRuleGraph(driver))

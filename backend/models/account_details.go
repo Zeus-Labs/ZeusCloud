@@ -10,4 +10,6 @@ type AccountDetails struct {
 	AwsSecretAccessKey string     `json:"aws_secret_access_key"`
 	DefaultRegion      string     `json:"default_region"`
 	LastScanCompleted  *time.Time `json:"last_scan_completed"`
+	ScanStatus         string     `json:"scan_status"`
+	RunningTime        float64    `json:"running_time,omitempty"`
 }
