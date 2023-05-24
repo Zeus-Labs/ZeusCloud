@@ -38,7 +38,7 @@ func (PubliclyExposedServerlessAdminCriticalCVE) Execute(tx neo4j.Transaction) (
 			(elbv2_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP]-
 			(elbv2:LoadBalancerV2{scheme: 'internet-facing'})—[:ELBV2_LISTENER]->
 			(listener:ELBV2Listener),
-			(elbv2CVE:CVE {severity:"info"})<-[HAS_VULNERABILITY]-(elbv2)-[:EXPOSE]->(lambda)
+			(elbv2CVE:CVE {severity:"critical"})<-[HAS_VULNERABILITY]-(elbv2)-[:EXPOSE]->(lambda)
 		WHERE listener.port >= perm.fromport AND listener.port <= perm.toport
 		WITH a, lambda, collect(distinct elbv2.id) as public_elbv2_ids, collect(distinct elbv2CVE.template_id) as elbv2_cve_ids
 		OPTIONAL MATCH
@@ -133,13 +133,13 @@ func (PubliclyExposedServerlessAdminCriticalCVE) ProduceRuleGraph(tx neo4j.Trans
 			(elbv2_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP]-
 			(elbv2:LoadBalancerV2{scheme: 'internet-facing'})—[:ELBV2_LISTENER]->
 			(listener:ELBV2Listener),
-			(lambda)<-[:EXPOSE]-(elbv2)-[:HAS_VULNERABILITY]->(:CVE {severity:"info"})
+			(lambda)<-[:EXPOSE]-(elbv2)-[:HAS_VULNERABILITY]->(:CVE {severity:"critical"})
 		WHERE listener.port >= perm.fromport AND listener.port <= perm.toport
 		OPTIONAL MATCH
 			indirectPath=(iprange)-[:MEMBER_OF_IP_RULE]->(perm)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
 			(elbv2_group)<-[:MEMBER_OF_EC2_SECURITY_GROUP]-(elbv2)-[:EXPOSE]->(lambda)
 		OPTIONAL MATCH 
-			elbv2CvePath = (elbv2)-[HAS_VULNERABILITY]->(:CVE {severity:"info"})
+			elbv2CvePath = (elbv2)-[HAS_VULNERABILITY]->(:CVE {severity:"critical"})
 		WITH a, lambda, collect(indirectPath) as indirectPaths, collect(elbv2CvePath) as elbv2CvePaths
 		OPTIONAL MATCH
 			adminRolePath=
