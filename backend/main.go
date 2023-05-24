@@ -18,6 +18,8 @@ import (
 	"github.com/Zeus-Labs/ZeusCloud/middleware"
 )
 
+const scanStatusInterval = 5 * time.Second
+
 func demoMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if os.Getenv("MODE") == constants.DemoEnvModeStr {
@@ -58,9 +60,10 @@ func main() {
 		}
 	}
 
+	// wait till cartography server is started in order for the nuclei templates to get downloaded
 	for {
 		if _, err := control.GetScanStatus(); err != nil {
-			time.Sleep(5 * time.Second)
+			time.Sleep(scanStatusInterval)
 			continue
 		}
 		break
