@@ -64,13 +64,13 @@ func ExecuteRules(postgresDb *gorm.DB, driver neo4j.Driver, rulesToExecute []typ
 			continue
 		}
 
-		if tx := postgresDb.Model(&models.RuleData{}).Where("UID = ?", r.UID()).Updates(map[string]interface{}{"last_run": time.Now()}); tx.Error != nil {
+		if tx := postgresDb.Model(&models.RuleData{}).Where("uid = ?", r.UID()).Updates(map[string]interface{}{"last_run": time.Now()}); tx.Error != nil {
 			log.Printf("Error in updating the last_run field for rule with UID: %v", r.UID())
 			continue
 		}
 
 		var rd models.RuleData
-		if tx := postgresDb.Where("UID = ?", r.UID()).Find(&rd); tx.Error != nil {
+		if tx := postgresDb.Where("uid = ?", r.UID()).Find(&rd); tx.Error != nil {
 			log.Printf("Error in fetching the rule with UID: %v", r.UID())
 			continue
 		}
