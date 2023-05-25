@@ -2,10 +2,9 @@ package rules
 
 import (
 	"fmt"
-	"github.com/Zeus-Labs/ZeusCloud/rules/attackpath"
-	"time"
 
 	"github.com/Zeus-Labs/ZeusCloud/models"
+	"github.com/Zeus-Labs/ZeusCloud/rules/attackpath"
 	"github.com/Zeus-Labs/ZeusCloud/rules/cloudtrail"
 	"github.com/Zeus-Labs/ZeusCloud/rules/cloudwatch"
 	"github.com/Zeus-Labs/ZeusCloud/rules/ec2"
@@ -150,12 +149,13 @@ func ExecuteRule(driver neo4j.Driver, r types.Rule) ([]types.Result, error) {
 }
 
 // UpsertRuleData inserts / replaces rule data struct
-func UpsertRuleData(postgresDb *gorm.DB, r types.Rule, ruleCategory string) (models.RuleData, error) {
+func UpsertRuleData(postgresDb *gorm.DB, r types.Rule, ruleCategory string) error {
+	// Not setting the LastRun value here as rule is not run at start up time
+	// TODO: changes to do when cve is merged
 	rd := models.RuleData{
 		UID:            r.UID(),
 		Description:    r.Description(),
 		Active:         true,
-		LastRun:        time.Now(),
 		Severity:       string(r.Severity()),
 		RuleCategory:   ruleCategory,
 		RiskCategories: r.RiskCategories().AsStringArray(),
@@ -163,7 +163,7 @@ func UpsertRuleData(postgresDb *gorm.DB, r types.Rule, ruleCategory string) (mod
 	tx := postgresDb.Clauses(clause.OnConflict{
 		UpdateAll: true,
 	}).Create(rd)
-	return rd, tx.Error
+	return tx.Error
 }
 
 // UpsertRuleResults inserts / updates rule results appropriately
@@ -195,6 +195,6 @@ func UpsertRuleResults(postgresDb *gorm.DB, rd models.RuleData, results []types.
 
 // DeleteStaleRuleResults deletes rule results for the given rule that are old
 func DeleteStaleRuleResults(postgresDb *gorm.DB, rd models.RuleData) error {
-	tx := postgresDb.Where("rule_data_uid = ? and last_seen < ?", rd.UID, rd.LastRun).Delete(&models.RuleResult{})
+	tx := postgresDb.Where("rule_data_uid = ? and last_seen > ?", rd.UID, rd.LastRun).Delete(&models.RuleResult{})
 	return tx.Error
 }

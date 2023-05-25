@@ -138,13 +138,6 @@ func AddAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.
 			http.Error(w, accountError.Error.Error(), accountError.ErrorCode)
 			return
 		}
-
-		// Trigger scan
-		if err := control.TriggerScan(postgresDb, ad.AccountName); err != nil {
-			log.Printf("failed to trigger scan: %v", err)
-			http.Error(w, "failed to trigger scan", 500)
-			return
-		}
 	}
 }
 
@@ -188,7 +181,7 @@ func Rescan(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		log.Printf("account name: %v", ad.AccountName)
-		if err := control.TriggerScan(postgresDb, ad.AccountName); err != nil {
+		if err := control.QueueAccountsToBeScanned(postgresDb, ad.AccountName); err != nil {
 			log.Printf("failed to trigger scan: %v", err)
 			http.Error(w, "failed to trigger scan", 500)
 			return

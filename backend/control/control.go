@@ -41,10 +41,9 @@ type CartographyJobRequest struct {
 //  1. Execute the rules and insert the rule results in postgress DB
 //  2. After rules are executed, the scan_status and last_scan_completed
 //     columns of RULES_RUNNING accounts in AccountDetails table in postgress DB are updated.
-func ExecuteRules(postgresDb *gorm.DB, driver neo4j.Driver, ruleDataList []models.RuleData,
-	rulesToExecute []types.Rule) error {
+func ExecuteRules(postgresDb *gorm.DB, driver neo4j.Driver, rulesToExecute []types.Rule) error {
 
-	for idx, r := range rulesToExecute {
+	for _, r := range rulesToExecute {
 		log.Printf("Rule ID and description: %v %v", r.UID(), r.Description())
 
 		// Skip if rule is inactive
@@ -65,7 +64,16 @@ func ExecuteRules(postgresDb *gorm.DB, driver neo4j.Driver, ruleDataList []model
 			continue
 		}
 
-		rd := ruleDataList[idx]
+		if tx := postgresDb.Model(&models.RuleData{}).Where("UID = ?", r.UID()).Updates(map[string]interface{}{"last_run": time.Now()}); tx.Error != nil {
+			log.Printf("Error in updating the last_run field for rule with UID: %v", r.UID())
+			continue
+		}
+
+		var rd models.RuleData
+		if tx := postgresDb.Where("UID = ?", r.UID()).Find(&rd); tx.Error != nil {
+			log.Printf("Error in fetching the rule with UID: %v", r.UID())
+			continue
+		}
 
 		// Upsert rule results
 		err = rules.UpsertRuleResults(postgresDb, rd, results)
@@ -82,8 +90,7 @@ func ExecuteRules(postgresDb *gorm.DB, driver neo4j.Driver, ruleDataList []model
 		}
 	}
 
-	tx := postgresDb.Model(&models.AccountDetails{}).Where("scan_status = ?", "RULES_RUNNING").Updates(map[string]interface{}{"scan_status": "PASSED", "last_scan_completed": time.Now()})
-	if tx.Error != nil {
+	if tx := postgresDb.Model(&models.AccountDetails{}).Where("scan_status = ?", "RULES_RUNNING").Updates(map[string]interface{}{"scan_status": "PASSED", "last_scan_completed": time.Now()}); tx.Error != nil {
 		return tx.Error
 	}
 	return nil
@@ -130,8 +137,9 @@ func StartCartographyJob(account models.AccountDetails) error {
 	return nil
 }
 
-func CartographyExecutionLoop(postgresDb *gorm.DB, driver neo4j.Driver, ruleDataList []models.RuleData,
-	rulesToExecute []types.Rule) {
+// Attempts to run a loop which fetches the account which is ready to be scanned
+// and starts cartography job and execute rules for that account
+func CartographyExecutionLoop(postgresDb *gorm.DB, driver neo4j.Driver, rulesToExecute []types.Rule) {
 	for {
 		a, err := getAccountReadyToBeScanned(postgresDb)
 		if err != nil {
@@ -147,7 +155,7 @@ func CartographyExecutionLoop(postgresDb *gorm.DB, driver neo4j.Driver, ruleData
 			continue
 		}
 
-		MonitorCartographyJobStatusLoop(postgresDb, account.AccountName)
+		monitorCartographyJobStatusLoop(postgresDb, account.AccountName)
 
 		// Change CARTOGRAPHY_PASSED status to RULES_RUNNNING
 		if tx := postgresDb.Model(&models.AccountDetails{}).Where("scan_status = ?", "CARTOGRAPHY_PASSED").Updates(map[string]interface{}{"scan_status": "RULES_RUNNING"}); tx.Error != nil {
@@ -155,11 +163,11 @@ func CartographyExecutionLoop(postgresDb *gorm.DB, driver neo4j.Driver, ruleData
 			continue
 		}
 
-		if areAccountsReadyForExecutingRules, err := CheckAccountsReadyForExecutingRules(postgresDb); err != nil {
+		if areAccountsReadyForExecutingRules, err := checkAccountsReadyForExecutingRules(postgresDb); err != nil {
 			log.Printf("Error in checking RULES_RUNNING status of accounts")
 			continue
 		} else if areAccountsReadyForExecutingRules {
-			executeRulesErr := ExecuteRules(postgresDb, driver, ruleDataList, rulesToExecute)
+			executeRulesErr := ExecuteRules(postgresDb, driver, rulesToExecute)
 			if executeRulesErr != nil {
 				log.Printf("Error in executing rules: %v", executeRulesErr)
 				continue
@@ -168,7 +176,7 @@ func CartographyExecutionLoop(postgresDb *gorm.DB, driver neo4j.Driver, ruleData
 	}
 }
 
-func MonitorCartographyJobStatusLoop(postgresDb *gorm.DB, accountName string) {
+func monitorCartographyJobStatusLoop(postgresDb *gorm.DB, accountName string) {
 	scanStatus := "READY"
 	for {
 		time.Sleep(time.Second * 10)
@@ -217,17 +225,13 @@ func getAccountReadyToBeScanned(postgresDb *gorm.DB) (*models.AccountDetails, er
 	return &accountDetailsLst[0], nil
 }
 
-func CheckAccountsReadyForExecutingRules(postgresDb *gorm.DB) (bool, error) {
-	var cartography_passed_accounts []models.AccountDetails
-	tx := postgresDb.Where("scan_status = ?", "RULES_RUNNING").Find(&cartography_passed_accounts)
+func checkAccountsReadyForExecutingRules(postgresDb *gorm.DB) (bool, error) {
+	var rulesRunningAccounts []models.AccountDetails
+	tx := postgresDb.Where("scan_status = ?", "RULES_RUNNING").Find(&rulesRunningAccounts)
 	if tx.Error != nil {
 		return false, tx.Error
 	}
-	if len(cartography_passed_accounts) == 0 {
-		// No accounts found which are ready to be scanned
-		return false, nil
-	}
-	return true, nil
+	return len(rulesRunningAccounts) != 0, nil
 }
 
 func ResetStatusOnStartup(postgresDb *gorm.DB) error {
@@ -239,17 +243,11 @@ func ResetStatusOnStartup(postgresDb *gorm.DB) error {
 	return nil
 }
 
-// TriggerScan attempts to
-//  1. Start a cartography job
-//  2. If the job was started or is already running, mark ExecuteRules boolean
-//     so the RuleExecutionLoop can run.
-func TriggerScan(postgresDb *gorm.DB, accountQueuedToBeScanned string) error {
-	// TODO: Read / parse credentials from database or request
+func QueueAccountsToBeScanned(postgresDb *gorm.DB, accountQueuedToBeScanned string) error {
 	tx := postgresDb.Model(&models.AccountDetails{}).Where("account_name = ?", accountQueuedToBeScanned).Updates(map[string]interface{}{"scan_status": "READY", "running_time": 0})
 	if tx.Error != nil {
 		return tx.Error
 	}
-
 	return nil
 }
 
