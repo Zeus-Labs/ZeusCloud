@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { AddNewAccount } from '../Components/Settings/AddNewAccount'
 import { ConnectedAccounts } from '../Components/Settings/ConnectedAccounts'
 import {useLocation} from 'react-router-dom';
+import GenerateReport from '../Components/Settings/GenerateReport';
 
 const Settings = () => {
     const location = useLocation();
@@ -22,6 +23,10 @@ const Settings = () => {
         {
             name: "Connected Accounts",
             body: <ConnectedAccounts/>
+        },
+        {
+            name: "Generate Report",
+            body: <GenerateReport/>
         },
     ]
     return (

@@ -4,10 +4,10 @@ import { useEffect } from "react"
 export default function RadioComp({ id, label, data, defaultChecked = false, setData }: { id: string, label: React.ReactNode, data: string, defaultChecked?: boolean, setData: any }) {
 
   useEffect(() => {
-    defaultChecked && setData(data);
+    defaultChecked && setData && setData(data);
   }, [defaultChecked])
   return (
-    <div className="flex items-center px-2">
+    <div className="flex items-center">
       <input
         id={id}
         name="notification-method"
