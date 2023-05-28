@@ -18,7 +18,7 @@ func (PrivateServerlessAdmin) Description() string {
 }
 
 func (PrivateServerlessAdmin) Severity() types.Severity {
-	return types.High
+	return types.Moderate
 }
 
 func (PrivateServerlessAdmin) RiskCategories() types.RiskCategoryList {
