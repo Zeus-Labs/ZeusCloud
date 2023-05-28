@@ -8,19 +8,13 @@ async function getAllActiveAlertsInfoData(): Promise<RuleAlertsResponse> {
         // @ts-ignore
         const ruleAlertsEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/getAllAlerts";
 
-        const miscongigResponse = await axios.get(ruleAlertsEndpoint,
-            { params: { rulecategory: "misconfiguration" } }
+        const response = await axios.get(ruleAlertsEndpoint,
+            { params: { rulecategory: "all" } }
         );
-        const misconfig_rule_alerts_group = miscongigResponse.data.rule_alerts_group.filter((group: rulealerts_group) => group.rule_data.active)
-
-        const attackResponse = await axios.get(ruleAlertsEndpoint,
-            { params: { rulecategory: "attackpath" } }
-        );
-        const attack_rule_alerts_group = attackResponse.data.rule_alerts_group.filter((group: rulealerts_group) => group.rule_data.active)
-
+        const rule_alerts_group = response.data.rule_alerts_group.filter((group: rulealerts_group) => group.rule_data.active)
         
         return {
-            rule_alerts_group: [...misconfig_rule_alerts_group,...attack_rule_alerts_group],
+            rule_alerts_group: rule_alerts_group,
             error: ''
         };
     }
