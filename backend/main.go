@@ -73,10 +73,11 @@ func main() {
 
 	// Kick of rule execution loop and try to trigger a scan successfully.
 	rulesToExecute := append(append([]types.Rule{}, rules.AttackPathsRulesToExecute...), rules.MisconfigurationRulesToExecute...)
-	if err := control.ResetStatusOnStartup(postgresDb); err != nil {
+	if err := control.ResetCartographyStatus(postgresDb); err != nil {
 		log.Printf("Error in resetting cartography job status on startup")
 	}
-	go control.CartographyExecutionLoop(postgresDb, driver, rulesToExecute)
+	go control.CartographyExecutionLoop(postgresDb, driver)
+	go control.ExecuteRules(postgresDb, driver, rulesToExecute)
 
 	// Set up routing
 	mux := http.NewServeMux()

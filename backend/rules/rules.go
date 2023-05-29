@@ -195,6 +195,6 @@ func UpsertRuleResults(postgresDb *gorm.DB, rd models.RuleData, results []types.
 
 // DeleteStaleRuleResults deletes rule results for the given rule that are old
 func DeleteStaleRuleResults(postgresDb *gorm.DB, rd models.RuleData) error {
-	tx := postgresDb.Where("rule_data_uid = ? and last_seen > ?", rd.UID, rd.LastRun).Delete(&models.RuleResult{})
+	tx := postgresDb.Where("rule_data_uid = ? and last_seen < ?", rd.UID, rd.LastRun).Delete(&models.RuleResult{})
 	return tx.Error
 }

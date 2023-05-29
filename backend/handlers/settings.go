@@ -18,6 +18,10 @@ type AccountError struct {
 	ErrorCode int
 }
 
+type AccountName struct {
+	AccountName string `json:"account_name"`
+}
+
 func GetAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -44,7 +48,6 @@ func GetAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.
 }
 
 func ManualAddAccountDetails(postgresDb *gorm.DB, ad models.AccountDetails) AccountError {
-	// Only allow 1 account details row for now
 	var accountDetailsLst []models.AccountDetails
 	if tx := postgresDb.Find(&accountDetailsLst); tx.Error != nil {
 		log.Printf("failed to retrieve account details: %v", tx.Error)
@@ -170,7 +173,7 @@ func DeleteAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *ht
 
 func Rescan(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var ad models.AccountDetails
+		var ad AccountName
 		if err := json.NewDecoder(r.Body).Decode(&ad); err != nil {
 			log.Printf("failed to decode json body: %v", err)
 			http.Error(w, "failed to decode json body", 400)
