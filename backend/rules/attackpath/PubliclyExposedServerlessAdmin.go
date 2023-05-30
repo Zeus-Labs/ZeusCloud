@@ -18,7 +18,7 @@ func (PubliclyExposedServerlessAdmin) Description() string {
 }
 
 func (PubliclyExposedServerlessAdmin) Severity() types.Severity {
-	return types.Critical
+	return types.High
 }
 
 func (PubliclyExposedServerlessAdmin) RiskCategories() types.RiskCategoryList {

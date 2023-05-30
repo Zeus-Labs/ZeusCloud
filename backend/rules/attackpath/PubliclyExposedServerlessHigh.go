@@ -18,7 +18,7 @@ func (PubliclyExposedServerlessHigh) Description() string {
 }
 
 func (PubliclyExposedServerlessHigh) Severity() types.Severity {
-	return types.High
+	return types.Moderate
 }
 
 func (PubliclyExposedServerlessHigh) RiskCategories() types.RiskCategoryList {

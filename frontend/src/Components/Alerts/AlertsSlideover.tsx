@@ -5,6 +5,8 @@ import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Risks } from '../Shared/Risks'
 import { Remediate } from '../Remediation/Remediate'
 import RuleGraph from "./RuleGraph";
+import ColoredBgSpan from "../Shared/ColoredBgSpan";
+import { severityColorMap } from "./AlertsTableOps";
 
 export const AlertSlideover = (
     { slideoverData, setOpen }: AlertSlideoverProps) => {
@@ -67,7 +69,13 @@ export const AlertSlideover = (
                                                         <div className="max-w-full flex flex-row grid grid-cols-3 gap-4">
                                                             <div className="flex flex-col">
                                                                 <span className="text-gray-400">Severity</span>
-                                                                <span className="text-black text-base font-normal">{slideoverData.rule_data.severity}</span>
+                                                                <span className="text-base font-normal">
+                                                                    <ColoredBgSpan 
+                                                                        value={slideoverData.rule_data.severity}
+                                                                        bgColor={severityColorMap[slideoverData.rule_data.severity]}
+                                                                        textColor={severityColorMap[slideoverData.rule_data.severity]} 
+                                                                    />
+                                                                </span>
                                                             </div>
                                                             <div className="flex flex-col">
                                                                 <span className="text-gray-400 mb-1">Risks</span>
