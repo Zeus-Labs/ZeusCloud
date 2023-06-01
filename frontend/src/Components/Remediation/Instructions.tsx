@@ -12,10 +12,11 @@ export const NormalInstruction = (prop: NormalInstructionProps) => {
 
 export interface StepInstructionProps extends NormalInstructionProps {
     stepNumber: string;
+    subInstruction?: boolean
 }
 
-export const StepInstruction = (prop: StepInstructionProps) => {
-    const completeStep: string = prop.stepNumber + " " + prop.instruction;
+export const StepInstruction = ({stepNumber,subInstruction=false,instruction}: StepInstructionProps) => {
+    const completeStep: string = stepNumber + " " + instruction;
     return (<ReactMarkdown 
-        className="markdown" children={completeStep}/>)
+        className={`markdown ${subInstruction && "ml-11"}`} children={completeStep}/>)
 }
