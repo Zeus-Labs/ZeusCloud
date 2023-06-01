@@ -18,6 +18,10 @@ type AccountError struct {
 	ErrorCode int
 }
 
+type AccountName struct {
+	AccountName string `json:"account_name"`
+}
+
 func GetAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -26,12 +30,13 @@ func GetAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.
 		}
 
 		var accountDetailsLst []models.AccountDetails
-		tx := postgresDb.Select("account_name", "connection_method", "profile", "default_region", "last_scan_completed").Find(&accountDetailsLst)
+		tx := postgresDb.Select("account_name", "connection_method", "profile", "default_region", "last_scan_completed", "scan_status", "running_time").Find(&accountDetailsLst)
 		if tx.Error != nil {
 			log.Printf("failed to retrieve account details: %v", tx.Error)
 			http.Error(w, "failed get account details", 500)
 			return
 		}
+
 		retDataBytes, err := json.Marshal(accountDetailsLst)
 		if err != nil {
 			log.Printf("failed to marshal account details: %v", err)
@@ -43,19 +48,11 @@ func GetAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.
 }
 
 func ManualAddAccountDetails(postgresDb *gorm.DB, ad models.AccountDetails) AccountError {
-	// Only allow 1 account details row for now
 	var accountDetailsLst []models.AccountDetails
 	if tx := postgresDb.Find(&accountDetailsLst); tx.Error != nil {
 		log.Printf("failed to retrieve account details: %v", tx.Error)
 		return AccountError{
 			Error:     errors.New("failed to retrieve account details"),
-			ErrorCode: 400,
-		}
-	}
-	if len(accountDetailsLst) > 0 {
-		log.Printf("Sorry! ZeusCloud only supports 1 account currently.")
-		return AccountError{
-			Error:     errors.New("Sorry! ZeusCloud only supports 1 account currently."),
 			ErrorCode: 400,
 		}
 	}
@@ -97,7 +94,8 @@ func ManualAddAccountDetails(postgresDb *gorm.DB, ad models.AccountDetails) Acco
 		ad.Profile = ""
 	}
 	ad.LastScanCompleted = nil
-
+	ad.ScanStatus = "READY"
+	ad.RunningTime = 0
 	// Attempt to insert into database
 	tx := postgresDb.Clauses(clause.OnConflict{DoNothing: true}).Create(&ad)
 	if tx.Error != nil {
@@ -143,13 +141,6 @@ func AddAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.
 			http.Error(w, accountError.Error.Error(), accountError.ErrorCode)
 			return
 		}
-
-		// Trigger scan
-		if err := control.TriggerScan(postgresDb); err != nil {
-			log.Printf("failed to trigger scan: %v", err)
-			http.Error(w, "failed to trigger scan", 500)
-			return
-		}
 	}
 }
 
@@ -182,43 +173,22 @@ func DeleteAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *ht
 
 func Rescan(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		var ad AccountName
+		if err := json.NewDecoder(r.Body).Decode(&ad); err != nil {
+			log.Printf("failed to decode json body: %v", err)
+			http.Error(w, "failed to decode json body", 400)
+			return
+		}
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
-
-		if err := control.TriggerScan(postgresDb); err != nil {
+		log.Printf("account name: %v", ad.AccountName)
+		if err := control.QueueAccountsToBeScanned(postgresDb, ad.AccountName); err != nil {
 			log.Printf("failed to trigger scan: %v", err)
 			http.Error(w, "failed to trigger scan", 500)
 			return
 		}
-	}
-}
-
-func GetAccountScanInfo() func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
-		sr, err := control.GetScanStatus()
-		if err != nil {
-			log.Printf("failed to determine if scan is running: %v", err)
-			http.Error(w, "failed to determine if scan is running", 500)
-			return
-		}
-		control.ExecuteRulesMutex.Lock()
-		if sr.Status != "RUNNING" && control.ExecuteRules {
-			sr.Status = "RULES_RUNNING"
-		}
-		control.ExecuteRulesMutex.Unlock()
-		retDataBytes, err := json.Marshal(sr)
-		if err != nil {
-			log.Printf("failed to marshal status response: %v", err)
-			http.Error(w, "failed to marshal status response", 500)
-			return
-		}
-		w.Write(retDataBytes)
 	}
 }
 
