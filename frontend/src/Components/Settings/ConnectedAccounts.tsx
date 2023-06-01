@@ -47,7 +47,7 @@ async function rescan(accountName:string): Promise<string> {
     try {
         // @ts-ignore
         const rescanEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/rescan";
-        await axios.post(rescanEndpoint,{account_name: accountName});
+        await axios.post(rescanEndpoint,{rescanning_account: accountName});
         // @ts-ignore
         posthog.capture(`${window._env_.REACT_APP_ENVIRONMENT} Account Rescanned`,{status:"Successful",environment: window._env_.REACT_APP_ENVIRONMENT})
 
