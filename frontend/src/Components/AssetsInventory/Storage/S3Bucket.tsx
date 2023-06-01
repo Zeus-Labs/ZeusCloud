@@ -1,14 +1,17 @@
 import { TableRow } from "../../Shared/Table";
 import {TextWithTooltipIcon } from "../../Shared/TextWithTooltip";
+import CrownElement from "../CrownElement";
 import { InlineIcon } from "../assetUtils";
 
 export declare type S3BucketFields={
+    node_id: number
     name: string,
     account_id: string,
     region: string,
     default_encryption: boolean,
     versioning_status: string,
-    mfa_delete: string
+    mfa_delete: string,
+    is_crown_jewel:boolean,
 }
 
 export enum S3BucketHeader{
@@ -16,7 +19,8 @@ export enum S3BucketHeader{
     region="Region",
     default_encryption = "Default Encryption",
     versioning_status = "Versioning Status",
-    mfa_delete = "MFA Delete"
+    mfa_delete = "MFA Delete",
+    crown_jewel = "Crown Jewel"
 }
 
 export class S3Bucket{
@@ -48,6 +52,11 @@ export class S3Bucket{
         "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
         "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
     },
+    {
+        "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+        "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+    }
 ]
 
     tableColumnHeaders = [
@@ -76,6 +85,11 @@ export class S3Bucket{
             accessor_key: S3BucketHeader.mfa_delete,
             allowSorting: false
         },
+        {
+            header: S3BucketHeader.crown_jewel,
+            accessor_key: S3BucketHeader.crown_jewel,
+            allowSorting: false
+        }
     ]
 
     getAllRows(assetCategoryInfo:any){
@@ -115,6 +129,15 @@ export class S3Bucket{
                         content: dataTableRow.mfa_delete || "Null",
                         accessor_key: S3BucketHeader.mfa_delete,
                         value: dataTableRow.mfa_delete || "Null",
+                        ignoreComponentExpansion: true
+                    },
+                    {
+                        content: <CrownElement 
+                        isCrownJewel={dataTableRow.is_crown_jewel || false}
+                        nodeId={dataTableRow.node_id}
+                        />,
+                        accessor_key: S3BucketHeader.crown_jewel,
+                        value: "",
                         ignoreComponentExpansion: true
                     }
                     

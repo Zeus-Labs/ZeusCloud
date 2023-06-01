@@ -1,8 +1,10 @@
 import { TableRow } from "../../Shared/Table";
 import {TextWithTooltip, TextWithTooltipIcon } from "../../Shared/TextWithTooltip";
+import CrownElement from "../CrownElement";
 import {AssetModal, convertDateFormat, InlineIcon } from "../assetUtils";
 
 export declare type RDSInstanceFields={
+    node_id: number
     arn: string,
     account_id: string,
     user_identifier: string,
@@ -13,6 +15,7 @@ export declare type RDSInstanceFields={
     create_time:string,
     publicly_accessible:boolean,
     storage_encrypted:boolean
+    is_crown_jewel:boolean,
 }
 
 export enum RDSInstanceHeader{
@@ -23,7 +26,8 @@ export enum RDSInstanceHeader{
     engine="Engine",
     create_date="Created Date",
     publicly_accessible="Publicly Accessible",
-    storage_encrypted="Storage Encrypted"
+    storage_encrypted="Storage Encrypted",
+    crown_jewel = "Crown Jewel"
 }
 
 export class RDSInstance{
@@ -64,6 +68,11 @@ export class RDSInstance{
         "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
         "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
         "chevronClassName": "h-5 w-5",
+    },
+    {
+        "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+        "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
     },
     {
         "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
@@ -113,6 +122,11 @@ export class RDSInstance{
             accessor_key: RDSInstanceHeader.storage_encrypted,
             allowSorting: false
         },
+        {
+            header: RDSInstanceHeader.crown_jewel,
+            accessor_key: RDSInstanceHeader.crown_jewel,
+            allowSorting: false
+        }
     ]
 
     getAllRows(assetCategoryInfo:any){
@@ -172,6 +186,15 @@ export class RDSInstance{
                         value: dataTableRow.storage_encrypted?.toString() || "Null",
                         ignoreComponentExpansion: true
                     },
+                    {
+                        content: <CrownElement 
+                        isCrownJewel={dataTableRow.is_crown_jewel || false}
+                        nodeId={dataTableRow.node_id}
+                        />,
+                        accessor_key: RDSInstanceHeader.crown_jewel,
+                        value: "",
+                        ignoreComponentExpansion: true
+                    }
                     
                     
                 ],

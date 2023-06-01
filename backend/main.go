@@ -77,7 +77,7 @@ func main() {
 		log.Printf("Error in resetting cartography job status on startup")
 	}
 	go control.CartographyExecutionLoop(postgresDb, driver)
-	go control.ExecuteRules(postgresDb, driver, rulesToExecute)
+	go control.ExecuteRulesLoop(postgresDb, driver, rulesToExecute)
 
 	// Set up routing
 	mux := http.NewServeMux()
@@ -97,6 +97,7 @@ func main() {
 	mux.HandleFunc("/api/getRuleGraph", handlers.GetRuleGraph(driver))
 	mux.HandleFunc("/api/getAccessExplorerGraph", handlers.GetAccessExplorerGraph(driver))
 	mux.HandleFunc("/api/getEdgeInfo", handlers.GetEdgeInfo(driver))
+	mux.HandleFunc("/api/setCrownJewel", handlers.SetCrownJewel(driver))
 
 	log.Printf("serving on 8080...")
 	dLog := log.Default()
