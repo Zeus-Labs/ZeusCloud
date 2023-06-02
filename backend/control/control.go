@@ -66,7 +66,7 @@ func RuleExecutionLoop(postgresDb *gorm.DB, driver neo4j.Driver, ruleDataList []
 			continue
 		}
 		resp.Body.Close()
-		if sr.Status != "CARTOGRAPHY_PASSED" {
+		if sr.Status != "READY" {
 			continue
 		}
 
