@@ -33,7 +33,7 @@ const HomeResolver = () => {
     async function parseAndRedirect() {
       const accountDetailsList = await getAccountDetails();
       const num_scans_running = accountDetailsList.filter(
-        (accountDetails) => accountDetails.is_scan_running
+        (accountDetails) => accountDetails.scan_status === "READY" || accountDetails.scan_status === "RUNNING" || accountDetails.scan_status === "CARTOGRAPHY_PASSED" || accountDetails.scan_status === "RULES_RUNNING"
       ).length
       if (accountDetailsList.length === 0) {
         navigate('/settings', { replace: true, state: { name: "Add New Account" } });

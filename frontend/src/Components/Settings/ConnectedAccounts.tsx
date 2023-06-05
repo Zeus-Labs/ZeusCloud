@@ -17,8 +17,6 @@ export interface account_details {
     aws_secret_access_key: string,
     default_region: string,
     last_scan_completed: Date | null,
-    is_scan_running: boolean,
-    is_rules_running: boolean,
     scan_status: string,
     running_time: number,
 }
@@ -39,8 +37,6 @@ export async function getAccountDetails(): Promise<account_details[]> {
             aws_secret_access_key: curElement.aws_secret_access_key,
             default_region: curElement.default_region,
             last_scan_completed: curElement.last_scan_completed,
-            is_scan_running: curElement.scan_status === "RUNNING" || curElement.scan_status === "RULES_RUNNING" || curElement.scan_status === "CARTOGRAPHY_PASSED",
-            is_rules_running: curElement.scan_status === "RULES_RUNNING",
             scan_status: curElement.scan_status,
             running_time: curElement.running_time,
         });
@@ -74,24 +70,22 @@ async function rescan(accountName:string): Promise<string> {
 }
 
 interface ScanStatusProps {
-    is_scan_running: boolean,
-    is_rules_running: boolean,
     running_time: number,
     last_scan_completed: Date | null,
     scan_status: string,
 }
 
-const ScanStatus = ({ is_scan_running, is_rules_running, running_time, last_scan_completed, scan_status }: ScanStatusProps) => {
+const ScanStatus = ({ running_time, last_scan_completed, scan_status }: ScanStatusProps) => {
     function runningTimeToPercentage(runningTime: number): string {
         return ((3 + Math.min(670, runningTime)) * 100 / 700.).toFixed(1);
     }
     if (scan_status === "READY") {
         return <>Queued</>
     }
-    if (is_rules_running) {
+    if (scan_status === "RULES_RUNNING") {
         running_time = 670
     }
-    if (is_scan_running) {
+    if (scan_status === "RUNNING" || scan_status === "CARTOGRAPHY_PASSED") {
         return <>In Progress: {runningTimeToPercentage(running_time)}% completed...</>
     }
     return (
@@ -134,11 +128,11 @@ async function deleteAccountDetails({ accountName }: AccountDetailsDeletion): Pr
 
 interface TriggerScanProps {
     account_name: string,
-    is_scan_running: boolean,
+    scan_status: string,
     setAccountDetailsList: React.Dispatch<React.SetStateAction<account_details[]>>
 }
 
-const TriggerScan = ({ account_name, is_scan_running, setAccountDetailsList }: TriggerScanProps) => {
+const TriggerScan = ({ account_name, scan_status, setAccountDetailsList }: TriggerScanProps) => {
     const [modalOpen, setModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -184,7 +178,7 @@ const TriggerScan = ({ account_name, is_scan_running, setAccountDetailsList }: T
             </Modal>
             <button
                 type="submit"
-                disabled={is_scan_running}
+                disabled={scan_status === "READY" || scan_status === "RUNNING" || scan_status === "CARTOGRAPHY_PASSED" || scan_status === "RULES_RUNNING"}
                 onClick={() => {setModalOpen(true)}}
                 className='bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ml-3 inline-flex justify-center rounded-md border border-transparent py-2 px-4 text-sm font-medium text-white shadow-sm disabled:opacity-50'
             >
@@ -196,11 +190,11 @@ const TriggerScan = ({ account_name, is_scan_running, setAccountDetailsList }: T
 
 interface RemoveAccountProps {
     account_name: string,
-    is_scan_running: boolean,
+    scan_status: string,
     setAccountDetailsList: React.Dispatch<React.SetStateAction<account_details[]>>
 }
 
-const RemoveAccount = ({ account_name, is_scan_running, setAccountDetailsList }: RemoveAccountProps) => {
+const RemoveAccount = ({ account_name, scan_status, setAccountDetailsList }: RemoveAccountProps) => {
     const [modalOpen, setModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
   
@@ -250,7 +244,7 @@ const RemoveAccount = ({ account_name, is_scan_running, setAccountDetailsList }:
             </Modal>  
             <button
                 type="submit"
-                disabled={is_scan_running}
+                disabled={scan_status === "READY" || scan_status === "RUNNING" || scan_status === "CARTOGRAPHY_PASSED" || scan_status === "RULES_RUNNING"}
                 onClick={() => {setModalOpen(true)}}
                 className='bg-rose-600 hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 ml-3 inline-flex justify-center rounded-md border border-transparent py-2 px-4 text-sm font-medium text-white shadow-sm disabled:opacity-50'
             >
@@ -262,19 +256,19 @@ const RemoveAccount = ({ account_name, is_scan_running, setAccountDetailsList }:
 
 interface AccountActionsProps {
     account_name: string,
-    is_scan_running:  boolean,
+    scan_status:  string,
     setAccountDetailsList: React.Dispatch<React.SetStateAction<account_details[]>>
 }
 
-const AccountActions = ({ account_name, is_scan_running, setAccountDetailsList }: AccountActionsProps) => {
+const AccountActions = ({ account_name, scan_status, setAccountDetailsList }: AccountActionsProps) => {
     let navigate = useNavigate(); 
   
     return (
         <>
-            <TriggerScan account_name={account_name} is_scan_running={is_scan_running} setAccountDetailsList={setAccountDetailsList} />
+            <TriggerScan account_name={account_name} scan_status={scan_status} setAccountDetailsList={setAccountDetailsList} />
             <button
                 type="submit"
-                disabled={is_scan_running}
+                disabled={scan_status === "READY" || scan_status === "RUNNING" || scan_status === "CARTOGRAPHY_PASSED" || scan_status === "RULES_RUNNING"}
                 onClick={() => {
                     // @ts-ignore
                     posthog.capture(`${window._env_.REACT_APP_ENVIRONMENT} Viewed Results`,{environment: window._env_.REACT_APP_ENVIRONMENT})
@@ -284,7 +278,7 @@ const AccountActions = ({ account_name, is_scan_running, setAccountDetailsList }
             >
                 View Results
             </button>
-            <RemoveAccount account_name={account_name} is_scan_running={is_scan_running} setAccountDetailsList={setAccountDetailsList} />
+            <RemoveAccount account_name={account_name} scan_status={scan_status} setAccountDetailsList={setAccountDetailsList} />
         </>
     )
 }
@@ -323,7 +317,7 @@ const ConnectedAccounts = () => {
             setAccountDetailsList(await getAccountDetails());
         }
         asyncSetAccountDetails();
-        const timeout = setTimeout(()=>asyncSetAccountDetails(),2000)
+        const timeout = setTimeout(()=>asyncSetAccountDetails(),4000)
         // No need to poll in read-only demo environment
         // @ts-ignore
         if (window._env_.REACT_APP_ENVIRONMENT === "Demo") {
@@ -355,13 +349,13 @@ const ConnectedAccounts = () => {
                           ignoreComponentExpansion: false,
                       },
                       {
-                          content: <ScanStatus is_scan_running={accountDetails.is_scan_running} is_rules_running={accountDetails.is_rules_running} running_time={accountDetails.running_time} last_scan_completed={accountDetails.last_scan_completed} scan_status={accountDetails.scan_status} />,
+                          content: <ScanStatus running_time={accountDetails.running_time} last_scan_completed={accountDetails.last_scan_completed} scan_status={accountDetails.scan_status} />,
                           accessor_key: "scan_status",
-                          value: accountDetails.is_scan_running,
+                          value: accountDetails.scan_status,
                           ignoreComponentExpansion: false,
                       },
                       {
-                          content: <AccountActions account_name={accountDetails.account_name} is_scan_running={accountDetails.is_scan_running} setAccountDetailsList={setAccountDetailsList} />,
+                          content: <AccountActions account_name={accountDetails.account_name} scan_status={accountDetails.scan_status} setAccountDetailsList={setAccountDetailsList} />,
                           accessor_key: "actions",
                           value: accountDetails.account_name,
                           ignoreComponentExpansion: false,
