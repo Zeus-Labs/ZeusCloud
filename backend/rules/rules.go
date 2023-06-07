@@ -118,6 +118,7 @@ var AttackPathsRulesToExecute = []types.Rule{
 	attackpath.ThirdPartyHigh{},
 	attackpath.ThirdPartyAdmin{},
 	attackpath.PubliclyExposedVmAdminGuardDutyFinding{},
+	attackpath.PubliclyExposedVmHighGuardDutyFinding{},
 }
 
 func IsRuleActive(postgresDb *gorm.DB, r types.Rule) (bool, error) {

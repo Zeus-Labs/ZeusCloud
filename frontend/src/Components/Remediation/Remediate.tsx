@@ -86,6 +86,8 @@ import { PubliclyExposedServerlessHighPermissions } from "./AttackPathComponents
 import { PubliclyExposedServerlessPrivilegeEscalation } from "./AttackPathComponents/PubliclyExposedServerlessPrivilegeEscalation";
 import { PubliclyExposedVmPrivilegeEscalation } from "./AttackPathComponents/PubliclyExposedVmPrivilegeEscalation";
 import { PrivateServerlessAdminPermissions } from "./AttackPathComponents/PrivateServerlessAdminPermissions";
+import { PubliclyExposedVmAdminGuardDutyFinding } from "./AttackPathComponents/PubliclyExposedVmAdminGuardDutyFinding";
+import { PubliclyExposedVmHighGuardDutyFinding } from "./AttackPathComponents/PubliclyExposedVmHighGuardDutyFinding";
 
 
 export const Remediate = ({rule_data} : RemediateProps) => {
@@ -269,6 +271,10 @@ export const Remediate = ({rule_data} : RemediateProps) => {
          return <PubliclyExposedVmPrivilegeEscalation/>
       case "attackpath/private_serverless_admin_permissions": 
          return <PrivateServerlessAdminPermissions/>
+      case "attackpath/publicly_exposed_vm_admin_permissions_guardduty_findings":
+         return <PubliclyExposedVmAdminGuardDutyFinding/>
+      case "attackpath/publicly_exposed_vm_high_permissions_guardduty_findings":
+         return <PubliclyExposedVmHighGuardDutyFinding/>
 
    }
    return (<></>)

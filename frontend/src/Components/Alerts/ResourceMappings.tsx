@@ -138,6 +138,12 @@ const labelInfoMap: { [label: string]: { [dataType :string] : string } } = {
         "display": "SQS Queue",
         "image": "/images/sqs-queue.svg",
         "category": "Storage",
+    },
+    // TODO: Change the guard duty category when the muclei is merged
+    "GuardDutyFinding":{
+        "display": "Guard Duty Finding",
+        "image": "/images/guardduty_finding.svg",
+        "category": "Storage",
     }
 };
 

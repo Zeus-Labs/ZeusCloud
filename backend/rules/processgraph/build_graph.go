@@ -179,7 +179,7 @@ func ConvertNodeToDisplayNode(node types.Node) (types.DisplayNode, error) {
 		displayId = nodeProps["name"].(string)
 	} else if CheckNodeLabel(node, "GuardDutyFinding") {
 		displayNodeLabel = "GuardDutyFinding"
-		displayId = nodeProps["arn"].(string)
+		displayId = nodeProps["description"].(string)
 	} else {
 		return types.DisplayNode{}, fmt.Errorf("node %+v is unsupported", node)
 	}

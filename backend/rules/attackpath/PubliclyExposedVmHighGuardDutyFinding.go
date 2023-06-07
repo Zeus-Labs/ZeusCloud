@@ -7,21 +7,21 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-type PubliclyExposedVmAdminGuardDutyFinding struct{}
+type PubliclyExposedVmHighGuardDutyFinding struct{}
 
-func (PubliclyExposedVmAdminGuardDutyFinding) UID() string {
-	return "attackpath/publicly_exposed_vm_admin_permissions_guardduty_findings"
+func (PubliclyExposedVmHighGuardDutyFinding) UID() string {
+	return "attackpath/publicly_exposed_vm_high_permissions_guardduty_findings"
 }
 
-func (PubliclyExposedVmAdminGuardDutyFinding) Description() string {
-	return "Publicly exposed VM instance with effective admin permissions and guard duty findings."
+func (PubliclyExposedVmHighGuardDutyFinding) Description() string {
+	return "Publicly exposed VM instance with effective high permissions and guard duty findings."
 }
 
-func (PubliclyExposedVmAdminGuardDutyFinding) Severity() types.Severity {
+func (PubliclyExposedVmHighGuardDutyFinding) Severity() types.Severity {
 	return types.Critical
 }
 
-func (PubliclyExposedVmAdminGuardDutyFinding) RiskCategories() types.RiskCategoryList {
+func (PubliclyExposedVmHighGuardDutyFinding) RiskCategories() types.RiskCategoryList {
 	return []types.RiskCategory{
 		types.PubliclyExposed,
 		types.IamMisconfiguration,
@@ -33,7 +33,7 @@ func (PubliclyExposedVmAdminGuardDutyFinding) RiskCategories() types.RiskCategor
 // - it's directly exposed through security group / IP
 // - it's exposed through an ELBv2
 // TODO: Add other mechanisms of exposure like ELBv1?
-func (PubliclyExposedVmAdminGuardDutyFinding) Execute(tx neo4j.Transaction) ([]types.Result, error) {
+func (PubliclyExposedVmHighGuardDutyFinding) Execute(tx neo4j.Transaction) ([]types.Result, error) {
 	records, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(e:EC2Instance)
 		OPTIONAL MATCH
@@ -51,21 +51,21 @@ func (PubliclyExposedVmAdminGuardDutyFinding) Execute(tx neo4j.Transaction) ([]t
 		WHERE listener.port >= perm.fromport AND listener.port <= perm.toport
 		WITH a, e, instance_group_ids, collect(distinct elbv2.id) as public_elbv2_ids
 		OPTIONAL MATCH
-			(e)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_admin: True})
-		WITH a, e, instance_group_ids, public_elbv2_ids, collect(role.arn) as admin_roles, collect(role.admin_reason) as admin_reasons
+			(e)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_high: True})
+		WITH a, e, instance_group_ids, public_elbv2_ids, collect(role.arn) as high_roles, collect(role.high_reason) as high_reasons
 		OPTIONAL MATCH 
 			(f:GuardDutyFinding)-[:ASSOCIATED_RESOURCE]->(e)
 			WHERE f.severity >= 7
-		WITH a, e, instance_group_ids, public_elbv2_ids, admin_roles, admin_reasons, collect(f.id) as finding_ids
-		WITH a, e, instance_group_ids, public_elbv2_ids, admin_roles, admin_reasons, finding_ids,
+		WITH a, e, instance_group_ids, public_elbv2_ids, high_roles, high_reasons, collect(f.id) as finding_ids
+		WITH a, e, instance_group_ids, public_elbv2_ids, high_roles, high_reasons, finding_ids,
 		(e.publicipaddress IS NOT NULL AND size(instance_group_ids) > 0) OR size(public_elbv2_ids) > 0 as publicly_exposed,
-		(size(admin_roles) > 0) as is_admin,
+		(size(high_roles) > 0) as is_high,
 		(size(finding_ids) > 0) as has_guardduty_findings
 		RETURN e.id as resource_id,
 		'EC2Instance' as resource_type,
 		a.id as account_id,
 		CASE 
-			WHEN publicly_exposed AND is_admin AND has_guardduty_findings THEN 'failed'
+			WHEN publicly_exposed AND is_high AND has_guardduty_findings THEN 'failed'
 			ELSE 'passed'
 		END as status,
 		CASE 
@@ -87,10 +87,10 @@ func (PubliclyExposedVmAdminGuardDutyFinding) Execute(tx neo4j.Transaction) ([]t
 			ELSE 'The instance is neither directly publicly exposed, nor indirectly public exposed through an ELBv2 load balancer.'
 		END + '\n' +
 		CASE 
-			WHEN is_admin THEN (
-				'The instance is effectively an admin in the account because of: ' + admin_reasons[0] + '.'
+			WHEN is_high THEN (
+				'The instance has high privileges in the account because of: ' + high_reasons[0] + '.'
 			)
-			ELSE 'The instance was not detected as effectively an admin in the account.'
+			ELSE 'The instance was not detected as being high-privileged in the account.'
 		END + '\n' +
 		CASE
 			WHEN has_guardduty_findings THEN (
@@ -142,7 +142,7 @@ func (PubliclyExposedVmAdminGuardDutyFinding) Execute(tx neo4j.Transaction) ([]t
 	return results, nil
 }
 
-func (PubliclyExposedVmAdminGuardDutyFinding) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (neo4j.Result, error) {
+func (PubliclyExposedVmHighGuardDutyFinding) ProduceRuleGraph(tx neo4j.Transaction, resourceId string) (neo4j.Result, error) {
 	params := map[string]interface{}{
 		"InstanceId": resourceId,
 	}
@@ -167,17 +167,17 @@ func (PubliclyExposedVmAdminGuardDutyFinding) ProduceRuleGraph(tx neo4j.Transact
 			(elbv2_group)<-[:MEMBER_OF_EC2_SECURITY_GROUP]-(elbv2)-[:EXPOSE]->(e)
 		WITH a, e, directPublicPaths, collect(indirectPath) as indirectPaths
 		OPTIONAL MATCH
-			adminRolePath=
-			(e)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_admin: True})
+			highRolePath=
+			(e)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_high: True})
 		WITH a, e, directPublicPaths, indirectPaths,
-		collect(adminRolePath) as adminRolePaths
+		collect(highRolePath) as highRolePaths
 		OPTIONAL MATCH 
 			guardDutyFindingPath = 
 			(f:GuardDutyFinding)-[:ASSOCIATED_RESOURCE]->(e)
 			WHERE f.severity >= 7
-		WITH a, e, directPublicPaths, indirectPaths, adminRolePaths,
+		WITH a, e, directPublicPaths, indirectPaths, highRolePaths,
 		collect(guardDutyFindingPath) as guardDutyFindingPaths
-		WITH directPublicPaths + indirectPaths + adminRolePaths + guardDutyFindingPaths AS paths
+		WITH directPublicPaths + indirectPaths + highRolePaths + guardDutyFindingPaths AS paths
 		RETURN paths`,
 		params)
 	if err != nil {
