@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom';
 
 const navigation = [
   { name: 'Rules', href: '/rules', current: false },
-  { name: 'Alerts', href: '/alerts', current: true },
+  { name: 'Alerts', href: '/alerts/misconfiguration', current: true },
   { name: 'Compliance', href: '/compliance', current: false },
   {name: 'Asset Inventory',href:'/asset-inventory',current: false},
   {name: 'Access Explorer',href:'/access-explorer',current: false},

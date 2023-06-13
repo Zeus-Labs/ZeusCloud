@@ -1,5 +1,5 @@
-import { AlertSlideoverProps } from "./AlertsTypes";
-import { Fragment } from 'react'
+import { AlertSlideoverProps, DisplayGraph, alert_instance, rulealerts_group } from "./AlertsTypes";
+import { Fragment, useEffect, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Risks } from '../Shared/Risks'
@@ -7,14 +7,70 @@ import { Remediate } from '../Remediation/Remediate'
 import RuleGraph from "./RuleGraph";
 import ColoredBgSpan from "../Shared/ColoredBgSpan";
 import { severityColorMap } from "./AlertsTableOps";
+import { useNavigate} from "react-router-dom";
+import axios from "axios";
+
+async function getRuleGraph(resource_id:string,rule_id:string){
+    try {
+        // @ts-ignore
+        const ruleGraphEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/getRuleGraph";
+        const response = await axios.get(ruleGraphEndpoint,
+            { params: { resource_id: resource_id, rule_id: rule_id } }
+        );
+        
+        return {
+            rule_graph: response.data,
+            error: ''
+        };
+    }
+    catch (error) {
+       
+        let message = '';
+        if (axios.isAxiosError(error)) {
+            if (error.response && error.response.data) {
+                message = "Error: " + error.response.data
+            } else {
+                message = "Oops! Encountered an error..."
+            }
+        } else {
+            message = "Error in retrieving alerts information."
+        }
+
+        return {
+            rule_graph: {},
+            error: message,
+        };
+    }
+}
 
 export const AlertSlideover = (
-    { slideoverData, setOpen }: AlertSlideoverProps) => {
-    const open = slideoverData.open;
+    {selectedAlertInstance,selectedRuleAlertGroup,navigateOnSideBarClose}: AlertSlideoverProps) => {
+    const [isOpen,setIsOpen] = useState(true)
+    const [displayGraph,setDisplayGraph] = useState<{rule_graph:DisplayGraph,error:string}>({
+        rule_graph:{
+            node_info: {},
+            adjacency_list: {}
+        },
+        error:""
+    })
+    
+    useEffect(()=>{
+        async function setGraphOnLoad(){
+            const ruleGraph = await getRuleGraph(selectedAlertInstance.resource_id,selectedRuleAlertGroup.rule_data.uid)
+            setDisplayGraph(ruleGraph)
+        }
+   
+        setGraphOnLoad()
+    },[])
+
+    const handleSideBarClose = ()=>{
+        setIsOpen(false)
+        navigateOnSideBarClose()
+    }
 
     return (
-        <Transition.Root show={open} as={Fragment}>
-            <Dialog as="div" className="relative z-10" onClose={setOpen}>
+        <Transition.Root show={isOpen} as={Fragment}>
+            <Dialog as="div" className="relative z-10" onClose={handleSideBarClose}>
                 <div className="fixed inset-0" />
 
                 <div className="fixed inset-0 overflow-hidden">
@@ -35,12 +91,12 @@ export const AlertSlideover = (
                                         <div className="h-0 flex-1 overflow-y-auto">
                                             <div className="bg-indigo-700 py-6 px-4 sm:px-6">
                                                 <div className="flex items-center justify-between">
-                                                    <Dialog.Title className="text-lg font-medium text-white">{slideoverData.rule_data.description}</Dialog.Title>
+                                                    <Dialog.Title className="text-lg font-medium text-white">{selectedRuleAlertGroup.rule_data.description}</Dialog.Title>
                                                     <div className="ml-3 flex h-7 items-center">
                                                         <button
                                                             type="button"
                                                             className="rounded-md bg-indigo-700 text-indigo-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
-                                                            onClick={() => setOpen()}
+                                                            onClick={() => handleSideBarClose()}
                                                         >
                                                             <span className="sr-only">Close panel</span>
                                                             <XMarkIcon className="h-6 w-6" aria-hidden="true" />
@@ -49,7 +105,7 @@ export const AlertSlideover = (
                                                 </div>
                                                 <div className="mt-1">
                                                     <p className="text-sm text-indigo-300">
-                                                        {"Resource Id: " + slideoverData.alert_instance.resource_id}
+                                                        {"Resource Id: " + selectedAlertInstance.resource_id}
                                                     </p>
                                                 </div>
                                             </div>
@@ -62,7 +118,7 @@ export const AlertSlideover = (
                                                             </label>
                                                             <div className="mt-1">
                                                                 <span className="block w-full">
-                                                                    {slideoverData.alert_instance.context}
+                                                                    {selectedAlertInstance.context}
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -71,15 +127,15 @@ export const AlertSlideover = (
                                                                 <span className="text-gray-400">Severity</span>
                                                                 <span className="text-base font-normal">
                                                                     <ColoredBgSpan 
-                                                                        value={slideoverData.rule_data.severity}
-                                                                        bgColor={severityColorMap[slideoverData.rule_data.severity]}
-                                                                        textColor={severityColorMap[slideoverData.rule_data.severity]} 
+                                                                        value={selectedRuleAlertGroup.rule_data.severity}
+                                                                        bgColor={severityColorMap[selectedRuleAlertGroup.rule_data.severity]}
+                                                                        textColor={severityColorMap[selectedRuleAlertGroup.rule_data.severity]} 
                                                                     />
                                                                 </span>
                                                             </div>
                                                             <div className="flex flex-col">
                                                                 <span className="text-gray-400 mb-1">Risks</span>
-                                                                <Risks values={slideoverData.rule_data.risk_categories} />
+                                                                <Risks values={selectedRuleAlertGroup.rule_data.risk_categories} />
                                                             </div>
                                                         </div>
                                                         <div>
@@ -91,10 +147,10 @@ export const AlertSlideover = (
                                                     Follow the remediation instructions of the Ensure IAM policies are attached only to
                                                     groups or roles recommendation
                                                     </span> */}
-                                                                <Remediate rule_data={slideoverData.rule_data} />
+                                                                <Remediate rule_data={selectedRuleAlertGroup.rule_data} />
                                                             </div>
                                                         </div>
-                                                        <RuleGraph ruleGraph={slideoverData.display_graph} />
+                                                        <RuleGraph ruleGraph={displayGraph.rule_graph} />
                                                     </div>
                                                     <div className="pt-4 pb-6">
 

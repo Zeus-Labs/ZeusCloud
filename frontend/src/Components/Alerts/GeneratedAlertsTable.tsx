@@ -11,8 +11,7 @@ import { labelImage } from "./ResourceMappings";
 export const GeneratedAlertsTable = ({filterValueState, 
                                     ruleAlertsGroup: {alert_instances, rule_data},
                                     toggleAlertMuteState, 
-                                    openSlideover,
-                                    setSlideoverFn}: 
+                                    navigateSlideoverFn}: 
                                     GeneratedAlertsTableProps): JSX.Element => {
 
     const alertTableHeaderCSS = [{
@@ -163,7 +162,7 @@ export const GeneratedAlertsTable = ({filterValueState,
                     },
                   ],
                   rowId: alert_instance.resource_id,
-                  handleRowClick:() => setSlideoverFn(alert_instance),
+                  handleRowClick:() => navigateSlideoverFn(alert_instance),
               }
           }
     );
