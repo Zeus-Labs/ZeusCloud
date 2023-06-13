@@ -33,11 +33,11 @@ type StatusResponse struct {
 }
 
 type CartographyJobRequest struct {
-	AccountName        string `json:"account_name"`
-	Profile            string `json:"profile,omitempty"`
-	AwsAccessKeyId     string `json:"aws_access_key_id,omitempty"`
-	AwsSecretAccessKey string `json:"aws_secret_access_key,omitempty"`
-	DefaultRegion      string `json:"default_region,omitempty"`
+	AccountName        string   `json:"account_name"`
+	Profile            string   `json:"profile,omitempty"`
+	AwsAccessKeyId     string   `json:"aws_access_key_id,omitempty"`
+	AwsSecretAccessKey string   `json:"aws_secret_access_key,omitempty"`
+	RegionNames        []string `json:"region_names,omitempty"`
 }
 
 // ExecuteRules attempts to
@@ -123,13 +123,14 @@ func StartCartographyJob(account models.AccountDetails) error {
 		cjr = CartographyJobRequest{
 			AccountName: account.AccountName,
 			Profile:     account.Profile,
+			RegionNames: account.RegionNames,
 		}
 	} else if account.ConnectionMethod == "access_key" {
 		cjr = CartographyJobRequest{
 			AccountName:        account.AccountName,
 			AwsAccessKeyId:     account.AwsAccessKeyId,
 			AwsSecretAccessKey: account.AwsSecretAccessKey,
-			DefaultRegion:      account.DefaultRegion,
+			RegionNames:        account.RegionNames,
 		}
 	} else {
 		// Invalid Connection Method
@@ -246,6 +247,7 @@ func getAccountReadyToBeScanned(postgresDb *gorm.DB) (*models.AccountDetails, er
 		// No accounts found which are ready to be scanned
 		return nil, nil
 	}
+	fmt.Println("regions: ", accountDetailsLst[0].RegionNames)
 	return &accountDetailsLst[0], nil
 }
 
