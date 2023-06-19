@@ -30,7 +30,7 @@ func GetAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.
 		}
 
 		var accountDetailsLst []models.AccountDetails
-		tx := postgresDb.Select("account_name", "connection_method", "profile", "default_region", "last_scan_completed", "scan_status", "running_time").Find(&accountDetailsLst)
+		tx := postgresDb.Select("account_name", "connection_method", "profile", "last_scan_completed", "scan_status", "running_time").Find(&accountDetailsLst)
 		if tx.Error != nil {
 			log.Printf("failed to retrieve account details: %v", tx.Error)
 			http.Error(w, "failed get account details", 500)
@@ -89,7 +89,6 @@ func ManualAddAccountDetails(postgresDb *gorm.DB, ad models.AccountDetails) Acco
 		}
 		ad.AwsAccessKeyId = ""
 		ad.AwsSecretAccessKey = ""
-		ad.DefaultRegion = ""
 	} else {
 		ad.Profile = ""
 	}

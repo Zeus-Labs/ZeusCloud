@@ -3,6 +3,7 @@ import { classNames } from '../../utils/utils'
 
 import axios from 'axios';
 import posthog from 'posthog-js'
+import Select,{ StylesConfig } from 'react-select';
 
 interface AccountDetailsSubmission {
     accountName: string;
@@ -10,10 +11,10 @@ interface AccountDetailsSubmission {
     profile: string;
     awsAccessKeyId: string;
     awsSecretAccessKey: string;
-    defaultRegion: string;
+    regionNames: string[];
 }
 
-async function addAccountDetails({accountName, connectionMethod, profile, awsAccessKeyId, awsSecretAccessKey, defaultRegion}: AccountDetailsSubmission): Promise<string> {
+async function addAccountDetails({accountName, connectionMethod, profile, awsAccessKeyId, awsSecretAccessKey,regionNames}: AccountDetailsSubmission): Promise<string> {
     let message = '';
     try {
         // @ts-ignore
@@ -22,12 +23,13 @@ async function addAccountDetails({accountName, connectionMethod, profile, awsAcc
             account_name: accountName,
             connection_method: connectionMethod,
             profile: profile,
+            region_names: regionNames
         } : {
             account_name: accountName,
             connection_method: connectionMethod,
             aws_access_key_id: awsAccessKeyId,
             aws_secret_access_key: awsSecretAccessKey,
-            default_region: defaultRegion,
+            region_names: regionNames
         }
         await axios.post(addAccountDetailsEndpoint, accountDetails);
         // @ts-ignore
@@ -66,13 +68,62 @@ interface AddNewAccountProps   {
     onSubmitCallback: () => void
 };
 
+interface RegionOption {
+    value: string,
+    label: string
+}
+
+  const regionStyles: StylesConfig<RegionOption> = {
+    control: (provided: Record<string, unknown>, state: any) => ({
+      ...provided,
+      border: state.isFocused ? "1px solid #6366F1" : "1px solid rgb(209 213 219 / var(--tw-border-opacity))", 
+      borderColor: state.isFocused ? "#6366F1" : "rgb(209 213 219 )",
+      borderRadius: "6px",
+      boxShadow: state.isFocused && "0 0 0 1px #6366F1",       
+      "&:hover": {
+        borderColor: state.isFocused ? "#6366F1" : "rgb(209 213 219 )",
+      }
+    })
+  };
+
+const regionOptions:RegionOption[] = [
+    { value: 'All Regions', label: 'All Regions' },
+    { value: 'us-east-1', label: 'us-east-1' },
+    { value: 'us-east-2', label: 'us-east-2' },
+    { value: 'us-west-1', label: 'us-west-1' },
+    { value: 'us-west-2', label: 'us-west-2' },
+    { value: 'af-south-1', label: 'af-south-1' },
+    { value: 'ap-east-1', label: 'ap-east-1' },
+    { value: 'ap-south-1', label: 'ap-south-1' },
+    { value: 'ap-south-2', label: 'ap-south-2' },
+    { value: 'ap-northeast-1', label: 'ap-northeast-1' },
+    { value: 'ap-northeast-2', label: 'ap-northeast-2' },
+    { value: 'ap-northeast-3', label: 'ap-northeast-3' },
+    { value: 'ap-southeast-1', label: 'ap-southeast-1' },
+    { value: 'ap-southeast-2', label: 'ap-southeast-2' },
+    { value: 'ap-southeast-3', label: 'ap-southeast-3' },
+    { value: 'ca-central-1', label: 'ca-central-1' },
+    { value: 'eu-central-1', label: 'eu-central-1' },
+    { value: 'eu-central-2', label: 'eu-central-2' },
+    { value: 'eu-west-1', label: 'eu-west-1' },
+    { value: 'eu-west-2', label: 'eu-west-2' },
+    { value: 'eu-west-3', label: 'eu-west-3' },
+    { value: 'eu-north-1', label: 'eu-north-1' },
+    { value: 'eu-south-1', label: 'eu-south-1' },
+    { value: 'eu-south-2', label: 'eu-south-2' },
+    { value: 'me-south-1', label: 'me-south-1' },
+    { value: 'me-central-1', label: 'me-central-1' },
+    { value: 'sa-east-1', label: 'sa-east-1' },
+  ];
+
+
 const AddNewAccount = (props: AddNewAccountProps) => {
     const [accountName, setAccountName] = useState("");
     const [connectionMethod, setConnectionMethod] = useState("profile");
     const [profile, setProfile] = useState("");
     const [awsAccessKeyId, setAwsAccessKeyId] = useState("");
     const [awsSecretAccessKey, setAwsSecretAccessKey] = useState("");
-    const [defaultRegion, setDefaultRegion] = useState("us-east-1");
+    const [regions,setRegions] = useState<Array<RegionOption>>([regionOptions[0]])
 
     const [awsProfiles, setAwsProfiles] = useState<string[]>([]);
     const [ready, setReady] = useState(false)
@@ -102,13 +153,15 @@ const AddNewAccount = (props: AddNewAccountProps) => {
             ...submissionState,
             loading: true,
         });
-        const message = await addAccountDetails({
+        const message = regions.length===0
+        ? "The Regions dropdown cannot be empty."
+        : await addAccountDetails({
             accountName: accountName,
             connectionMethod: connectionMethod,
             profile: profile,
             awsAccessKeyId: awsAccessKeyId,
             awsSecretAccessKey: awsSecretAccessKey,
-            defaultRegion: defaultRegion,
+            regionNames: regions.map(region=>region.value) 
         });
         if (message.length > 0) {
             setSubmissionState({
@@ -202,47 +255,6 @@ const AddNewAccount = (props: AddNewAccountProps) => {
                                         />
                                     </div>
                                 </div>
-                                <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
-                                    <label htmlFor="default-region" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-                                        Default Region
-                                    </label>
-                                    <div className="mt-1 sm:col-span-2 sm:mt-0">
-                                        <select
-                                            id="default-region"
-                                            name="default-region"
-                                            onChange = {(event) => setDefaultRegion(event.target.value)}
-                                            value = {defaultRegion}
-                                            className="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm"
-                                        >
-                                            <option>us-east-1</option>
-                                            <option>us-east-2</option>
-                                            <option>us-west-1</option>
-                                            <option>us-west-2</option>
-                                            <option>af-south-1</option>
-                                            <option>ap-east-1</option>
-                                            <option>ap-south-1</option>
-                                            <option>ap-south-2</option>
-                                            <option>ap-northeast-1</option>
-                                            <option>ap-northeast-2</option>
-                                            <option>ap-northeast-3</option>
-                                            <option>ap-southeast-1</option>
-                                            <option>ap-southeast-2</option>
-                                            <option>ap-southeast-3</option>
-                                            <option>ca-central-1</option>
-                                            <option>eu-central-1</option>
-                                            <option>eu-central-2</option>
-                                            <option>eu-west-1</option>
-                                            <option>eu-west-2</option>
-                                            <option>eu-west-3</option>
-                                            <option>eu-north-1</option>
-                                            <option>eu-south-1</option>
-                                            <option>eu-south-2</option>
-                                            <option>me-south-1</option>
-                                            <option>me-central-1</option>
-                                            <option>sa-east-1</option>
-                                        </select>
-                                    </div>
-                            </div>
                             </>
                         }
                         {
@@ -266,6 +278,36 @@ const AddNewAccount = (props: AddNewAccountProps) => {
                                 </div>
                             </>
                         }
+                        <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
+                            <label htmlFor="regions" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
+                                Regions
+                            </label>
+                            <div className="mt-1 sm:col-span-2 sm:mt-0">
+                                <Select
+                                    id="regions"
+                                    name="regions"
+                                    isMulti = {true}
+                                    value={regions}
+                                    onChange = {(selected:any)=>{
+                                        // Assign All Regions value to the regions state variable when all regions option is selected
+                                        selected.find((option:RegionOption) => option.value === "All Regions") 
+                                        ? setRegions([regionOptions[0]]) 
+                                        : setRegions(selected)
+                                    }}
+                                    options={regionOptions}
+                                    styles={regionStyles}
+                                    isOptionDisabled={((option:RegionOption)=> {
+                                        if(option.value !== "All Regions" && regions.length==1 && regions[0].value==="All Regions"){
+                                            return true
+                                        } 
+                                        return false
+                                    })}
+                                    
+                                    className="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm"
+                                />
+                                    
+                            </div>
+                        </div>
                     </div>
                     <div className="pt-5">
                         <div className="flex justify-end">
