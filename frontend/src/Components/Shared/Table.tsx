@@ -1,7 +1,7 @@
 
 // import {TablePropGetter, TableProps, Row, HeaderGroup,} from "react-table";
 import { ChevronDownIcon, ChevronUpIcon, ChevronUpDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
-import {useState, useCallback} from "react";
+import {useCallback, useRef, useEffect} from "react";
 
 export interface SortColumnHeader {
     sortStateValue: string,
@@ -28,20 +28,21 @@ export interface TableRow {
     openRowState?: boolean;
     handleRowClick?:()=>void;
     setOpenRowStateFn?: () => void;
+    selectedRowId?: string | undefined,
 }
 
 export interface TableProps   {
     tableFixed: boolean,
     tableColumnHeaders: TableColumnHeader[],
     tableRows?: TableRow[]
-
+    selectedRowId?: string | undefined,
     // List of the table css header styles.
     tableHeaderCSS: any[]; 
 };
 
 // TableRowComp returns the table row component.
 const TableRowComp = ({rowId, columns, nestedComponent, 
-    openRowState,handleRowClick ,setOpenRowStateFn}: TableRow) => {
+    openRowState,handleRowClick ,setOpenRowStateFn,selectedRowId}: TableRow) => {
 
     const onClickCallback = useCallback(() => {
         if (nestedComponent && setOpenRowStateFn) {
@@ -50,7 +51,7 @@ const TableRowComp = ({rowId, columns, nestedComponent,
     }, [nestedComponent, openRowState]);
     
     const currRow = (
-        <tr key={rowId} onClick={handleRowClick} 
+        <tr key={rowId} id={rowId} onClick={handleRowClick} 
             className={(nestedComponent || handleRowClick) ? 'cursor-pointer hover:bg-gray-100' : ''}>
                 
                     {columns.map((column, idx) => {
@@ -95,10 +96,20 @@ const TableComp = ({
     tableFixed,
     tableRows,
     tableColumnHeaders, 
-    tableHeaderCSS}: TableProps) => {
+    tableHeaderCSS,
+    selectedRowId}: TableProps) => {
     var tableClassName = tableFixed ? "table-fixed min-w-full divide-y divide-gray-300" : "min-w-full divide-y divide-gray-300"
+
+    const tableRef = useRef<HTMLTableElement>(null)
+    useEffect(()=>{
+        if(selectedRowId){
+            const ruleAlertGroupRow = tableRef.current?.querySelector(`#${CSS.escape(selectedRowId)}`)
+            ruleAlertGroupRow?.scrollIntoView({ behavior: "smooth",block:"start"})
+        }
+    },[selectedRowId,tableRows])
+
     return (
-        <table className={tableClassName}>
+        <table className={tableClassName} ref={tableRef}>
             <thead className="bg-gray-50">
                 <tr key={"header_row"}>
                     {tableColumnHeaders.map((tableColumnHeader, index) =>  {

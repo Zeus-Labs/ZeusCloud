@@ -1,17 +1,18 @@
 import {TableComp, TableRow} from '../Shared/Table';
 import axios from 'axios';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Risks  } from '../Shared/Risks';
 import { SelectFilterDropdown } from '../Shared/Select';
 import { alertNumberSortTypeFn, severitySortTypeFn, severityFilterFn, 
     searchFilterFn, risksFilterFn, zeroAlertFilter} from "../Shared/TableOpsUtils";
-import { RuleAlertsResponse, rulealerts_group, AlertId, SlidoverStateData, alert_instance, DisplayNode} from './AlertsTypes';
+import { RuleAlertsResponse, rulealerts_group, AlertId, alert_instance, DisplayNode} from './AlertsTypes';
 import { GeneratedAlertsTable } from './GeneratedAlertsTable';
 import { AlertSlideover } from './AlertsSlideover';
 import { TextInput } from "../Shared/Input";
 import { extractServiceName } from "../../utils/utils";
 import ColoredBgSpan from '../Shared/ColoredBgSpan';
 import posthog from 'posthog-js'
+import {createSearchParams, useNavigate, useSearchParams } from 'react-router-dom';
 export const severityColorMap:{[label:string]:string}={
     "Critical":"red",
     "High":"orange",
@@ -52,45 +53,18 @@ async function getActiveAlertsInfoData(ruleCategory: string): Promise<RuleAlerts
     }
 }
 
-async function getRuleGraph(resource_id:string,rule_id:string){
-    try {
-        // @ts-ignore
-        const ruleGraphEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/getRuleGraph";
-        const response = await axios.get(ruleGraphEndpoint,
-            { params: { resource_id: resource_id, rule_id: rule_id } }
-        );
-        
-        return {
-            rule_graph: response.data,
-            error: ''
-        };
-    }
-    catch (error) {
-       
-        let message = '';
-        if (axios.isAxiosError(error)) {
-            if (error.response && error.response.data) {
-                message = "Error: " + error.response.data
-            } else {
-                message = "Oops! Encountered an error..."
-            }
-        } else {
-            message = "Error in retrieving alerts information."
-        }
 
-        return {
-            rule_graph: {},
-            error: message,
-        };
-    }
-}
 
 
 type AlertsTableOpsProps = {
     ruleCategory: string, 
+    selectedRuleAlertGroup:rulealerts_group | undefined,
+    selectedAlertInstance: alert_instance | undefined,
+    isSlideover:boolean
 };
 
-const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
+const AlertsTableOps = ({ruleCategory,selectedAlertInstance,selectedRuleAlertGroup,
+    isSlideover}: AlertsTableOpsProps) => {
     if (ruleCategory !== "misconfiguration" && ruleCategory !== "attackpath") {
         throw new Error("Invalid rule category");
     }
@@ -103,31 +77,6 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
     let initDisplayedTableRows: TableRow[] = [];
 
     let initNestedAlertCompList: React.ReactNode[] = [];
-
-    let initSlideOver: SlidoverStateData = {
-        rule_data: {
-            uid: "",
-            description: "",
-            severity: "",
-            risk_categories: new Array<string>(),
-            active: false,
-        },
-        alert_instance: {
-            resource_type: "",
-            resource_id: "",
-            account_id: "",
-            context: "",
-            status: "", 
-            first_seen: new Date(),
-            last_seen: new Date(),
-            muted: false,
-        },
-        display_graph:{
-            node_info: {},
-            adjacency_list: {}
-        },
-        open: false,
-    };
     
     const [activeAlertsInfo, setActiveAlertsInfo] = useState(initRulesAlertsInfo);
     function toggleAlertMuteState(alertId: AlertId, newMutedValue: boolean) {
@@ -160,25 +109,30 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
     // allRows is a state variable which has all the table rows initially pulled.
     const [allRows, setAllRows] = useState(initDisplayedTableRows);
 
-    // These are the filters.
-    const [severityFilter, setSeverityFilter] = useState("All");
-    const [riskFilter, setRiskFilter] = useState("All");
-    const [searchFilter, setSearchFilter] = useState("");
+    const [searchParams,setSearchParams] = useSearchParams()
 
-    const [slideover, setSlideover] = useState(initSlideOver);
+    // These are the filters.
+    const [severityFilter, setSeverityFilter] = useState(searchParams.get("severity") ?? "All");
+    const [riskFilter, setRiskFilter] = useState(searchParams.get("risk") || "All");
+    const [searchFilter, setSearchFilter] = useState(searchParams.get("search") || "");
+
 
     // Filter for inner alerts tables.
-    const [innerAlertsFilter, setInnerAlertsFilter] = useState({
+    const [innerAlertsFilter, setInnerAlertsFilter] = useState(
+        JSON.parse(searchParams.get("innerAlerts") as string) 
+        ?? {
         "muted": "Unmuted",
         "status": "Failed",
         "account": "All",
     });
 
     // These are states for sorting.
-    const [sortState, setSortState] = useState({
-        "severity": "Dec",
-        "alerts": "None"
-    })
+    const [sortState, setSortState] = useState(
+        JSON.parse(searchParams.get("sort") as string) 
+        ?? {
+            "severity": "Dec",
+            "alerts": "None"
+        })
 
     // State to track open/close state of every row.
     var initOpenTableState: { [rowId: string] : boolean; } = {};
@@ -186,6 +140,27 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
 
     // For initial display of table.
     const [ready, setReady] = useState(false)
+
+    const navigate = useNavigate()
+
+    useEffect(()=>{
+        setSeverityFilter(searchParams.get("severity") ?? "All")
+        setRiskFilter(searchParams.get("risk") || "All")
+        setSearchFilter(searchParams.get("search") || "")
+        setInnerAlertsFilter(
+            JSON.parse(searchParams.get("innerAlerts") as string) 
+            ?? {
+            "muted": "Unmuted",
+            "status": "Failed",
+            "account": "All",
+        })
+        setSortState(
+            JSON.parse(searchParams.get("sort") as string) 
+            ?? {
+                "severity": "Dec",
+                "alerts": "None"
+            })
+    },[searchParams])
 
     // Get all active alerts info data at initial set up. Set all rows to be closed.
     useEffect(() => {
@@ -197,9 +172,35 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
                 setOpenTableState(prevOpenStateInfo => ({...prevOpenStateInfo, 
                     [ruleUid]: false}));
             }); 
+
+            // set openRowState to true when alert row is clicked and the url is changed and params are received on the alerts page
+            if(isSlideover && selectedRuleAlertGroup){
+                setOpenTableState(prevOpenStateInfo=>({
+                    ...prevOpenStateInfo,
+                    [selectedRuleAlertGroup?.rule_data.uid]:true
+                }))
+            }  
         }
         asyncWork()
-    }, [ruleCategory]);
+    }, [ruleCategory,selectedRuleAlertGroup,isSlideover]);
+
+    const queryParams = useMemo(()=>{
+        const params = {
+            severity: severityFilter, 
+            risk: riskFilter,
+            search: searchFilter,
+            innerAlerts: JSON.stringify(innerAlertsFilter),
+            sort: JSON.stringify(sortState)
+        }
+        return params 
+    },[innerAlertsFilter,severityFilter,riskFilter,searchFilter,sortState])
+
+    const navigateOnSideBarClose = useCallback(()=>{
+        navigate({
+            pathname:`/alerts/${ruleCategory}`,
+            search: `?${createSearchParams(queryParams)}`                    
+        })
+    },[innerAlertsFilter,severityFilter,riskFilter,searchFilter,sortState,ruleCategory])
 
     // Create each alert table and surrounding components.
     useEffect(() => {
@@ -210,19 +211,14 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
         let alertTableList = activeAlertsInfo.rule_alerts_group.map(activeAlertInfo => {
             
             // Callback function to update open and set the alert instance variable.
-            const setSlideoverAlertInstanceFn = async function(currAlertInstance: alert_instance) {
-                const ruleGraph = await getRuleGraph(currAlertInstance.resource_id,activeAlertInfo.rule_data.uid)
+            const navigateSlideoverAlertFn = function(currAlertInstance: alert_instance) {
+                
                 // @ts-ignore
                 posthog.capture(`${window._env_.REACT_APP_ENVIRONMENT} Alert Row Clicked`,{environment: window._env_.REACT_APP_ENVIRONMENT})
-
-                setSlideover(prevSlideover => {
-                    return {
-                        open: !prevSlideover.open,
-                        rule_data: activeAlertInfo.rule_data,
-                        alert_instance: currAlertInstance,
-                        display_graph: ruleGraph.rule_graph
-                    }
-                });
+                navigate({
+                    pathname:`/alerts/${ruleCategory}/${encodeURIComponent(activeAlertInfo.rule_data.uid)}/${encodeURIComponent(currAlertInstance.resource_id)}`,
+                    search: `?${createSearchParams(queryParams)}`                    
+                })
             }
             
             return (
@@ -233,8 +229,7 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
                                 ruleAlertsGroup: activeAlertInfo,
                                 filterValueState: innerAlertsFilter,
                                 toggleAlertMuteState: toggleAlertMuteState,
-                                openSlideover: slideover,
-                                setSlideoverFn: setSlideoverAlertInstanceFn,
+                                navigateSlideoverFn: navigateSlideoverAlertFn,
                             })}
                         </div>
                     </td>
@@ -242,7 +237,7 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
             )
         })
         setNestedAlertComponents(alertTableList);
-    }, [slideover, activeAlertsInfo, innerAlertsFilter]);
+    }, [activeAlertsInfo, innerAlertsFilter,queryParams]);
 
     // Create every row in the table. Uses alert tables (as nested) and every rule.
     useEffect(() => {
@@ -551,24 +546,15 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
         "chevronClassName": "h-5 w-5",
     }];
 
-
-    // Callback function to update open and set the alert instance variable.
-    const setSlideoverBoolFn = function() {
-        setSlideover(prevSlideover => {
-            return {
-                ...prevSlideover,
-                open: !prevSlideover.open,
-            }
-        });
-    }
-
     const handleSearchChange = (e: React.FormEvent<HTMLInputElement>) => {
         setSearchFilter(e.currentTarget.value);
     }
 
     // These divs are used to build the table and filters.
     return (
-    <div className="pt-8 sm:pt-10">
+    activeAlertsInfo.rule_alerts_group.length === 0
+    ? <></>
+    : <div className="pt-8 sm:pt-10">
         {/* This div is used to build the filters. */}
         <div className="flex flex-row grid grid-cols-6 gap-4">
                     <div key={"RuleInput"}>
@@ -637,30 +623,32 @@ const AlertsTableOps = ({ruleCategory}: AlertsTableOpsProps) => {
                     </div>
             </div>
 
-        {/* These div is for the structure around the table. */}
-        {
-            slideover.open ? (
-                <AlertSlideover 
-                    slideoverData={slideover} 
-                    setOpen={setSlideoverBoolFn} />
-            ) : <></>
-        }
         { ready ? 
         (<div className="mt-12 flex flex-col">
             <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
                 <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
                     <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
                         <TableComp 
-                                tableFixed={true}
-                                tableColumnHeaders={tableColumnHeaders}
-                                tableHeaderCSS={tableHeaderCSS}
-                                tableRows={displayedTableRows}
-                                />
+                            tableFixed={true}
+                            tableColumnHeaders={tableColumnHeaders}
+                            tableHeaderCSS={tableHeaderCSS}
+                            tableRows={displayedTableRows}
+                            selectedRowId={(isSlideover && selectedRuleAlertGroup!=undefined) ? selectedRuleAlertGroup.rule_data.uid : ""}
+                        />
                     </div>
                 </div>
             </div>
         </div>) :
         <></>}
+
+        {isSlideover && selectedAlertInstance && selectedRuleAlertGroup
+        && <AlertSlideover 
+            selectedAlertInstance={selectedAlertInstance}
+            selectedRuleAlertGroup={selectedRuleAlertGroup}
+            navigateOnSideBarClose={navigateOnSideBarClose}
+            />
+        }
+
     </div>);
 }
 

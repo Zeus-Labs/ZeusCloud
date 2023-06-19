@@ -17,6 +17,7 @@ import { useEffect } from "react";
 import { getAccountDetails } from './Components/Settings/ConnectedAccounts';
 import AssetsInventory from "./Pages/AssetsInventory";
 import Explore from "./Pages/Explore";
+import NotFound from "./Pages/404Page";
 
 const WithNavbar = () => {
   return (
@@ -40,7 +41,7 @@ const HomeResolver = () => {
       } else if (num_scans_running > 0) {
         navigate('/settings', { replace: true, state: { name: "Connected Accounts" } });
       } else {
-        navigate('/alerts', { replace: true });
+        navigate('/alerts/misconfiguration', { replace: true });
       }
     }
     parseAndRedirect(); 
@@ -58,12 +59,14 @@ const App = () => {
           <Route path="/" element={<HomeResolver/>} />
           <Route element={<WithNavbar />}>
                 <Route path="/rules" element={<Rules />} />
-                <Route path="/alerts" element={<Alerts />} />
+                <Route path="/alerts/:ruleCategory" element={<Alerts />} />
+                <Route path="/alerts/:ruleCategory/:rule_uid/:alert_resource_id" element={<Alerts />} />
                 <Route path="/compliance" element={<Compliance />} />
                 <Route path="/compliance/report/:frameworkId" element={<ComplianceReport />} />
                 <Route path="/asset-inventory" element={<AssetsInventory />} />
                 <Route path="/access-explorer" element={<Explore />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="*" element={<NotFound/>} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -27,8 +27,7 @@ export interface GeneratedAlertsTableProps {
         [muted: string]: string;
     };
     toggleAlertMuteState: (alertId: AlertId, newMutedValue: boolean) => void;
-    openSlideover: SlidoverStateData; 
-    setSlideoverFn: (updatedVal: alert_instance) => void;
+    navigateSlideoverFn: (updatedVal: alert_instance) => void;
 }
 
 export interface UpdateAlertMuteStateData {
@@ -50,12 +49,12 @@ export interface SlidoverStateData {
     rule_data: rule_info;
     alert_instance: alert_instance;
     open: boolean;
-    display_graph: DisplayGraph
 }
 
 export interface AlertSlideoverProps {
-    slideoverData: SlidoverStateData;
-    setOpen: () => void
+    selectedRuleAlertGroup:rulealerts_group,
+    selectedAlertInstance: alert_instance,
+    navigateOnSideBarClose:()=>void
 }
 
 export interface DisplayNode{

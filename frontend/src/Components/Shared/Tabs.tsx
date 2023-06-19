@@ -15,12 +15,13 @@ export interface TabsProps   {
     }[],
     current: string,
     setCurrent: (c: string) => void
+    navigateOnTabClick?:(tabNme:string)=>void
 };
 
 
 export default function Tabs(props: TabsProps) {
     const {
-        tabs, current, setCurrent,
+        tabs, current, setCurrent,navigateOnTabClick
     } = props;
     const curTab = tabs.filter(({ name }) => name === current)[0];
     return (
@@ -31,7 +32,10 @@ export default function Tabs(props: TabsProps) {
                         <button
                             key={tab.name}
                             type="button"
-                            onClick={() => setCurrent(tab.name)}
+                            onClick={() => {
+                                navigateOnTabClick && navigateOnTabClick(tab.name)
+                                setCurrent(tab.name)
+                            }}
                             className={classNames(
                                 tab.name === current
                                     ? 'border-indigo-500 text-indigo-600'
