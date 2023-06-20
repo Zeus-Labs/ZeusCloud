@@ -78,7 +78,7 @@ func main() {
 	}
 	go control.CartographyExecutionLoop(postgresDb, driver)
 	go control.ExecuteRules(postgresDb, driver, rulesToExecute)
-
+	go control.RescanLoop(postgresDb)
 	// Set up routing
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/getRules", handlers.GetRules(postgresDb))
@@ -89,8 +89,10 @@ func main() {
 	mux.HandleFunc("/api/getComplianceFrameworkStats", handlers.GetComplianceFrameworkStats(postgresDb))
 	mux.HandleFunc("/api/getAwsProfiles", handlers.GetAwsProfiles())
 	mux.HandleFunc("/api/addAccountDetails", handlers.AddAccountDetails(postgresDb))
+	mux.HandleFunc("/api/addScanFrequency", handlers.AddScanFrequency(postgresDb))
 	mux.HandleFunc("/api/deleteAccountDetails", handlers.DeleteAccountDetails(postgresDb))
 	mux.HandleFunc("/api/getAccountDetails", handlers.GetAccountDetails(postgresDb))
+	mux.HandleFunc("/api/getScanFrequency", handlers.GetScanFrequency(postgresDb))
 	mux.HandleFunc("/api/rescan", handlers.Rescan(postgresDb))
 	mux.HandleFunc("/api/getAssetInventory", handlers.GetAssetInventory(driver))
 	mux.HandleFunc("/api/getExploreAssets", handlers.GetExploreAssets(driver))

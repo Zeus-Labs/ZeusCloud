@@ -22,6 +22,65 @@ type AccountName struct {
 	AccountName string `json:"account_name"`
 }
 
+func AddScanFrequency(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		// Validate account details
+		var scanFrequencyConstant models.Constants
+		if err := json.NewDecoder(r.Body).Decode(&scanFrequencyConstant); err != nil {
+			log.Printf("failed to decode json body: %v", err)
+			http.Error(w, "failed to decode json body", 400)
+			return
+		}
+
+		if scanFrequencyConstant.Name != "Scan Frequency" {
+			log.Printf("invalid name provided for scan frequency, the name should be Scan Frequency.")
+			http.Error(w, "invalid name provided for scan frequency, the name should be Scan Frequency.", 400)
+		}
+
+		tx := postgresDb.Clauses(clause.OnConflict{
+			UpdateAll: true,
+		}).Create(&scanFrequencyConstant)
+
+		if tx.Error != nil {
+			log.Printf("failed to add scan frequency value: %v", tx.Error)
+			http.Error(w, "failed to add scan frequency value", 400)
+			return
+		}
+	}
+}
+
+func GetScanFrequency(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var scanFrequencyConstant models.Constants
+		tx := postgresDb.Where("name = ?", "Scan Frequency").First(&scanFrequencyConstant)
+		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+			// this is for the initial case when there is no data in db and user tries to fetch,
+			// so we return the value corresponding to the manual scan by default
+			scanFrequencyConstant = models.Constants{
+				Name:  "Scan Frequency",
+				Value: 0,
+			}
+		} else if tx.Error != nil {
+			log.Printf("failed to retrieve scan frequency constant: %v", tx.Error)
+			http.Error(w, "failed to retrieve scan frequency constant", 500)
+			return
+		}
+
+		retDataBytes, err := json.Marshal(scanFrequencyConstant)
+		if err != nil {
+			log.Printf("failed to marshal scan frequency details: %v", err)
+			http.Error(w, "failed get scan frequency details", 500)
+			return
+		}
+		w.Write(retDataBytes)
+	}
+}
+
 func GetAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {

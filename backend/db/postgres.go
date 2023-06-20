@@ -31,7 +31,7 @@ func InitPostgres() *gorm.DB {
 		break
 	}
 
-	err = db.AutoMigrate(&models.RuleData{}, &models.RuleResult{}, &models.AccountDetails{})
+	err = db.AutoMigrate(&models.RuleData{}, &models.RuleResult{}, &models.AccountDetails{}, &models.Constants{})
 	if err != nil {
 		log.Fatal(err)
 	}

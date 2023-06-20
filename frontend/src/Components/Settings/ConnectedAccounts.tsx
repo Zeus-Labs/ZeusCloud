@@ -8,6 +8,7 @@ import axios from 'axios';
 import moment from 'moment';
 import { stringify } from 'querystring';
 import { posthog } from 'posthog-js';
+import { SelectFilterDropdown } from '../Shared/Select';
 
 export interface account_details {
     account_name: string,
@@ -83,7 +84,7 @@ const ScanStatus = ({ running_time, last_scan_completed, scan_status }: ScanStat
     if (scan_status === "RULES_RUNNING") {
         running_time = 670
     }
-    if (scan_status === "RUNNING" || scan_status === "CARTOGRAPHY_PASSED") {
+    if (scan_status === "RUNNING" || scan_status === "CARTOGRAPHY_PASSED" || scan_status === "RULES_RUNNING") {
         return <>In Progress: {runningTimeToPercentage(running_time)}% completed...</>
     }
     return (
@@ -298,6 +299,52 @@ const ConnectionDetails = ({ connection_method, profile }: ConnectionDetailsProp
 
 }
 
+type ScanFrequencyDetails = {
+    name: string,
+    value: number
+}
+
+async function addScanFrequency(scanFrequencyValue: number){
+    let message = '';
+    try {
+        // @ts-ignore
+        const addScanFrequencyEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/addScanFrequency";
+        var scanFrequencyDetails:ScanFrequencyDetails = {
+            name: "Scan Frequency",
+            value: scanFrequencyValue
+        }
+        await axios.post(addScanFrequencyEndpoint, scanFrequencyDetails);
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            if (error.response && error.response.data) {
+                return message = "Encountered an error in submitting scan frequency details: " + error.response.data
+            } 
+        }
+        if (message.length === 0) {
+            return message = "Encountered an error in submitting scan frequency details"
+        }
+    }
+    return message;
+}
+
+async function getScanFrequency(){
+    try{
+        // @ts-ignore
+        const getScanFrequencyEndpoint = window._env_.REACT_APP_API_DOMAIN + "/api/getScanFrequency";
+        const response = await axios.get(getScanFrequencyEndpoint)
+        const scanFrequencyConstant:ScanFrequencyDetails = response.data
+        return {
+            message: "",
+            value: scanFrequencyConstant.value
+        }
+    }catch(e){
+        return {
+            message:`Error in retrieving scan frequency details`,
+            value: 0
+        }
+    }
+        
+}
 
 const ConnectedAccounts = () => {
     // accountDetailsList stores account details info pulled from the server
@@ -309,12 +356,40 @@ const ConnectedAccounts = () => {
     // For initial display of table.
     const [ready, setReady] = useState(false)
 
+    const initScanFrequencyLabel = ""
+    const [scanFrequencyLabel,setScanFrequencyLabel] = useState(initScanFrequencyLabel)
+
+    const scanFrequencyToValueMap : {[label:string]:number} = {
+        "Manual" : 0,
+        "Scan every 4 hours": 4,
+        "Scan every 6 hours": 6,
+        "Scan every 12 hours": 12
+    }
+    
+    const getFrequencyTextFromValue = (value:number):string=>{
+        const keys = Object.keys(scanFrequencyToValueMap)
+        for (const key of keys){
+            if(scanFrequencyToValueMap[key]===value){
+                return key
+            }
+        }
+        return "Manual";
+    }
+
     // Pull initial rules information. Only runs the very first render.
     useEffect(() => {
         async function asyncSetAccountDetails() {
             setAccountDetailsList(await getAccountDetails());
         }
+        async function asyncSetFrequencyText(){
+            const scanFrequencyObj = await getScanFrequency()
+            const value = scanFrequencyObj.message==="" ? scanFrequencyObj.value : 0
+            setScanFrequencyLabel(getFrequencyTextFromValue(value)) 
+        }
+
         asyncSetAccountDetails();
+        asyncSetFrequencyText();
+
         const timeout = setTimeout(()=>asyncSetAccountDetails(),4000)
         // No need to poll in read-only demo environment
         // @ts-ignore
@@ -327,6 +402,11 @@ const ConnectedAccounts = () => {
             clearTimeout(timeout);
         }
     }, []);
+
+    useEffect(()=>{
+        scanFrequencyLabel!==initScanFrequencyLabel 
+        && addScanFrequency(scanFrequencyToValueMap[scanFrequencyLabel])
+    },[scanFrequencyLabel])
 
     // Set all table rows.
     useEffect(() => {
@@ -418,6 +498,20 @@ const ConnectedAccounts = () => {
                     Manage connected accounts and monitor their scans. Visit the <b>Alerts</b> tab once scans complete!
                 </p>
             </div>
+            {
+                allRows.length>0 && scanFrequencyLabel!==initScanFrequencyLabel
+                && 
+                <div className='flex items-center'>
+                    <label className="block mr-6 text-sm font-medium text-gray-700" htmlFor="scan_frequency">Scan Frequency</label>
+                    <div id='scan_frequency' className='min-w-[200px] ml-5'>
+                        <SelectFilterDropdown 
+                            selectedFilterValue={scanFrequencyLabel}
+                            setFilter={setScanFrequencyLabel}
+                            filterOptions={["Manual","Scan every 4 hours","Scan every 6 hours","Scan every 12 hours"]}
+                        />
+                    </div>
+                </div>
+            }
             {
                 ready && (
                     <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
