@@ -40,6 +40,39 @@ type CartographyJobRequest struct {
 	RegionNames        []string `json:"region_names,omitempty"`
 }
 
+func PeriodicRescanFunc(postgresDb *gorm.DB) {
+
+	var scanFreqConstant models.Constants
+	if tx := postgresDb.Where("name=?", "Scan Frequency").First(&scanFreqConstant); tx.Error != nil {
+		log.Printf("Error in fetching the scan frequency constant: %v", tx.Error)
+		return
+	}
+
+	// checking if manual scan is enabled
+	if scanFreqConstant.Value == 0 {
+		return
+	}
+
+	frequencyHrsAgo := time.Now().UTC().Add(-time.Duration(scanFreqConstant.Value) * time.Hour)
+	statusValues := []string{"PASSED", "FAILED"}
+
+	if tx := postgresDb.Model(&models.AccountDetails{}).
+		Where("scan_status IN (?) and last_scan_completed <= ?", statusValues, frequencyHrsAgo).
+		Updates(map[string]interface{}{"scan_status": "READY", "running_time": 0}); tx.Error != nil {
+		log.Printf("Error in updating the scan status from RULES_RUNNING to PASSED and last_scan_completed: %v", tx.Error)
+		return
+	}
+}
+
+func RescanLoop(postgresDb *gorm.DB) {
+	for {
+		time.Sleep(time.Minute * 5)
+		ExecuteRulesMutex.Lock()
+		PeriodicRescanFunc(postgresDb)
+		ExecuteRulesMutex.Unlock()
+	}
+}
+
 // ExecuteRules attempts to
 //  1. Execute the rules and insert the rule results in postgress DB
 //  2. After rules are executed, the scan_status and last_scan_completed
