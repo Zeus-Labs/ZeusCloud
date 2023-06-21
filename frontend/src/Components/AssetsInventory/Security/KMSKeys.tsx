@@ -1,18 +1,22 @@
 import { TableRow } from "../../Shared/Table";
 import {TextWithTooltip, TextWithTooltipIcon } from "../../Shared/TextWithTooltip";
+import CrownElement from "../CrownElement";
 import {AssetModal, convertDateFormat, InlineIcon } from "../assetUtils";
 
 export declare type KmsKeyFields={
+    node_id: number,
     id: string,
     account_id: string,
     creation_date: string,
     enabled: boolean,
+    is_crown_jewel:boolean,
 }
 
 export enum KmsKeyHeader{
     arn="KMS Key",
     creation_date="Creation Date",
-    enabled="Enabled"
+    enabled="Enabled",
+    crown_jewel = "Crown Jewel"
 }
 
 export class KMSKey{
@@ -23,6 +27,11 @@ export class KMSKey{
         "headerClassName": "w-1/2 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900 sm:pl-6",
         "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
         "chevronClassName": "h-5 w-5",
+    },
+    {
+        "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+        "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
     },
     {
         "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
@@ -50,6 +59,11 @@ export class KMSKey{
         {
             header: KmsKeyHeader.enabled,
             accessor_key: KmsKeyHeader.enabled,
+            allowSorting: false
+        },
+        {
+            header: KmsKeyHeader.crown_jewel,
+            accessor_key: KmsKeyHeader.crown_jewel,
             allowSorting: false
         },
     ]
@@ -81,7 +95,15 @@ export class KMSKey{
                         value: dataTableRow.enabled?.toString() || "Null",
                         ignoreComponentExpansion: true
                     },
-                    
+                    {
+                        content: <CrownElement 
+                        isCrownJewel={dataTableRow.is_crown_jewel ?? false}
+                        nodeId={dataTableRow.node_id}
+                        />,
+                        accessor_key: KmsKeyHeader.crown_jewel,
+                        value: "",
+                        ignoreComponentExpansion: true
+                    }
                 ],
                 rowId: dataTableRow.id
             }

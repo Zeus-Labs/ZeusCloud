@@ -10,6 +10,7 @@ import (
 )
 
 type RdsIntance struct {
+	NodeId             *int64     `json:"node_id"`
 	Arn                *string    `json:"arn"`
 	AccountId          *string    `json:"account_id"`
 	UserIdentifier     *string    `json:"user_identifier"`
@@ -20,12 +21,14 @@ type RdsIntance struct {
 	CreateTime         *time.Time `json:"create_time"`
 	PubliclyAccessible *bool      `json:"publicly_accessible"`
 	StorageEncrypted   *bool      `json:"storage_encrypted"`
+	IsCrownJewel       *bool      `json:"is_crown_jewel"`
 }
 
 func RetrieveRdsInstances(tx neo4j.Transaction) ([]interface{}, error) {
 	records, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(r:RDSInstance)
-		RETURN r.arn as arn,
+		RETURN ID(r) as node_id,
+		r.arn as arn,
 		a.id as account_id,
 		r.db_instance_identifier as user_identifier,
 		r.availability_zone as availability_zone,
@@ -34,7 +37,8 @@ func RetrieveRdsInstances(tx neo4j.Transaction) ([]interface{}, error) {
 		r.engine as engine,
 		r.instance_create_time as create_time,
 		r.publicly_accessible as publicly_accessible,
-		r.storage_encrypted as storage_encrypted`,
+		r.storage_encrypted as storage_encrypted,
+		r.is_crown_jewel as is_crown_jewel`,
 		nil,
 	)
 	if err != nil {
@@ -45,6 +49,8 @@ func RetrieveRdsInstances(tx neo4j.Transaction) ([]interface{}, error) {
 		record := records.Record()
 
 		var parsingErrs error
+		NodeIdInt, err := util.ParseAsOptionalInt64(record, "node_id")
+		multierror.Append(parsingErrs, err)
 		arnStr, err := util.ParseAsOptionalString(record, "arn")
 		multierror.Append(parsingErrs, err)
 		accountIDStr, err := util.ParseAsOptionalString(record, "account_id")
@@ -65,11 +71,15 @@ func RetrieveRdsInstances(tx neo4j.Transaction) ([]interface{}, error) {
 		multierror.Append(parsingErrs, err)
 		storageEncryptedBool, err := util.ParseAsOptionalBool(record, "storage_encrypted")
 		multierror.Append(parsingErrs, err)
+		isCrownJewelBool, err := util.ParseAsOptionalBool(record, "is_crown_jewel")
+		multierror.Append(parsingErrs, err)
+
 		if parsingErrs != nil {
 			log.Printf("Encountered errors parsing resource: %v, continuing on...", parsingErrs.Error())
 		}
 
 		retrievedRdsInstances = append(retrievedRdsInstances, RdsIntance{
+			NodeId:             NodeIdInt,
 			Arn:                arnStr,
 			AccountId:          accountIDStr,
 			UserIdentifier:     userIdentifierStr,
@@ -80,6 +90,7 @@ func RetrieveRdsInstances(tx neo4j.Transaction) ([]interface{}, error) {
 			CreateTime:         createTime,
 			PubliclyAccessible: publiclyAccessibleBool,
 			StorageEncrypted:   storageEncryptedBool,
+			IsCrownJewel:       isCrownJewelBool,
 		})
 	}
 

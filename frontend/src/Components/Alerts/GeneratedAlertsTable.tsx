@@ -93,11 +93,19 @@ export const GeneratedAlertsTable = ({filterValueState,
         }
         return alertInstance.account_id === filterAccountStateVal;
     };
+    const resourceFilterFn = function(alertInstance: alert_instance): boolean {
+        const filterResourceStateVal = filterValueState["resource"];
+        if(filterResourceStateVal==="All"){
+            return true
+        }
+        return alertInstance.crown_jewel
+    }
     
     var allTableRows = alert_instances.
         filter(alert_instance => statusFilterFn(alert_instance)).
         filter(alert_instance => muteFilterFn(alert_instance)).
         filter(alert_instance => accountFilterFn(alert_instance)).
+        filter(alert_instance => resourceFilterFn(alert_instance)).
         sort(function(a: alert_instance, b: alert_instance): number {
             if (a.status === b.status) {
                 return 0

@@ -1,15 +1,18 @@
 import { TableRow } from "../../Shared/Table";
 import {TextWithTooltip, TextWithTooltipIcon } from "../../Shared/TextWithTooltip";
+import CrownElement from "../CrownElement";
 import {AssetModal, InlineIcon } from "../assetUtils";
 
 export declare type VPCFields={
+    node_id: number,
     id: string,
     account_id: string,
     primary_cidr_block: string,
     state: string,
     is_default: boolean,
     region: string,
-    subnet_ids: string[]
+    subnet_ids: string[],
+    is_crown_jewel:boolean,
 }
 
 export enum VPCHeader{
@@ -18,7 +21,8 @@ export enum VPCHeader{
     state="State",
     is_default="Is Default",
     region="Region",
-    subnet_ids="Subnet Ids"
+    subnet_ids="Subnet Ids",
+    crown_jewel = "Crown Jewel"
 }
 
 export class VPC{
@@ -44,6 +48,11 @@ export class VPC{
         "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
         "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
         "chevronClassName": "h-5 w-5",
+    },
+    {
+        "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+        "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
     },
     {
         "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
@@ -86,6 +95,11 @@ export class VPC{
         {
             header: VPCHeader.subnet_ids,
             accessor_key: VPCHeader.subnet_ids,
+            allowSorting: false
+        },
+        {
+            header: VPCHeader.crown_jewel,
+            accessor_key: VPCHeader.crown_jewel,
             allowSorting: false
         },
     ]
@@ -149,8 +163,16 @@ export class VPC{
                         accessor_key: VPCHeader.subnet_ids,
                         value: dataTableRow.subnet_ids || "None",
                         ignoreComponentExpansion: true
+                    },
+                    {
+                        content: <CrownElement 
+                        isCrownJewel={dataTableRow.is_crown_jewel ?? false}
+                        nodeId={dataTableRow.node_id}
+                        />,
+                        accessor_key: VPCHeader.crown_jewel,
+                        value: "",
+                        ignoreComponentExpansion: true
                     }
-                    
                 ],
                 rowId: dataTableRow.id
             }

@@ -1,9 +1,11 @@
 import { TableRow } from "../../Shared/Table";
 import { TextWithTooltip, TextWithTooltipIcon } from "../../Shared/TextWithTooltip";
+import CrownElement from "../CrownElement";
 import { InlineIcon, parseArn, convertDateFormat, AssetModal, parseIAMPolicy, stringAfterLastSlash, formatDateAgo, AssetsModalWrapper } from "../assetUtils";
 
 
 export declare type IAMUsersFields={
+    node_id: number,
     arn: string,
     account_id: string,
     friendly_name: string,
@@ -12,7 +14,8 @@ export declare type IAMUsersFields={
     iam_groups: string[],
     iam_policies: string[],
     iam_roles: string[],
-    access_keys: string[]
+    access_keys: string[],
+    is_crown_jewel:boolean,
 }
 
 export enum IAMUsersHeader{
@@ -22,7 +25,8 @@ export enum IAMUsersHeader{
     iam_groups = "IAM Groups",
     iam_policies = "IAM Policies",
     iam_roles = "IAM Roles",
-    access_keys = "Access Keys"
+    access_keys = "Access Keys",
+    crown_jewel = "Crown Jewel"
 }
 
 export class IAMUsers{
@@ -48,6 +52,11 @@ export class IAMUsers{
         "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
         "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
         "chevronClassName": "h-5 w-5",
+    },
+    {
+        "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+        "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
     },
     {
         "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
@@ -100,7 +109,12 @@ export class IAMUsers{
             header: IAMUsersHeader.access_keys,
             accessor_key: IAMUsersHeader.access_keys,
             allowSorting: false
-        }
+        },
+        {
+            header: IAMUsersHeader.crown_jewel,
+            accessor_key: IAMUsersHeader.crown_jewel,
+            allowSorting: false
+        },
     ]
 
     getAllRows(assetCategoryInfo:any,setAssetCategory?:any,setSearchFilter?:any){
@@ -245,7 +259,15 @@ export class IAMUsers{
                         value: dataTableRow.access_keys,
                         ignoreComponentExpansion: true
                     },
-                    
+                    {
+                        content: <CrownElement 
+                        isCrownJewel={dataTableRow.is_crown_jewel ?? false}
+                        nodeId={dataTableRow.node_id}
+                        />,
+                        accessor_key: IAMUsersHeader.crown_jewel,
+                        value: "",
+                        ignoreComponentExpansion: true
+                    }
                 ],
                 rowId: dataTableRow.arn
             }

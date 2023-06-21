@@ -88,6 +88,7 @@ import { PubliclyExposedVmPrivilegeEscalation } from "./AttackPathComponents/Pub
 import { PrivateServerlessAdminPermissions } from "./AttackPathComponents/PrivateServerlessAdminPermissions";
 import { PubliclyExposedVmHighIMDSv1Enabled } from "./AttackPathComponents/PubliclyExposedVmHighIMDSv1Enabled";
 import { PubliclyExposedVmAdminIMDSv1Enabled } from "./AttackPathComponents/PubliclyExposedVmAdminIMDSv1Enabled";
+import { PubliclyExposedVmIMDSv1EnabledAccessCrownJewelS3 } from "./AttackPathComponents/PubliclyExposedVmIMDSv1EnabledAccessCrownJewelS3";
 
 
 export const Remediate = ({rule_data} : RemediateProps) => {
@@ -275,7 +276,8 @@ export const Remediate = ({rule_data} : RemediateProps) => {
          return <PubliclyExposedVmHighIMDSv1Enabled/>
       case "attackpath/publicly_exposed_vm_admin_permissions_imdsv1_enabled":
          return <PubliclyExposedVmAdminIMDSv1Enabled/>
-
+      case "attackpath/publicly_exposed_vm_imdsv1_enabled_has_access_to_crown_jewel_s3_bucket":
+         return <PubliclyExposedVmIMDSv1EnabledAccessCrownJewelS3 />
    }
    return (<></>)
 

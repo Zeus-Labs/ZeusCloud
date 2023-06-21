@@ -9,13 +9,15 @@ import (
 )
 
 type IamPolicy struct {
-	Id         *string  `json:"id"`
-	AccountId  *string  `json:"account_id"`
-	Name       *string  `json:"name"`
-	PolicyType *string  `json:"policy_type"`
-	IamUsers   []string `json:"iam_users"`
-	IamGroups  []string `json:"iam_groups"`
-	IamRoles   []string `json:"iam_roles"`
+	NodeId       *int64   `json:"node_id"`
+	Id           *string  `json:"id"`
+	AccountId    *string  `json:"account_id"`
+	Name         *string  `json:"name"`
+	PolicyType   *string  `json:"policy_type"`
+	IamUsers     []string `json:"iam_users"`
+	IamGroups    []string `json:"iam_groups"`
+	IamRoles     []string `json:"iam_roles"`
+	IsCrownJewel *bool    `json:"is_crown_jewel"`
 }
 
 func RetrieveIamPolicies(tx neo4j.Transaction) ([]interface{}, error) {
@@ -27,10 +29,12 @@ func RetrieveIamPolicies(tx neo4j.Transaction) ([]interface{}, error) {
 		WITH a, p, user_arns, collect(g.arn) as group_arns
 		OPTIONAL MATCH (p)<-[:POLICY]-(r:AWSRole)
 		WITH a, p, user_arns, group_arns, collect(r.arn) as role_arns
-		RETURN p.id as id,
+		RETURN ID(p) as node_id,
+		p.id as id,
 		a.id as account_id,
 		p.name as name,
 		p.type as policy_type,
+		p.is_crown_jewel as is_crown_jewel,
 		user_arns as iam_users,
 		group_arns as iam_groups,
 		role_arns as iam_roles`,
@@ -44,6 +48,8 @@ func RetrieveIamPolicies(tx neo4j.Transaction) ([]interface{}, error) {
 		record := records.Record()
 
 		var parsingErrs error
+		NodeIdInt, err := util.ParseAsOptionalInt64(record, "node_id")
+		multierror.Append(parsingErrs, err)
 		idStr, err := util.ParseAsOptionalString(record, "id")
 		multierror.Append(parsingErrs, err)
 		accountIDStr, err := util.ParseAsOptionalString(record, "account_id")
@@ -58,18 +64,22 @@ func RetrieveIamPolicies(tx neo4j.Transaction) ([]interface{}, error) {
 		multierror.Append(parsingErrs, err)
 		iamRolesLst, err := util.ParseAsOptionalStringList(record, "iam_roles")
 		multierror.Append(parsingErrs, err)
+		isCrownJewelBool, err := util.ParseAsOptionalBool(record, "is_crown_jewel")
+		multierror.Append(parsingErrs, err)
 		if parsingErrs != nil {
 			log.Printf("Encountered errors parsing resource: %v, continuing on...", parsingErrs.Error())
 		}
 
 		retrievedIamPolicies = append(retrievedIamPolicies, IamPolicy{
-			Id:         idStr,
-			AccountId:  accountIDStr,
-			Name:       nameStr,
-			PolicyType: policyTypeStr,
-			IamUsers:   iamUsersLst,
-			IamGroups:  iamGroupsLst,
-			IamRoles:   iamRolesLst,
+			NodeId:       NodeIdInt,
+			Id:           idStr,
+			AccountId:    accountIDStr,
+			Name:         nameStr,
+			PolicyType:   policyTypeStr,
+			IamUsers:     iamUsersLst,
+			IamGroups:    iamGroupsLst,
+			IamRoles:     iamRolesLst,
+			IsCrownJewel: isCrownJewelBool,
 		})
 	}
 

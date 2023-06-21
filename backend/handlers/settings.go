@@ -18,8 +18,8 @@ type AccountError struct {
 	ErrorCode int
 }
 
-type AccountName struct {
-	AccountName string `json:"account_name"`
+type RescanningAccount struct {
+	RescanningAccount string `json:"rescanning_account"`
 }
 
 func GetAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
@@ -172,7 +172,7 @@ func DeleteAccountDetails(postgresDb *gorm.DB) func(w http.ResponseWriter, r *ht
 
 func Rescan(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var ad AccountName
+		var ad RescanningAccount
 		if err := json.NewDecoder(r.Body).Decode(&ad); err != nil {
 			log.Printf("failed to decode json body: %v", err)
 			http.Error(w, "failed to decode json body", 400)
@@ -182,8 +182,8 @@ func Rescan(postgresDb *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
-		log.Printf("account name: %v", ad.AccountName)
-		if err := control.QueueAccountsToBeScanned(postgresDb, ad.AccountName); err != nil {
+		log.Printf("account name: %v", ad.RescanningAccount)
+		if err := control.QueueAccountToBeScanned(postgresDb, ad.RescanningAccount); err != nil {
 			log.Printf("failed to trigger scan: %v", err)
 			http.Error(w, "failed to trigger scan", 500)
 			return

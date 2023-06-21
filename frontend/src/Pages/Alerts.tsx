@@ -74,7 +74,7 @@ const Alerts = () => {
     }
     const [ruleAlertGroup,setRuleAlertGroup]=useState<rulealerts_group | undefined>(initRuleAlertGroup)
 
-    const initAlertInstance = {
+    const initAlertInstance:alert_instance = {
         resource_id:"",
         resource_type:"",
         account_id:"",
@@ -82,7 +82,8 @@ const Alerts = () => {
         status:"",
         first_seen: new Date(),
         last_seen: new Date(),
-        muted:false
+        muted:false,
+        crown_jewel:false
     }
     const [alertInstance,setAlertInstance]=useState<alert_instance | undefined>  (initAlertInstance) 
     const [isSlideOver,setIsSlideOver] = useState(false)

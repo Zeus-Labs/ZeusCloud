@@ -121,7 +121,7 @@ func getEdgeParameters(tx neo4j.Transaction, edgeID int) (EdgeParameters, error)
 			return EdgeParameters{}, fmt.Errorf("edge type %v must be a string", edgeType)
 		}
 		srcLabels, _ := record.Get("srcLabels")
-		srcLabelLst, err := castLabelLst(srcLabels)
+		srcLabelLst, err := CastToStrLst(srcLabels, "labels must be a slice of strings")
 
 		if err != nil {
 			return EdgeParameters{}, err
@@ -129,7 +129,7 @@ func getEdgeParameters(tx neo4j.Transaction, edgeID int) (EdgeParameters, error)
 
 		targetLabels, _ := record.Get("targetLabels")
 
-		targetLabelLst, err := castLabelLst(targetLabels)
+		targetLabelLst, err := CastToStrLst(targetLabels, "labels must be a slice of strings")
 		if err != nil {
 			return EdgeParameters{}, err
 		}
@@ -144,21 +144,21 @@ func getEdgeParameters(tx neo4j.Transaction, edgeID int) (EdgeParameters, error)
 	return edgeParameters, nil
 }
 
-func castLabelLst(labels interface{}) ([]string, error) {
+func CastToStrLst(varInterface interface{}, errorText string) ([]string, error) {
 
-	var resutLabelLst []string
-	labelLst, ok := labels.([]interface{})
+	var resultLst []string
+	lst, ok := varInterface.([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("labels must be a slice of strings")
+		return nil, fmt.Errorf(errorText)
 	}
-	for _, label := range labelLst {
-		labelStr, ok := label.(string)
+	for _, elm := range lst {
+		elmlStr, ok := elm.(string)
 		if !ok {
-			return nil, fmt.Errorf("label of a node must be of type string")
+			return nil, fmt.Errorf(errorText)
 		}
-		resutLabelLst = append(resutLabelLst, labelStr)
+		resultLst = append(resultLst, elmlStr)
 	}
-	return resutLabelLst, nil
+	return resultLst, nil
 }
 
 func getPrivelegeEscalationReason(tx neo4j.Transaction, edgeID int, edgeType string) (interface{}, error) {
@@ -368,7 +368,7 @@ func getPolicyInfo(tx neo4j.Transaction, edgeID int, targetLabel string, edgeTyp
 	return retrievedPolicyInfo, nil
 }
 
-func contains(s []string, search string) bool {
+func Contains(s []string, search string) bool {
 	for _, value := range s {
 		if value == search {
 			return true
@@ -412,14 +412,14 @@ func GetEdgeInfo(driver neo4j.Driver) func(w http.ResponseWriter, r *http.Reques
 			case "PRIVILEGE_ESCALATION":
 				return getPrivelegeEscalationReason(tx, edgeID, edgeType)
 			case "STS_ASSUME_ROLE_ALLOW":
-				if contains(srcLableLst, "AWSPrincipal") {
+				if Contains(srcLableLst, "AWSPrincipal") {
 					return getPolicyInfo(tx, edgeID, "AWSPrincipal", edgeType, true)
-				} else if contains(srcLableLst, "EC2Instance") {
+				} else if Contains(srcLableLst, "EC2Instance") {
 					return getPolicyInfo(tx, edgeID, "AWSPrincipal", edgeType, false)
 				}
 				return nil, fmt.Errorf("This edge is not categorised yet")
 			case "HAS_POLICY_ACCESS":
-				if contains(srcLableLst, "AWSPrincipal") && contains(targetLabelLst, "S3Bucket") {
+				if Contains(srcLableLst, "AWSPrincipal") && Contains(targetLabelLst, "S3Bucket") {
 					return getPolicyInfo(tx, edgeID, "S3Bucket", edgeType, true)
 				}
 				return nil, fmt.Errorf("This edge is not categorised yet")

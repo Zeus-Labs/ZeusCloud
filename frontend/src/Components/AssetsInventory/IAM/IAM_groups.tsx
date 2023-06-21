@@ -2,15 +2,18 @@ import { parse } from "url";
 import { TableRow } from "../../Shared/Table";
 import { TextWithTooltipIcon } from "../../Shared/TextWithTooltip";
 import { AssetModal, AssetsModalWrapper, convertDateFormat, InlineIcon, parseArn } from "../assetUtils";
+import CrownElement from "../CrownElement";
 
 export declare type IAMGroupsFields={
+    node_id: number,
     arn: string,
     account_id: string,
     friendly_name: string,
     create_date: string,
     iam_users: string[],
     iam_roles: string[],
-    iam_policies: string[]
+    iam_policies: string[],
+    is_crown_jewel:boolean,
 }
 
 export enum IAMGroupsHeader{
@@ -18,7 +21,8 @@ export enum IAMGroupsHeader{
     create_date="Created Date",
     iam_users ="IAM Users",
     iam_roles="IAM Roles",
-    iam_policies="IAM Policies"
+    iam_policies="IAM Policies",
+    crown_jewel = "Crown Jewel"
 }
 
 export class IAMGroups{
@@ -44,6 +48,11 @@ export class IAMGroups{
         "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
         "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
         "chevronClassName": "h-5 w-5",
+    },
+    {
+        "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+        "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
     },
     {
         "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
@@ -75,6 +84,11 @@ export class IAMGroups{
         {
             header: IAMGroupsHeader.iam_policies,
             accessor_key: IAMGroupsHeader.iam_policies,
+            allowSorting: false
+        },
+        {
+            header: IAMGroupsHeader.crown_jewel,
+            accessor_key: IAMGroupsHeader.crown_jewel,
             allowSorting: false
         },
     ]
@@ -190,6 +204,15 @@ export class IAMGroups{
                         value: dataTableRow.iam_policies,
                         ignoreComponentExpansion: true
                     },
+                    {
+                        content: <CrownElement 
+                        isCrownJewel={dataTableRow.is_crown_jewel ?? false}
+                        nodeId={dataTableRow.node_id}
+                        />,
+                        accessor_key: IAMGroupsHeader.crown_jewel,
+                        value: "",
+                        ignoreComponentExpansion: true
+                    }
                 ],
                 rowId: dataTableRow.arn
             }

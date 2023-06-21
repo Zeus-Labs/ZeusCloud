@@ -10,6 +10,7 @@ import (
 )
 
 type LambdaFunction struct {
+	NodeId       *int64     `json:"node_id"`
 	Arn          *string    `json:"arn"`
 	AccountId    *string    `json:"account_id"`
 	Name         *string    `json:"name"`
@@ -17,6 +18,7 @@ type LambdaFunction struct {
 	State        *string    `json:"state"`
 	Runtime      *string    `json:"runtime"`
 	IamRoles     []string   `json:"iam_roles"`
+	IsCrownJewel *bool      `json:"is_crown_jewel"`
 }
 
 func RetrieveLambdaFunctions(tx neo4j.Transaction) ([]interface{}, error) {
@@ -24,12 +26,14 @@ func RetrieveLambdaFunctions(tx neo4j.Transaction) ([]interface{}, error) {
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(l:AWSLambda)
 		OPTIONAL MATCH (l)-[:STS_ASSUME_ROLE_ALLOW]->(r:AWSRole)
 		WITH a, l, collect(r.arn) as role_arns
-		RETURN l.id as arn,
+		RETURN ID(l) as node_id,
+		l.id as arn,
 		a.id as account_id,
 		l.name as name,
 		l.modifieddate as modified_date,
 		l.state as state,
 		l.runtime as runtime,
+		l.is_crown_jewel as is_crown_jewel,
 		role_arns as iam_roles`,
 		nil,
 	)
@@ -41,6 +45,8 @@ func RetrieveLambdaFunctions(tx neo4j.Transaction) ([]interface{}, error) {
 		record := records.Record()
 
 		var parsingErrs error
+		NodeIdInt, err := util.ParseAsOptionalInt64(record, "node_id")
+		multierror.Append(parsingErrs, err)
 		arnStr, err := util.ParseAsOptionalString(record, "arn")
 		multierror.Append(parsingErrs, err)
 		accountIDStr, err := util.ParseAsOptionalString(record, "account_id")
@@ -55,11 +61,14 @@ func RetrieveLambdaFunctions(tx neo4j.Transaction) ([]interface{}, error) {
 		multierror.Append(parsingErrs, err)
 		iamRolesLst, err := util.ParseAsOptionalStringList(record, "iam_roles")
 		multierror.Append(parsingErrs, err)
+		isCrownJewelBool, err := util.ParseAsOptionalBool(record, "is_crown_jewel")
+		multierror.Append(parsingErrs, err)
 		if parsingErrs != nil {
 			log.Printf("Encountered errors parsing resource: %v, continuing on...", parsingErrs.Error())
 		}
 
 		retrievedLambdaFunctions = append(retrievedLambdaFunctions, LambdaFunction{
+			NodeId:       NodeIdInt,
 			Arn:          arnStr,
 			AccountId:    accountIDStr,
 			Name:         nameStr,
@@ -67,6 +76,7 @@ func RetrieveLambdaFunctions(tx neo4j.Transaction) ([]interface{}, error) {
 			State:        stateStr,
 			Runtime:      runtimeStr,
 			IamRoles:     iamRolesLst,
+			IsCrownJewel: isCrownJewelBool,
 		})
 	}
 

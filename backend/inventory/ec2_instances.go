@@ -10,6 +10,7 @@ import (
 )
 
 type Ec2Instance struct {
+	NodeId          *int64     `json:"node_id"`
 	InstancdId      *string    `json:"instance_id"`
 	AccountId       *string    `json:"account_id"`
 	LaunchTime      *time.Time `json:"launch_time"`
@@ -19,6 +20,7 @@ type Ec2Instance struct {
 	KeyPairs        []string   `json:"key_pairs"`
 	Vpc             *string    `json:"vpc"`
 	Region          *string    `json:"region"`
+	IsCrownJewel    *bool      `json:"is_crown_jewel"`
 }
 
 func RetrieveEc2Instances(tx neo4j.Transaction) ([]interface{}, error) {
@@ -30,10 +32,12 @@ func RetrieveEc2Instances(tx neo4j.Transaction) ([]interface{}, error) {
 		WITH a, e, role_arns, collect(v.id) as vpc_ids
 		OPTIONAL MATCH (e)<-[:SSH_LOGIN_TO]-(k:EC2KeyPair)
 		WITH a, e, role_arns, vpc_ids, collect(k.arn) as key_arns
-		RETURN e.id as instance_id,
+		RETURN ID(e) as node_id,
+		e.id as instance_id,
 		a.id as account_id,
 		e.launchtime as launch_time,
 		e.state as state,
+		e.is_crown_jewel as is_crown_jewel,
 		CASE WHEN e.exposed_internet THEN "Yes" ELSE "No" END as publicly_exposed,
 		role_arns as iam_roles,
 		key_arns as key_pairs,
@@ -49,6 +53,8 @@ func RetrieveEc2Instances(tx neo4j.Transaction) ([]interface{}, error) {
 		record := records.Record()
 
 		var parsingErrs error
+		NodeIdInt, err := util.ParseAsOptionalInt64(record, "node_id")
+		multierror.Append(parsingErrs, err)
 		instanceIdStr, err := util.ParseAsOptionalString(record, "instance_id")
 		multierror.Append(parsingErrs, err)
 		accountIDStr, err := util.ParseAsOptionalString(record, "account_id")
@@ -67,11 +73,14 @@ func RetrieveEc2Instances(tx neo4j.Transaction) ([]interface{}, error) {
 		multierror.Append(parsingErrs, err)
 		regionStr, err := util.ParseAsOptionalString(record, "region")
 		multierror.Append(parsingErrs, err)
+		isCrownJewelBool, err := util.ParseAsOptionalBool(record, "is_crown_jewel")
+		multierror.Append(parsingErrs, err)
 		if parsingErrs != nil {
 			log.Printf("Encountered errors parsing resource: %v, continuing on...", parsingErrs.Error())
 		}
 
 		retrievedEc2Instances = append(retrievedEc2Instances, Ec2Instance{
+			NodeId:          NodeIdInt,
 			InstancdId:      instanceIdStr,
 			AccountId:       accountIDStr,
 			LaunchTime:      launchTime,
@@ -81,6 +90,7 @@ func RetrieveEc2Instances(tx neo4j.Transaction) ([]interface{}, error) {
 			KeyPairs:        keyPairsLst,
 			Vpc:             vpcStr,
 			Region:          regionStr,
+			IsCrownJewel:    isCrownJewelBool,
 		})
 	}
 
