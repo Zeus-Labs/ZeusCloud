@@ -1,15 +1,18 @@
 import { TableRow } from "../../Shared/Table";
 import { TextWithTooltip, TextWithTooltipIcon } from "../../Shared/TextWithTooltip";
+import CrownElement from "../CrownElement";
 import { AssetModal, AssetsModalWrapper, convertDateFormat, formatDateAgo, InlineIcon, parseArn } from "../assetUtils";
 
 export declare type LambdaFnFields={
+    node_id: number,
     arn: string,
     account_id: string,
     name: string,
     modified_date: string,
     state: string,
     runtime: string,
-    iam_roles: string[]
+    iam_roles: string[],
+    is_crown_jewel:boolean,
 }
 
 export enum LambdaFnHeader{
@@ -17,7 +20,8 @@ export enum LambdaFnHeader{
     modified_date="Modified Date",
     state="State",
     runtime = "Runtime",
-    iam_roles="IAM Roles"
+    iam_roles="IAM Roles",
+    crown_jewel = "Crown Jewel"
 }
 
 export class LambdaFunction{
@@ -43,6 +47,11 @@ export class LambdaFunction{
         "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
         "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
         "chevronClassName": "h-5 w-5",
+    },
+    {
+        "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+        "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
     },
     {
         "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
@@ -75,6 +84,11 @@ export class LambdaFunction{
         {
             header: LambdaFnHeader.iam_roles,
             accessor_key: LambdaFnHeader.iam_roles,
+            allowSorting: false
+        },
+        {
+            header: LambdaFnHeader.crown_jewel,
+            accessor_key: LambdaFnHeader.crown_jewel,
             allowSorting: false
         },
     ]
@@ -140,6 +154,15 @@ export class LambdaFunction{
                     : "None",
                         accessor_key: LambdaFnHeader.iam_roles,
                         value: dataTableRow.iam_roles || "None",
+                        ignoreComponentExpansion: true
+                    },
+                    {
+                        content: <CrownElement 
+                        isCrownJewel={dataTableRow.is_crown_jewel ?? false}
+                        nodeId={dataTableRow.node_id}
+                        />,
+                        accessor_key: LambdaFnHeader.crown_jewel,
+                        value: "",
                         ignoreComponentExpansion: true
                     }
                 ],

@@ -1,20 +1,24 @@
 import { TableRow } from "../../Shared/Table";
 import { TextWithTooltip, TextWithTooltipIcon } from "../../Shared/TextWithTooltip";
+import CrownElement from "../CrownElement";
 import {AssetsModalWrapper, InlineIcon, parseArn } from "../assetUtils";
 
 export declare type SecurityGroupFields={
+    node_id: number,
     id: string,
     account_id: string,
     name: string
     vpc: string,
-    region:string
+    region:string,
+    is_crown_jewel:boolean,
 }
 
 export enum SecurityGroupHeader{
     arn = "Security Group",
     name = "Name",
     vpc = "VPC",
-    region = "Region"
+    region = "Region",
+    crown_jewel = "Crown Jewel"
 }
 
 export class SecurityGroup{
@@ -25,6 +29,11 @@ export class SecurityGroup{
         "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900 sm:pl-6",
         "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
         "chevronClassName": "h-5 w-5",
+    },
+    {
+        "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+        "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
     },
     {
         "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
@@ -62,6 +71,11 @@ export class SecurityGroup{
         {
             header: SecurityGroupHeader.region,
             accessor_key: SecurityGroupHeader.region,
+            allowSorting: false
+        },
+        {
+            header: SecurityGroupHeader.crown_jewel,
+            accessor_key: SecurityGroupHeader.crown_jewel,
             allowSorting: false
         },
     ]
@@ -111,6 +125,15 @@ export class SecurityGroup{
                         value: dataTableRow.region,
                         ignoreComponentExpansion: true
                     },
+                    {
+                        content: <CrownElement 
+                        isCrownJewel={dataTableRow.is_crown_jewel ?? false}
+                        nodeId={dataTableRow.node_id}
+                        />,
+                        accessor_key: SecurityGroupHeader.crown_jewel,
+                        value: "",
+                        ignoreComponentExpansion: true
+                    }
                 ],
                 rowId: dataTableRow.id
             }

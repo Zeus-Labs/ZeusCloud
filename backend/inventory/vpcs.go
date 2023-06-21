@@ -9,6 +9,7 @@ import (
 )
 
 type Vpc struct {
+	NodeId           *int64   `json:"node_id"`
 	Id               *string  `json:"id"`
 	AccountId        *string  `json:"account_id"`
 	PrimaryCidrBlock *string  `json:"primary_cidr_block"`
@@ -16,6 +17,7 @@ type Vpc struct {
 	IsDefault        *bool    `json:"is_default"`
 	Region           *string  `json:"region"`
 	SubnetIds        []string `json:"subnet_ids"`
+	IsCrownJewel     *bool    `json:"is_crown_jewel"`
 }
 
 func RetrieveVpcs(tx neo4j.Transaction) ([]interface{}, error) {
@@ -23,12 +25,14 @@ func RetrieveVpcs(tx neo4j.Transaction) ([]interface{}, error) {
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(v:AWSVpc)
 		OPTIONAL MATCH (sn:EC2Subnet)-[:MEMBER_OF_AWS_VPC]->(v)
 		WITH a, v, collect(sn.id) as subnet_ids
-		RETURN v.id as id,
+		RETURN ID(v) as node_id,
+		v.id as id,
 		a.id as account_id,
 		v.primary_cidr_block as primary_cidr_block,
 		v.state as state,
 		v.is_default as is_default,
 		v.region as region,
+		v.is_crown_jewel as is_crown_jewel,
 		subnet_ids`,
 		nil,
 	)
@@ -40,6 +44,8 @@ func RetrieveVpcs(tx neo4j.Transaction) ([]interface{}, error) {
 		record := records.Record()
 
 		var parsingErrs error
+		NodeIdInt, err := util.ParseAsOptionalInt64(record, "node_id")
+		multierror.Append(parsingErrs, err)
 		idStr, err := util.ParseAsOptionalString(record, "id")
 		multierror.Append(parsingErrs, err)
 		accountIDStr, err := util.ParseAsOptionalString(record, "account_id")
@@ -54,11 +60,14 @@ func RetrieveVpcs(tx neo4j.Transaction) ([]interface{}, error) {
 		multierror.Append(parsingErrs, err)
 		subnetIdsLst, err := util.ParseAsOptionalStringList(record, "subnet_ids")
 		multierror.Append(parsingErrs, err)
+		isCrownJewelBool, err := util.ParseAsOptionalBool(record, "is_crown_jewel")
+		multierror.Append(parsingErrs, err)
 		if parsingErrs != nil {
 			log.Printf("Encountered errors parsing resource: %v, continuing on...", parsingErrs.Error())
 		}
 
 		retrievedVpcs = append(retrievedVpcs, Vpc{
+			NodeId:           NodeIdInt,
 			Id:               idStr,
 			AccountId:        accountIDStr,
 			PrimaryCidrBlock: primaryCidrBlockStr,
@@ -66,6 +75,7 @@ func RetrieveVpcs(tx neo4j.Transaction) ([]interface{}, error) {
 			IsDefault:        isDefaultBool,
 			Region:           regionStr,
 			SubnetIds:        subnetIdsLst,
+			IsCrownJewel:     isCrownJewelBool,
 		})
 	}
 

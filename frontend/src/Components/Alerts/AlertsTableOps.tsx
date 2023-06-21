@@ -124,6 +124,7 @@ const AlertsTableOps = ({ruleCategory,selectedAlertInstance,selectedRuleAlertGro
         "muted": "Unmuted",
         "status": "Failed",
         "account": "All",
+        "resource": "All"
     });
 
     // These are states for sorting.
@@ -153,6 +154,7 @@ const AlertsTableOps = ({ruleCategory,selectedAlertInstance,selectedRuleAlertGro
             "muted": "Unmuted",
             "status": "Failed",
             "account": "All",
+            "resource": "All"
         })
         setSortState(
             JSON.parse(searchParams.get("sort") as string) 
@@ -260,6 +262,13 @@ const AlertsTableOps = ({ruleCategory,selectedAlertInstance,selectedRuleAlertGro
             return filterAccountStr === account;
         }
 
+        const resourceFilterPred = function(isCrownJewel: boolean, filterResourceStr: string): boolean {
+            if(filterResourceStr==="All"){
+                return true
+            }
+            return isCrownJewel
+        }
+
         var allTableRows = activeAlertsInfo.rule_alerts_group.map((rulealerts_group, idx) => {
             var openStateBool: boolean = false;
             var rule_date_id: string = rulealerts_group.rule_data.uid;
@@ -310,6 +319,8 @@ const AlertsTableOps = ({ruleCategory,selectedAlertInstance,selectedRuleAlertGro
                                 alert_instance => statusFilterPred(alert_instance.status === "failed", innerAlertsFilter["status"])
                             ).filter(
                                 alert_instance => accountFilterPred(alert_instance.account_id, innerAlertsFilter["account"])
+                            ).filter(
+                                alert_instance => resourceFilterPred(alert_instance.crown_jewel,innerAlertsFilter["resource"])
                             ).length,
                             accessor_key: "alerts",
                             value: rulealerts_group.alert_instances.filter(
@@ -318,6 +329,8 @@ const AlertsTableOps = ({ruleCategory,selectedAlertInstance,selectedRuleAlertGro
                                 alert_instance => statusFilterPred(alert_instance.status === "failed", innerAlertsFilter["status"])
                             ).filter(
                                 alert_instance => accountFilterPred(alert_instance.account_id, innerAlertsFilter["account"])
+                            ).filter(
+                                alert_instance => resourceFilterPred(alert_instance.crown_jewel,innerAlertsFilter["resource"])
                             ).length,
                             ignoreComponentExpansion: false,
                         },
@@ -358,6 +371,8 @@ const AlertsTableOps = ({ruleCategory,selectedAlertInstance,selectedRuleAlertGro
                                 alert_instance => statusFilterPred(alert_instance.status === "failed", innerAlertsFilter["status"])
                             ).filter(
                                 alert_instance => accountFilterPred(alert_instance.account_id, innerAlertsFilter["account"])
+                            ).filter(
+                                alert_instance => resourceFilterPred(alert_instance.crown_jewel,innerAlertsFilter["resource"])
                             ).length,
                             accessor_key: "alerts",
                             value: rulealerts_group.alert_instances.filter(
@@ -366,6 +381,8 @@ const AlertsTableOps = ({ruleCategory,selectedAlertInstance,selectedRuleAlertGro
                                 alert_instance => statusFilterPred(alert_instance.status === "failed", innerAlertsFilter["status"])
                             ).filter(
                                 alert_instance => accountFilterPred(alert_instance.account_id, innerAlertsFilter["account"])
+                            ).filter(
+                                alert_instance => resourceFilterPred(alert_instance.crown_jewel,innerAlertsFilter["resource"])
                             ).length,
                             ignoreComponentExpansion: false,
                         },
@@ -389,7 +406,6 @@ const AlertsTableOps = ({ruleCategory,selectedAlertInstance,selectedRuleAlertGro
             var filteredSeverityRows = severityFilterFn(allRowsCopy, severityFilter);
             var filteredRiskRows = risksFilterFn(filteredSeverityRows, riskFilter);
             var filteredSearchRows = searchFilterFn(filteredRiskRows, searchFilter);
-
             // Filter out any rows with 0 alerts.
             var filteredZeroAlertRows = zeroAlertFilter(filteredSearchRows)
 
@@ -577,6 +593,20 @@ const AlertsTableOps = ({ruleCategory,selectedAlertInstance,selectedRuleAlertGro
                             selectedFilterValue={severityFilter} 
                             setFilter={setSeverityFilter}
                             filterOptions={["All", "Critical", "High", "Medium", "Low"]}
+                        />
+                    </div>
+                    <div key={"ResourceFilter"}>
+                        <SelectFilterDropdown 
+                            key={"ResourceFilter"}
+                            title={"Resource"} 
+                            selectedFilterValue={innerAlertsFilter["resource"]} 
+                            setFilter={(updatedResourceState:string)=>{
+                                setInnerAlertsFilter((currInnerAlerts:any)=>({
+                                    ...currInnerAlerts,
+                                    "resource":updatedResourceState
+                                }))
+                            }}
+                            filterOptions={["All", "Crown Jewel"]}
                         />
                     </div>
                     <div key={"AccountFilter"}>

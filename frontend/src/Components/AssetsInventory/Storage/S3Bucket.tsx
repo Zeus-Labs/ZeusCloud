@@ -133,7 +133,7 @@ export class S3Bucket{
                     },
                     {
                         content: <CrownElement 
-                        isCrownJewel={dataTableRow.is_crown_jewel || false}
+                        isCrownJewel={dataTableRow.is_crown_jewel ?? false}
                         nodeId={dataTableRow.node_id}
                         />,
                         accessor_key: S3BucketHeader.crown_jewel,

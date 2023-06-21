@@ -18,7 +18,7 @@ export const searchFilterFn = (allRows: Array<TableRow>, filterValue: string): A
                 return true;
             }
 
-            if (col.accessor_key === "risk_categories" && col.value instanceof Array<string> && 
+            if (col.accessor_key === "risk_categories" && col.value instanceof Array && 
                 col.value.some(v => v.toLowerCase().includes(filterValue))) {
                 return true;
             }
@@ -71,6 +71,7 @@ export const severityFilterFn = (allRows: Array<TableRow>, filterValue: string):
         }
     });
 }
+
 
 export const alertNumberSortTypeFn = (rowA: TableRow, rowB: TableRow): number => {
     var a: number = 0; 

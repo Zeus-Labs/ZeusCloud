@@ -1,8 +1,10 @@
 import { TableRow } from "../../Shared/Table";
 import { TextWithTooltipIcon } from "../../Shared/TextWithTooltip";
+import CrownElement from "../CrownElement";
 import { AssetModal, AssetsModalWrapper, InlineIcon, parseArn } from "../assetUtils";
 
 export declare type IAMPoliciesFields={
+    node_id: number,
     id: string,
     account_id: string,
     name: string,
@@ -10,6 +12,7 @@ export declare type IAMPoliciesFields={
     iam_users: string[],
     iam_groups: string[],
     iam_roles: string[],
+    is_crown_jewel:boolean,
 }
 
 export enum IAMPoliciesHeader{
@@ -17,7 +20,8 @@ export enum IAMPoliciesHeader{
     policy_type="Policy Type",
     iam_users ="IAM Users",
     iam_groups="IAM Groups",
-    iam_roles="IAM Roles"
+    iam_roles="IAM Roles",
+    crown_jewel = "Crown Jewel"
 }
 
 export class IAMPolicies{
@@ -43,6 +47,11 @@ export class IAMPolicies{
         "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
         "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
         "chevronClassName": "h-5 w-5",
+    },
+    {
+        "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+        "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
     },
     {
         "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
@@ -74,6 +83,11 @@ export class IAMPolicies{
         {
             header: IAMPoliciesHeader.iam_roles,
             accessor_key: IAMPoliciesHeader.iam_roles,
+            allowSorting: false
+        },
+        {
+            header: IAMPoliciesHeader.crown_jewel,
+            accessor_key: IAMPoliciesHeader.crown_jewel,
             allowSorting: false
         },
     ]
@@ -189,7 +203,15 @@ export class IAMPolicies{
                         value: dataTableRow.iam_roles,
                         ignoreComponentExpansion: true
                     },
-                    
+                    {
+                        content: <CrownElement 
+                        isCrownJewel={dataTableRow.is_crown_jewel ?? false}
+                        nodeId={dataTableRow.node_id}
+                        />,
+                        accessor_key: IAMPoliciesHeader.crown_jewel,
+                        value: "",
+                        ignoreComponentExpansion: true
+                    }
                 ],
                 rowId: dataTableRow.id
             }

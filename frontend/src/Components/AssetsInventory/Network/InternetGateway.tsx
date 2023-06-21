@@ -1,18 +1,22 @@
 import { TableRow } from "../../Shared/Table";
 import { TextWithTooltip, TextWithTooltipIcon } from "../../Shared/TextWithTooltip";
+import CrownElement from "../CrownElement";
 import { AssetModal, AssetsModalWrapper, convertDateFormat, formatDateAgo, InlineIcon, parseArn } from "../assetUtils";
 
 export declare type InternetGatewayFields={
+    node_id: number,
     arn: string,
     account_id: string,
     vpc: string,
-    region:string
+    region:string,
+    is_crown_jewel:boolean,
 }
 
 export enum InternetGatewayHeader{
     arn = "Internet Gateway",
     vpc = "VPC",
-    region = "Region"
+    region = "Region",
+    crown_jewel = "Crown Jewel"
 }
 
 export class InternetGateway{
@@ -23,6 +27,11 @@ export class InternetGateway{
         "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900 sm:pl-6",
         "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
         "chevronClassName": "h-5 w-5",
+    },
+    {
+        "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+        "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
     },
     {
         "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
@@ -50,6 +59,11 @@ export class InternetGateway{
         {
             header: InternetGatewayHeader.region,
             accessor_key: InternetGatewayHeader.region,
+            allowSorting: false
+        },
+        {
+            header: InternetGatewayHeader.crown_jewel,
+            accessor_key: InternetGatewayHeader.crown_jewel,
             allowSorting: false
         },
     ]
@@ -90,6 +104,15 @@ export class InternetGateway{
                         value: dataTableRow.region,
                         ignoreComponentExpansion: true
                     },
+                    {
+                        content: <CrownElement 
+                        isCrownJewel={dataTableRow.is_crown_jewel ?? false}
+                        nodeId={dataTableRow.node_id}
+                        />,
+                        accessor_key: InternetGatewayHeader.crown_jewel,
+                        value: "",
+                        ignoreComponentExpansion: true
+                    }
                 ],
                 rowId: dataTableRow.arn
             }

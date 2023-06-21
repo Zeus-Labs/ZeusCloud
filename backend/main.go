@@ -83,7 +83,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/getRules", handlers.GetRules(postgresDb))
 	mux.HandleFunc("/api/toggleRuleActive", handlers.ToggleRuleActive(postgresDb))
-	mux.HandleFunc("/api/getAllAlerts", handlers.GetAllAlerts(postgresDb))
+	mux.HandleFunc("/api/getAllAlerts", handlers.GetAllAlerts(postgresDb, driver))
 	mux.HandleFunc("/api/toggleAlertMuted", handlers.ToggleAlertMuted(postgresDb))
 	mux.HandleFunc("/api/getComplianceFramework", handlers.GetComplianceFramework(postgresDb))
 	mux.HandleFunc("/api/getComplianceFrameworkStats", handlers.GetComplianceFrameworkStats(postgresDb))

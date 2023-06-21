@@ -9,6 +9,7 @@ export interface alert_instance {
     first_seen: Date;
     last_seen: Date;
     muted: boolean;
+    crown_jewel: boolean;
 }
 
 export interface rulealerts_group {

@@ -10,6 +10,7 @@ import (
 )
 
 type IamGroup struct {
+	NodeId       *int64     `json:"node_id"`
 	Arn          *string    `json:"arn"`
 	AccountId    *string    `json:"account_id"`
 	FriendlyName *string    `json:"friendly_name"`
@@ -17,6 +18,7 @@ type IamGroup struct {
 	IamUsers     []string   `json:"iam_users"`
 	IamRoles     []string   `json:"iam_roles"`
 	IamPolicies  []string   `json:"iam_policies"`
+	IsCrownJewel *bool      `json:"is_crown_jewel"`
 }
 
 func RetrieveIamGroups(tx neo4j.Transaction) ([]interface{}, error) {
@@ -28,9 +30,11 @@ func RetrieveIamGroups(tx neo4j.Transaction) ([]interface{}, error) {
 		WITH a, g, user_arns, collect(r.arn) as role_arns
 		OPTIONAL MATCH (g)-[:POLICY]->(p:AWSPolicy)
 		WITH a, g, user_arns, role_arns, collect(p.id) as policy_ids
-		RETURN g.arn as arn,
+		RETURN ID(g) as node_id,
+		g.arn as arn,
 		a.id as account_id,
 		g.name as friendly_name,
+		g.is_crown_jewel as is_crown_jewel,
 		g.createdate as create_date,
 		user_arns as iam_users,
 		role_arns as iam_roles,
@@ -45,6 +49,8 @@ func RetrieveIamGroups(tx neo4j.Transaction) ([]interface{}, error) {
 		record := records.Record()
 
 		var parsingErrs error
+		NodeIdInt, err := util.ParseAsOptionalInt64(record, "node_id")
+		multierror.Append(parsingErrs, err)
 		arnStr, err := util.ParseAsOptionalString(record, "arn")
 		multierror.Append(parsingErrs, err)
 		accountIDStr, err := util.ParseAsOptionalString(record, "account_id")
@@ -59,11 +65,14 @@ func RetrieveIamGroups(tx neo4j.Transaction) ([]interface{}, error) {
 		multierror.Append(parsingErrs, err)
 		iamPoliciesLst, err := util.ParseAsOptionalStringList(record, "iam_policies")
 		multierror.Append(parsingErrs, err)
+		isCrownJewelBool, err := util.ParseAsOptionalBool(record, "is_crown_jewel")
+		multierror.Append(parsingErrs, err)
 		if parsingErrs != nil {
 			log.Printf("Encountered errors parsing resource: %v, continuing on...", parsingErrs.Error())
 		}
 
 		retrievedIamGroups = append(retrievedIamGroups, IamGroup{
+			NodeId:       NodeIdInt,
 			Arn:          arnStr,
 			AccountId:    accountIDStr,
 			FriendlyName: friendlyNameStr,
@@ -71,6 +80,7 @@ func RetrieveIamGroups(tx neo4j.Transaction) ([]interface{}, error) {
 			IamUsers:     iamUsersLst,
 			IamRoles:     iamRolesLst,
 			IamPolicies:  iamPoliciesLst,
+			IsCrownJewel: isCrownJewelBool,
 		})
 	}
 

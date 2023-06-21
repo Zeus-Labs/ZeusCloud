@@ -1,6 +1,7 @@
 import { TableRow } from "../../Shared/Table";
 import { TextWithTooltip, TextWithTooltipIcon } from "../../Shared/TextWithTooltip";
 import assetCategoryMap, { AssetCategoryInterface } from "../AssetCategoryMap";
+import CrownElement from "../CrownElement";
 import { AssetModal, convertDateFormat, InlineIcon, parseIAMPolicy, parseArn, replaceUnderscore, stringAfterLastSlash, stringBetweenLastTwoSlashes, ToolTipForList, AssetsModalWrapper } from "../assetUtils";
 
 export enum IAMRolesHeader{
@@ -8,16 +9,19 @@ export enum IAMRolesHeader{
     create_date= "Created Date",
     iam_roles = "IAM Roles",
     iam_policies = "IAM Policies",
-    trusted_principals = "Trusted Principals"
+    trusted_principals = "Trusted Principals",
+    crown_jewel = "Crown Jewel"
 }
 
 export declare type IAMRolesFields={
+    node_id: number,
     arn: string,
     account_id: string,
     create_date: string,
     iam_roles : string[],
     iam_policies: string[],
-    trusted_principals : string[]
+    trusted_principals : string[],
+    is_crown_jewel:boolean,
 }
 
 export class IAMRoles implements AssetCategoryInterface{
@@ -49,6 +53,11 @@ export class IAMRoles implements AssetCategoryInterface{
         "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
         "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
         "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+    },
+    {
+        "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+        "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
     }]
 
     tableColumnHeaders = [
@@ -75,6 +84,11 @@ export class IAMRoles implements AssetCategoryInterface{
         {
             header: IAMRolesHeader.trusted_principals,
             accessor_key: IAMRolesHeader.trusted_principals,
+            allowSorting: false
+        },
+        {
+            header: IAMRolesHeader.crown_jewel,
+            accessor_key: IAMRolesHeader.crown_jewel,
             allowSorting: false
         }
     ]
@@ -186,6 +200,15 @@ export class IAMRoles implements AssetCategoryInterface{
                        value: dataTableRow.trusted_principals,
                        ignoreComponentExpansion: true
                    },
+                   {
+                    content: <CrownElement 
+                    isCrownJewel={dataTableRow.is_crown_jewel ?? false}
+                    nodeId={dataTableRow.node_id}
+                    />,
+                    accessor_key: IAMRolesHeader.crown_jewel,
+                    value: "",
+                    ignoreComponentExpansion: true
+                }
                    
                ],
                rowId: dataTableRow.arn

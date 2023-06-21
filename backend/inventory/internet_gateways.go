@@ -9,10 +9,12 @@ import (
 )
 
 type InternetGateway struct {
-	Arn       *string `json:"arn"`
-	AccountId *string `json:"account_id"`
-	VPC       *string `json:"vpc"`
-	Region    *string `json:"region"`
+	NodeId       *int64  `json:"node_id"`
+	Arn          *string `json:"arn"`
+	AccountId    *string `json:"account_id"`
+	VPC          *string `json:"vpc"`
+	Region       *string `json:"region"`
+	IsCrownJewel *bool   `json:"is_crown_jewel"`
 }
 
 func RetrieveInternetGateways(tx neo4j.Transaction) ([]interface{}, error) {
@@ -20,7 +22,9 @@ func RetrieveInternetGateways(tx neo4j.Transaction) ([]interface{}, error) {
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(ig:AWSInternetGateway)
 		OPTIONAL MATCH (ig)-[:ATTACHED_TO]->(v:AWSVpc)
 		WITH a, ig, collect(v.id) as vpc_ids
-		RETURN ig.arn as arn,
+		RETURN ID(ig) as node_id,
+		ig.arn as arn,
+		ig.is_crown_jewel as is_crown_jewel,
 		a.id as account_id,
 		CASE WHEN size(vpc_ids) > 0 THEN vpc_ids[0] ELSE "" END as vpc,
 		ig.region as region`,
@@ -34,6 +38,8 @@ func RetrieveInternetGateways(tx neo4j.Transaction) ([]interface{}, error) {
 		record := records.Record()
 
 		var parsingErrs error
+		NodeIdInt, err := util.ParseAsOptionalInt64(record, "node_id")
+		multierror.Append(parsingErrs, err)
 		arnStr, err := util.ParseAsOptionalString(record, "arn")
 		multierror.Append(parsingErrs, err)
 		accountIDStr, err := util.ParseAsOptionalString(record, "account_id")
@@ -42,15 +48,19 @@ func RetrieveInternetGateways(tx neo4j.Transaction) ([]interface{}, error) {
 		multierror.Append(parsingErrs, err)
 		regionStr, err := util.ParseAsOptionalString(record, "region")
 		multierror.Append(parsingErrs, err)
+		isCrownJewelBool, err := util.ParseAsOptionalBool(record, "is_crown_jewel")
+		multierror.Append(parsingErrs, err)
 		if parsingErrs != nil {
 			log.Printf("Encountered errors parsing resource: %v, continuing on...", parsingErrs.Error())
 		}
 
 		retrievedInternetGateways = append(retrievedInternetGateways, InternetGateway{
-			Arn:       arnStr,
-			AccountId: accountIDStr,
-			VPC:       vpcStr,
-			Region:    regionStr,
+			NodeId:       NodeIdInt,
+			Arn:          arnStr,
+			AccountId:    accountIDStr,
+			VPC:          vpcStr,
+			Region:       regionStr,
+			IsCrownJewel: isCrownJewelBool,
 		})
 	}
 

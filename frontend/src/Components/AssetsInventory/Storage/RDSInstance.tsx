@@ -188,7 +188,7 @@ export class RDSInstance{
                     },
                     {
                         content: <CrownElement 
-                        isCrownJewel={dataTableRow.is_crown_jewel || false}
+                        isCrownJewel={dataTableRow.is_crown_jewel ?? false}
                         nodeId={dataTableRow.node_id}
                         />,
                         accessor_key: RDSInstanceHeader.crown_jewel,

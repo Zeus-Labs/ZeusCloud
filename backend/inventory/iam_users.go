@@ -10,6 +10,7 @@ import (
 )
 
 type IamUser struct {
+	NodeId           *int64     `json:"node_id"`
 	Arn              *string    `json:"arn"`
 	AccountId        *string    `json:"account_id"`
 	FriendlyName     *string    `json:"friendly_name"`
@@ -19,6 +20,7 @@ type IamUser struct {
 	IamRoles         []string   `json:"iam_roles"`
 	IamPolicies      []string   `json:"iam_policies"`
 	AccessKeys       []string   `json:"access_keys"`
+	IsCrownJewel     *bool      `json:"is_crown_jewel"`
 }
 
 func RetrieveIamUsers(tx neo4j.Transaction) ([]interface{}, error) {
@@ -32,11 +34,13 @@ func RetrieveIamUsers(tx neo4j.Transaction) ([]interface{}, error) {
 		WITH a, u, group_arns, role_arns, collect(p.id) as policy_ids
 		OPTIONAL MATCH (u)-[:AWS_ACCESS_KEY]->(k:AccountAccessKey)
 		WITH a, u, group_arns, role_arns, policy_ids, collect(k.accesskeyid) as access_key_ids
-		RETURN u.arn as arn,
+		RETURN ID(u) as node_id,
+		u.arn as arn,
 		a.id as account_id,
 		u.name as friendly_name,
 		u.createdate as create_date,
 		u.passwordlastused as password_last_used,
+		u.is_crown_jewel as is_crown_jewel,
 		group_arns as iam_groups,
 		role_arns as iam_roles,
 		policy_ids as iam_policies,
@@ -51,6 +55,8 @@ func RetrieveIamUsers(tx neo4j.Transaction) ([]interface{}, error) {
 		record := records.Record()
 
 		var parsingErrs error
+		NodeIdInt, err := util.ParseAsOptionalInt64(record, "node_id")
+		multierror.Append(parsingErrs, err)
 		arnStr, err := util.ParseAsOptionalString(record, "arn")
 		multierror.Append(parsingErrs, err)
 		accountIDStr, err := util.ParseAsOptionalString(record, "account_id")
@@ -69,11 +75,14 @@ func RetrieveIamUsers(tx neo4j.Transaction) ([]interface{}, error) {
 		multierror.Append(parsingErrs, err)
 		accessKeysLst, err := util.ParseAsOptionalStringList(record, "access_keys")
 		multierror.Append(parsingErrs, err)
+		isCrownJewelBool, err := util.ParseAsOptionalBool(record, "is_crown_jewel")
+		multierror.Append(parsingErrs, err)
 		if parsingErrs != nil {
 			log.Printf("Encountered errors parsing resource: %v, continuing on...", parsingErrs.Error())
 		}
 
 		retrievedIamUsers = append(retrievedIamUsers, IamUser{
+			NodeId:           NodeIdInt,
 			Arn:              arnStr,
 			AccountId:        accountIDStr,
 			FriendlyName:     friendlyNameStr,
@@ -83,6 +92,7 @@ func RetrieveIamUsers(tx neo4j.Transaction) ([]interface{}, error) {
 			IamRoles:         iamRolesLst,
 			IamPolicies:      iamPoliciesLst,
 			AccessKeys:       accessKeysLst,
+			IsCrownJewel:     isCrownJewelBool,
 		})
 	}
 

@@ -1,8 +1,10 @@
 import { TableRow } from "../../Shared/Table";
 import {TextWithTooltip, TextWithTooltipIcon } from "../../Shared/TextWithTooltip";
+import CrownElement from "../CrownElement";
 import {AssetModal, convertDateFormat, InlineIcon } from "../assetUtils";
 
 export declare type ELBV2Fields={
+    node_id: number,
     dns_name: string,
     account_id: string,
     name: string,
@@ -10,6 +12,7 @@ export declare type ELBV2Fields={
     publicly_exposed: string,
     created_time: string
     region: string,
+    is_crown_jewel:boolean,
 }
 
 export enum ELBV2Header{
@@ -17,7 +20,8 @@ export enum ELBV2Header{
     scheme="Scheme",
     publicly_exposed="Publicly Exposed",
     create_date="Created Date",
-    region="Region"
+    region="Region",
+    crown_jewel = "Crown Jewel"
 }
 
 export class ELBV2{
@@ -43,6 +47,11 @@ export class ELBV2{
         "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
         "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
         "chevronClassName": "h-5 w-5",
+    },
+    {
+        "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+        "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
     },
     {
         "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
@@ -75,6 +84,11 @@ export class ELBV2{
         {
             header: ELBV2Header.region,
             accessor_key: ELBV2Header.region,
+            allowSorting: false
+        },
+        {
+            header: ELBV2Header.crown_jewel,
+            accessor_key: ELBV2Header.crown_jewel,
             allowSorting: false
         },
     ]
@@ -118,8 +132,15 @@ export class ELBV2{
                         value: dataTableRow.region || "Null",
                         ignoreComponentExpansion: true
                     },
-                    
-                    
+                    {
+                        content: <CrownElement 
+                        isCrownJewel={dataTableRow.is_crown_jewel ?? false}
+                        nodeId={dataTableRow.node_id}
+                        />,
+                        accessor_key: ELBV2Header.crown_jewel,
+                        value: "",
+                        ignoreComponentExpansion: true
+                    }
                 ],
                 rowId: dataTableRow.dns_name
             }
