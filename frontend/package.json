@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@antv/g6": "^4.8.10",
-    "@headlessui/react": "^1.7.14",
+    "@headlessui/react": "^1.7.15",
     "@heroicons/react": "^2.0.18",
     "@material-tailwind/react": "^1.4.2",
     "@tailwindcss/forms": "^0.5.3",
