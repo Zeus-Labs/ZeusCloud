@@ -40,8 +40,8 @@ func (PubliclyExposedVmAdminCVECritical) Execute(tx neo4j.Transaction) ([]types.
 			(:IpRange{id: '0.0.0.0/0'})-[:MEMBER_OF_IP_RULE]->
 			(:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
 			(instance_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP|NETWORK_INTERFACE*..2]-(e)-[:HAS_VULNERABILITY]->(ec2CVE:CVE {severity:"critical"})
-		WITH a, e, collect(distinct instance_group.id) as instance_group_ids, collect(distinct ec2CVE.template_id) as ec2_cve_ids
-		OPTIONAL MATCH
+			WITH a, e, collect(distinct instance_group.id) as instance_group_ids, collect(distinct COALESCE(ec2CVE.template_id, ec2CVE.vulnerabilityid)) as ec2_cve_ids
+			OPTIONAL MATCH
 			(:IpRange{range:'0.0.0.0/0'})-[:MEMBER_OF_IP_RULE]->
 			(perm:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
 			(elbv2_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP]-
@@ -150,11 +150,16 @@ func (PubliclyExposedVmAdminCVECritical) ProduceRuleGraph(tx neo4j.Transaction, 
 	records, err := tx.Run(
 		`MATCH (a:AWSAccount{inscope: true})-[:RESOURCE]->(e:EC2Instance{id: $InstanceId})
 		OPTIONAL MATCH
-			directPublicPath=
+			directPublicNucleiCvePath=
 			(:IpRange{id: '0.0.0.0/0'})-[:MEMBER_OF_IP_RULE]->
 			(:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
-			(instance_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP|NETWORK_INTERFACE*..2]-(e)-[:HAS_VULNERABILITY]->(:CVE {severity:"critical"})
-		WITH a, e, collect(directPublicPath) as directPublicPaths
+			(instance_group:EC2SecurityGroup)<-[:MEMBER_OF_EC2_SECURITY_GROUP|NETWORK_INTERFACE*..2]-(e)-[:HAS_VULNERABILITY]->(nucleiCve:CVE:NUCLEI {severity:"critical"})
+		WITH e, collect(directPublicNucleiCvePath) as directPublicNucleiCvePaths, collect(nucleiCve.template_id) as template_ids
+		OPTIONAL MATCH 
+			ec2InspectorCvePath=
+			(e)-[:HAS_VULNERABILITY]->(inspectorCve:CVE:AWSInspectorFinding {severity:"critical"})
+			WHERE NOT inspectorCve.vulnerabilityid IN template_ids
+		WITH e, directPublicNucleiCvePaths, collect(ec2InspectorCvePath) as ec2InspectorCvePaths
 		OPTIONAL MATCH
 			(:IpRange{range:'0.0.0.0/0'})-[:MEMBER_OF_IP_RULE]->
 			(perm:IpPermissionInbound)-[:MEMBER_OF_EC2_SECURITY_GROUP]->
@@ -168,13 +173,13 @@ func (PubliclyExposedVmAdminCVECritical) ProduceRuleGraph(tx neo4j.Transaction, 
 			(elbv2_group)<-[:MEMBER_OF_EC2_SECURITY_GROUP]-(elbv2)-[:EXPOSE]->(e)
 		OPTIONAL MATCH 
 			elbv2CvePath = (elbv2)-[HAS_VULNERABILITY]->(:CVE {severity:"critical"})
-		WITH a, e, directPublicPaths, collect(indirectPath) as indirectPaths,collect(elbv2CvePath) as elbv2CvePaths
+		WITH e, directPublicNucleiCvePaths, ec2InspectorCvePaths, collect(indirectPath) as indirectPaths,collect(elbv2CvePath) as elbv2CvePaths
 		OPTIONAL MATCH
 			adminRolePath=
 			(e)-[:STS_ASSUME_ROLE_ALLOW]->(role:AWSRole{is_admin: True})
-		WITH a, e, directPublicPaths, indirectPaths,elbv2CvePaths,
+		WITH e, directPublicNucleiCvePaths, ec2InspectorCvePaths, indirectPaths,elbv2CvePaths,
 		collect(adminRolePath) as adminRolePaths
-		WITH directPublicPaths + indirectPaths + adminRolePaths + elbv2CvePaths AS paths
+		WITH  directPublicNucleiCvePaths + ec2InspectorCvePaths + indirectPaths + adminRolePaths + elbv2CvePaths AS paths
 		RETURN paths`,
 		params)
 	if err != nil {

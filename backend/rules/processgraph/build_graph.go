@@ -179,7 +179,11 @@ func ConvertNodeToDisplayNode(node types.Node) (types.DisplayNode, error) {
 		displayId = nodeProps["name"].(string)
 	} else if CheckNodeLabel(node, "CVE") {
 		displayNodeLabel = "CVE"
-		displayId = nodeProps["template_id"].(string)
+		if nodeProps["template_id"] != nil {
+			displayId = nodeProps["template_id"].(string)
+		} else {
+			displayId = nodeProps["vulnerabilityid"].(string)
+		}
 	} else {
 		return types.DisplayNode{}, fmt.Errorf("node %+v is unsupported", node)
 	}
