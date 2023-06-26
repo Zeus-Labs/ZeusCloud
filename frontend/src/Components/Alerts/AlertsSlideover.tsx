@@ -147,19 +147,6 @@ export const AlertSlideover = (
                                                                 <Risks values={selectedRuleAlertGroup.rule_data.risk_categories} />
                                                             </div>
                                                         </div>
-                                                        <div>
-                                                            <label htmlFor="remediation" className="block text-base font-medium text-gray-900">
-                                                                Remediation
-                                                            </label>
-                                                            <div className="mt-1">
-                                                                {/* <span>
-                                                    Follow the remediation instructions of the Ensure IAM policies are attached only to
-                                                    groups or roles recommendation
-                                                    </span> */}
-                                                                <Remediate rule_data={selectedRuleAlertGroup.rule_data} />
-                                                            </div>
-                                                        </div>
-                                                        
                                                         {ruleCategory!=="vulnerability"
                                                         ?   <div>
                                                                 <label htmlFor="remediation" className="block text-base font-medium text-gray-900">
