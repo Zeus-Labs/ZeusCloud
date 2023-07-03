@@ -16,4 +16,5 @@ type AccountDetails struct {
 	ScanStatus         string         `json:"scan_status"`
 	RunningTime        float64        `json:"running_time,omitempty"`
 	RegionNames        pq.StringArray `json:"region_names" gorm:"type:text[]"`
+	VulnerabilityScan  string         `json:"vulnerability_scan"`
 }

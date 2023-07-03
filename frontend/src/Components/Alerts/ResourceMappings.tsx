@@ -138,6 +138,11 @@ const labelInfoMap: { [label: string]: { [dataType :string] : string } } = {
         "display": "SQS Queue",
         "image": "/images/sqs-queue.svg",
         "category": "Storage",
+    },
+    "CVE":{
+        "display": "CVE",
+        "image": "/images/cve.svg",
+        "category": "Finding",
     }
 };
 
@@ -171,5 +176,6 @@ export const categoryToColor:{[category:string]:string}={
     "Storage": "#FF0000",
     "Compute": "#00CC00",
     "Network": "#FF8000",
-    "Security": "#7F00FF"
+    "Security": "#7F00FF",
+    "Finding":"#FF0000"
 }

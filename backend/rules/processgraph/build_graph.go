@@ -177,6 +177,13 @@ func ConvertNodeToDisplayNode(node types.Node) (types.DisplayNode, error) {
 	} else if CheckNodeLabel(node, "S3Bucket") {
 		displayNodeLabel = "S3Bucket"
 		displayId = nodeProps["name"].(string)
+	} else if CheckNodeLabel(node, "CVE") {
+		displayNodeLabel = "CVE"
+		if nodeProps["template_id"] != nil {
+			displayId = nodeProps["template_id"].(string)
+		} else {
+			displayId = nodeProps["vulnerabilityid"].(string)
+		}
 	} else {
 		return types.DisplayNode{}, fmt.Errorf("node %+v is unsupported", node)
 	}

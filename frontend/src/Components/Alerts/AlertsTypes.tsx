@@ -54,7 +54,8 @@ export interface SlidoverStateData {
 export interface AlertSlideoverProps {
     selectedRuleAlertGroup:rulealerts_group,
     selectedAlertInstance: alert_instance,
-    navigateOnSideBarClose:()=>void
+    navigateOnSideBarClose:()=>void,
+    ruleCategory: string
 }
 
 export interface DisplayNode{

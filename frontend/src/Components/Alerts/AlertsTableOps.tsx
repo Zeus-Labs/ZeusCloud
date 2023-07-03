@@ -1,4 +1,4 @@
-import {TableComp, TableRow} from '../Shared/Table';
+import {TableColumnHeader, TableComp, TableRow} from '../Shared/Table';
 import axios from 'axios';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Risks  } from '../Shared/Risks';
@@ -65,7 +65,7 @@ type AlertsTableOpsProps = {
 
 const AlertsTableOps = ({ruleCategory,selectedAlertInstance,selectedRuleAlertGroup,
     isSlideover}: AlertsTableOpsProps) => {
-    if (ruleCategory !== "misconfiguration" && ruleCategory !== "attackpath") {
+    if (ruleCategory !== "misconfiguration" && ruleCategory !== "attackpath" && ruleCategory !== "vulnerability") {
         throw new Error("Invalid rule category");
     }
     let initRuleAlertsGroupList: rulealerts_group[] = [];
@@ -223,7 +223,7 @@ const AlertsTableOps = ({ruleCategory,selectedAlertInstance,selectedRuleAlertGro
             
             return (
                 <tr key={activeAlertInfo.rule_data.uid+"_alerts"}>
-                    <td key={activeAlertInfo.rule_data.uid+"_alerts_td"} colSpan={5} className="p-0 bg-gray-50">
+                    <td key={activeAlertInfo.rule_data.uid+"_alerts_td"} colSpan={7} className="p-0 bg-gray-50">
                         <div key={activeAlertInfo.rule_data.uid+"_alerts_div"}>
                             {GeneratedAlertsTable({
                                 ruleAlertsGroup: activeAlertInfo,
@@ -327,7 +327,7 @@ const AlertsTableOps = ({ruleCategory,selectedAlertInstance,selectedRuleAlertGro
                     openRowState: openStateBool, 
                     setOpenRowStateFn: flipOpenRowStateFn,
                 }
-            } else {
+            } else if(ruleCategory==="attackpath") {
                 return {
                     columns: [
                         {
@@ -375,6 +375,70 @@ const AlertsTableOps = ({ruleCategory,selectedAlertInstance,selectedRuleAlertGro
                     openRowState: openStateBool, 
                     setOpenRowStateFn: flipOpenRowStateFn,
                 }
+            }else{
+                return {
+                    columns: [
+                        {
+                            content: rulealerts_group.rule_data.name || null,
+                            accessor_key: "name",
+                            value: rulealerts_group.rule_data.name || "",
+                            ignoreComponentExpansion: false,
+                        },
+                        {
+                            content: rulealerts_group.rule_data.uid,
+                            accessor_key: "cve_identifier",
+                            value: rulealerts_group.rule_data.uid,
+                            ignoreComponentExpansion: false,
+                        },
+                        {
+                            content: rulealerts_group.rule_data.description,
+                            accessor_key: "description",
+                            value: rulealerts_group.rule_data.description,
+                            ignoreComponentExpansion: false,
+                        },
+                        {
+                            content: <ColoredBgSpan 
+                                        value={rulealerts_group.rule_data.severity} 
+                                        bgColor={severityColorMap[rulealerts_group.rule_data.severity]}
+                                        textColor={severityColorMap[rulealerts_group.rule_data.severity]}
+                                    />,
+                            accessor_key: "severity",
+                            value: rulealerts_group.rule_data.severity,
+                            ignoreComponentExpansion: false,
+                        },
+                        {
+                            content: rulealerts_group.rule_data.cvss_score || null,
+                            accessor_key: "cvss_score",
+                            value: rulealerts_group.rule_data.cvss_score || "",
+                            ignoreComponentExpansion: false,
+                        },
+                        {
+                            content: <Risks values={rulealerts_group.rule_data.risk_categories} />,
+                            accessor_key: "risk_categories",
+                            value: rulealerts_group.rule_data.risk_categories,
+                            ignoreComponentExpansion: false,
+                        },
+                        {
+                            content: rulealerts_group.alert_instances.filter(
+                                alert_instance => mutedFilterPred(alert_instance.muted, innerAlertsFilter["muted"])
+                            ).filter(
+                                alert_instance => accountFilterPred(alert_instance.account_id, innerAlertsFilter["account"])
+                            ).length,
+                            accessor_key: "alerts",
+                            value: rulealerts_group.alert_instances.filter(
+                                alert_instance => mutedFilterPred(alert_instance.muted, innerAlertsFilter["muted"])
+                            ).filter(
+                                alert_instance => accountFilterPred(alert_instance.account_id, innerAlertsFilter["account"])
+                            ).length,
+                            ignoreComponentExpansion: false,
+                        },
+                        
+                    ],
+                    rowId: rulealerts_group.rule_data.uid,
+                    nestedComponent: nestedAlertComponents[idx],
+                    openRowState: openStateBool, 
+                    setOpenRowStateFn: flipOpenRowStateFn,
+                }
             }
         });
 
@@ -408,143 +472,260 @@ const AlertsTableOps = ({ruleCategory,selectedAlertInstance,selectedRuleAlertGro
         });
     }, [allRows, searchFilter, severityFilter, riskFilter, sortState]);
 
-    const tableColumnHeaders = ruleCategory === "misconfiguration" ?
-    [
-        {
-            header: "Name",
-            accessor_key: "description",
-            allowSorting: false,
-        },
-        {
-            header: "Severity",
-            accessor_key: "severity",
-            allowSorting: true,
-            sortColumnHeader: {
-                sortStateValue: sortState["severity"],
-                setSortStateFn: (updatedSeverity: string) => {
-                    setSortState({
-                        "alerts": "None",
-                        "severity": updatedSeverity,
-                    })
+    let tableColumnHeaders:TableColumnHeader[]=[] 
+    switch (ruleCategory){
+        case "misconfiguration":
+            tableColumnHeaders=[
+                {
+                    header: "Name",
+                    accessor_key: "description",
+                    allowSorting: false,
                 },
-            }
-        },
-        {
-            header: "Risks",
-            accessor_key: "risk_categories",
-            allowSorting: false,
-        },
-        {
-            header: "Service", 
-            accessor_key: "service", 
-            allowSorting: false,
-        },
-        {
-            header: "Alerts",
-            accessor_key: "alerts",
-            allowSorting: true,
-            sortColumnHeader: {
-                sortStateValue: sortState["alerts"],
-                setSortStateFn: (updatedAlerts: string) => {
-                    setSortState({
-                        "severity": "None",
-                        "alerts": updatedAlerts,
-                    })
+                {
+                    header: "Severity",
+                    accessor_key: "severity",
+                    allowSorting: true,
+                    sortColumnHeader: {
+                        sortStateValue: sortState["severity"],
+                        setSortStateFn: (updatedSeverity: string) => {
+                            setSortState({
+                                "alerts": "None",
+                                "severity": updatedSeverity,
+                            })
+                        },
+                    }
                 },
-            }
-        }
-    ] :
-    [
-        {
-            header: "Name",
-            accessor_key: "description",
-            allowSorting: false,
-        },
-        {
-            header: "Severity",
-            accessor_key: "severity",
-            allowSorting: true,
-            sortColumnHeader: {
-                sortStateValue: sortState["severity"],
-                setSortStateFn: (updatedSeverity: string) => {
-                    setSortState({
-                        "alerts": "None",
-                        "severity": updatedSeverity,
-                    })
+                {
+                    header: "Risks",
+                    accessor_key: "risk_categories",
+                    allowSorting: false,
                 },
-            }
-        },
-        {
-            header: "Risks",
-            accessor_key: "risk_categories",
-            allowSorting: false,
-        },
-        {
-            header: "Alerts",
-            accessor_key: "alerts",
-            allowSorting: true,
-            sortColumnHeader: {
-                sortStateValue: sortState["alerts"],
-                setSortStateFn: (updatedAlerts: string) => {
-                    setSortState({
-                        "severity": "None",
-                        "alerts": updatedAlerts,
-                    })
+                {
+                    header: "Service", 
+                    accessor_key: "service", 
+                    allowSorting: false,
                 },
-            }
-        }
-    ];
+                {
+                    header: "Alerts",
+                    accessor_key: "alerts",
+                    allowSorting: true,
+                    sortColumnHeader: {
+                        sortStateValue: sortState["alerts"],
+                        setSortStateFn: (updatedAlerts: string) => {
+                            setSortState({
+                                "severity": "None",
+                                "alerts": updatedAlerts,
+                            })
+                        },
+                    }
+                }
+            ]
+            break;
+        
+        case "attackpath":
+            tableColumnHeaders=[
+                {
+                    header: "Name",
+                    accessor_key: "description",
+                    allowSorting: false,
+                },
+                {
+                    header: "Severity",
+                    accessor_key: "severity",
+                    allowSorting: true,
+                    sortColumnHeader: {
+                        sortStateValue: sortState["severity"],
+                        setSortStateFn: (updatedSeverity: string) => {
+                            setSortState({
+                                "alerts": "None",
+                                "severity": updatedSeverity,
+                            })
+                        },
+                    }
+                },
+                {
+                    header: "Risks",
+                    accessor_key: "risk_categories",
+                    allowSorting: false,
+                },
+                {
+                    header: "Alerts",
+                    accessor_key: "alerts",
+                    allowSorting: true,
+                    sortColumnHeader: {
+                        sortStateValue: sortState["alerts"],
+                        setSortStateFn: (updatedAlerts: string) => {
+                            setSortState({
+                                "severity": "None",
+                                "alerts": updatedAlerts,
+                            })
+                        },
+                    }
+                }
+            ]
+            break;
+        
+        case 'vulnerability':
+            tableColumnHeaders=[
+                {
+                    header: "Name",
+                    accessor_key: "name",
+                    allowSorting: false,
+                },
+                {
+                    header: "CVE Identifier", 
+                    accessor_key: "cve_identifier", 
+                    allowSorting: false,
+                },
+                {
+                    header: "Description", 
+                    accessor_key: "description", 
+                    allowSorting: false,
+                },
+                {
+                    header: "Severity",
+                    accessor_key: "severity",
+                    allowSorting: true,
+                    sortColumnHeader: {
+                        sortStateValue: sortState["severity"],
+                        setSortStateFn: (updatedSeverity: string) => {
+                            setSortState({
+                                "alerts": "None",
+                                "severity": updatedSeverity,
+                            })
+                        },
+                    }
+                },
+                {
+                    header: "CVSS Score", 
+                    accessor_key: "cvss_score", 
+                    allowSorting: false,
+                },
+                {
+                    header: "Risks",
+                    accessor_key: "risk_categories",
+                    allowSorting: false,
+                },              
+                {
+                    header: "Alerts",
+                    accessor_key: "alerts",
+                    allowSorting: true,
+                    sortColumnHeader: {
+                        sortStateValue: sortState["alerts"],
+                        setSortStateFn: (updatedAlerts: string) => {
+                            setSortState({
+                                "severity": "None",
+                                "alerts": updatedAlerts,
+                            })
+                        },
+                    }
+                }
+            ]
+            break;
+    
+        default:
+            break;
+    }
+     
 
     useEffect(() => {
         setTimeout(() => setReady(true), 100)
     }, []);
 
-    const tableHeaderCSS = ruleCategory === "misconfiguration" ?
-    [{
-        "headerClassName": "w-1/2 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900 sm:pl-6",
-        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
-        "chevronClassName": "h-5 w-5",
-    },
-    {
-        "headerClassName": "w-1/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
-        "spanClassName": "ml-2 flex-none rounded bg-gray-200 text-gray-900 group-hover:bg-gray-300",
-        "chevronClassName": "h-5 w-5",
-    },
-    {
-        "headerClassName": "w-2/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
-        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
-        "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
-    },
-    {
-        "headerClassName": "w-1/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
-        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
-        "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
-    },
-    {
-        "headerClassName": "w-1/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
-        "spanClassName": "ml-2 flex-none rounded bg-gray-200 text-gray-900 group-hover:bg-gray-300",
-        "chevronClassName": "h-5 w-5",
-    }] :
-    [{
-        "headerClassName": "w-1/2 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900 sm:pl-6",
-        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
-        "chevronClassName": "h-5 w-5",
-    },
-    {
-        "headerClassName": "w-1/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
-        "spanClassName": "ml-2 flex-none rounded bg-gray-200 text-gray-900 group-hover:bg-gray-300",
-        "chevronClassName": "h-5 w-5",
-    },
-    {
-        "headerClassName": "w-3/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
-        "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
-        "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
-    },
-    {
-        "headerClassName": "w-1/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
-        "spanClassName": "ml-2 flex-none rounded bg-gray-200 text-gray-900 group-hover:bg-gray-300",
-        "chevronClassName": "h-5 w-5",
-    }];
+    let tableHeaderCSS:any[] =[]
+    switch (ruleCategory) {
+        case "misconfiguration":
+            tableHeaderCSS =[{
+                "headerClassName": "w-1/2 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900 sm:pl-6",
+                "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+                "chevronClassName": "h-5 w-5",
+            },
+            {
+                "headerClassName": "w-1/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+                "spanClassName": "ml-2 flex-none rounded bg-gray-200 text-gray-900 group-hover:bg-gray-300",
+                "chevronClassName": "h-5 w-5",
+            },
+            {
+                "headerClassName": "w-2/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+                "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+                "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+            },
+            {
+                "headerClassName": "w-1/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+                "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+                "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+            },
+            {
+                "headerClassName": "w-1/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+                "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+                "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+            }]
+            break;
+
+        case "attackpath":
+            tableHeaderCSS=[{
+                "headerClassName": "w-1/2 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900 sm:pl-6",
+                "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+                "chevronClassName": "h-5 w-5",
+            },
+            {
+                "headerClassName": "w-1/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+                "spanClassName": "ml-2 flex-none rounded bg-gray-200 text-gray-900 group-hover:bg-gray-300",
+                "chevronClassName": "h-5 w-5",
+            },
+            {
+                "headerClassName": "w-3/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+                "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+                "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+            },
+            {
+                "headerClassName": "w-1/10 px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+                "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+                "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+            }]
+            break;
+
+        case "vulnerability":
+            tableHeaderCSS =[{
+                "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900 sm:pl-6",
+                "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+                "chevronClassName": "h-5 w-5",
+            },
+            {
+                "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+                "spanClassName": "ml-2 flex-none rounded bg-gray-200 text-gray-900 group-hover:bg-gray-300",
+                "chevronClassName": "h-5 w-5",
+            },
+            {
+                "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+                "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+                "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+            },
+            {
+                "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+                "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+                "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+            },
+            {
+                "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+                "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+                "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+            },
+            {
+                "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+                "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+                "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+            },
+            {
+                "headerClassName": "px-3 py-3.5 uppercase text-left text-sm font-semibold text-gray-900",
+                "spanClassName": "invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+                "chevronClassName": "invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible",
+            }]
+            break;
+        
+        default:
+            break;
+    }
 
     const handleSearchChange = (e: React.FormEvent<HTMLInputElement>) => {
         setSearchFilter(e.currentTarget.value);
@@ -567,7 +748,7 @@ const AlertsTableOps = ({ruleCategory,selectedAlertInstance,selectedRuleAlertGro
                             title={"Risk"} 
                             selectedFilterValue={riskFilter} 
                             setFilter={setRiskFilter}
-                            filterOptions={["All", "Insufficient Monitoring", "Publicly Exposed", "Poor Encryption", "Data Access", "Unused Resource", "IAM Misconfiguration", "Patching Issue", "Poor Backup"]}
+                            filterOptions={["All", "Vulnerability"]}
                         />
                     </div>
                     <div key={"SeverityFilter"}>
@@ -607,7 +788,8 @@ const AlertsTableOps = ({ruleCategory,selectedAlertInstance,selectedRuleAlertGro
                             filterOptions={["Muted", "Unmuted"]}
                             />
                     </div>
-                    <div key={"StatusFilter"}>
+                    {ruleCategory!=="vulnerability" 
+                    && <div key={"StatusFilter"}>
                         <SelectFilterDropdown
                             key={"StatusFilter"} 
                             title={"Alert Status"} 
@@ -620,7 +802,7 @@ const AlertsTableOps = ({ruleCategory,selectedAlertInstance,selectedRuleAlertGro
                                 }}
                             filterOptions={["Failed", "All"]}
                         />
-                    </div>
+                    </div>}
             </div>
 
         { ready ? 
@@ -646,6 +828,7 @@ const AlertsTableOps = ({ruleCategory,selectedAlertInstance,selectedRuleAlertGro
             selectedAlertInstance={selectedAlertInstance}
             selectedRuleAlertGroup={selectedRuleAlertGroup}
             navigateOnSideBarClose={navigateOnSideBarClose}
+            ruleCategory={ruleCategory}
             />
         }
 

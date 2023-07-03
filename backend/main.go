@@ -4,17 +4,21 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/Zeus-Labs/ZeusCloud/control"
 	"github.com/Zeus-Labs/ZeusCloud/models"
 	"github.com/Zeus-Labs/ZeusCloud/rules"
 	"github.com/Zeus-Labs/ZeusCloud/rules/types"
+	"github.com/Zeus-Labs/ZeusCloud/rules/vulnerability"
 
 	"github.com/Zeus-Labs/ZeusCloud/constants"
 	"github.com/Zeus-Labs/ZeusCloud/db"
 	"github.com/Zeus-Labs/ZeusCloud/handlers"
 	"github.com/Zeus-Labs/ZeusCloud/middleware"
 )
+
+const scanStatusInterval = 5 * time.Second
 
 func demoMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -55,6 +59,36 @@ func main() {
 			continue
 		}
 	}
+
+	// wait till cartography server is started in order for the nuclei templates to get downloaded
+	for {
+		if _, err := control.GetScanStatus(); err != nil {
+			time.Sleep(scanStatusInterval)
+			continue
+		}
+		break
+	}
+	vriList, err := control.GetVulnRuleInfo()
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, vri := range vriList {
+		vulnRule := vulnerability.Vulnerability{
+			Name:           vri.Name,
+			CveDescription: vri.Description,
+			CvssScore:      vri.CvssScore,
+			CveIdentifier:  vri.CveIdentifier,
+			YamlTemplate:   vri.YamlTemplate,
+		}
+		rules.VulnerabilityRulesToExecute = append(rules.VulnerabilityRulesToExecute, vulnRule)
+
+		err := rules.UpsertRuleData(postgresDb, vulnRule, "vulnerability")
+		if err != nil {
+			log.Printf("Unexpected error upserting rule_data %v", err)
+			continue
+		}
+	}
+
 	log.Println("Finished inserting postgres rules.")
 
 	// For demo environment, attempt to add account to kick of cartography.
@@ -73,6 +107,7 @@ func main() {
 
 	// Kick of rule execution loop and try to trigger a scan successfully.
 	rulesToExecute := append(append([]types.Rule{}, rules.AttackPathsRulesToExecute...), rules.MisconfigurationRulesToExecute...)
+	rulesToExecute = append(rulesToExecute, rules.VulnerabilityRulesToExecute...)
 	if err := control.ResetCartographyStatus(postgresDb); err != nil {
 		log.Printf("Error in resetting cartography job status on startup")
 	}

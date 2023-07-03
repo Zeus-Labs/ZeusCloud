@@ -9,6 +9,9 @@ import ColoredBgSpan from "../Shared/ColoredBgSpan";
 import { severityColorMap } from "./AlertsTableOps";
 import { useNavigate} from "react-router-dom";
 import axios from "axios";
+import yaml from 'js-yaml';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { agate } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 async function getRuleGraph(resource_id:string,rule_id:string){
     try {
@@ -44,7 +47,7 @@ async function getRuleGraph(resource_id:string,rule_id:string){
 }
 
 export const AlertSlideover = (
-    {selectedAlertInstance,selectedRuleAlertGroup,navigateOnSideBarClose}: AlertSlideoverProps) => {
+    {selectedAlertInstance,selectedRuleAlertGroup,navigateOnSideBarClose,ruleCategory}: AlertSlideoverProps) => {
     const [isOpen,setIsOpen] = useState(true)
     const [displayGraph,setDisplayGraph] = useState<{rule_graph:DisplayGraph,error:string}>({
         rule_graph:{
@@ -66,6 +69,12 @@ export const AlertSlideover = (
     const handleSideBarClose = ()=>{
         setIsOpen(false)
         navigateOnSideBarClose()
+    }
+
+    let yamlStr = ""
+    if(ruleCategory==="vulnerability" && selectedRuleAlertGroup.rule_data.yaml_template){
+        const yamlObj = yaml.load(selectedRuleAlertGroup.rule_data.yaml_template)
+        yamlStr = yaml.dump(yamlObj, { indent: 2 });
     }
 
     return (
@@ -117,7 +126,7 @@ export const AlertSlideover = (
                                                                 Context
                                                             </label>
                                                             <div className="mt-1">
-                                                                <span className="block w-full">
+                                                                <span className="block w-full whitespace-pre-line">
                                                                     {selectedAlertInstance.context}
                                                                 </span>
                                                             </div>
@@ -138,22 +147,29 @@ export const AlertSlideover = (
                                                                 <Risks values={selectedRuleAlertGroup.rule_data.risk_categories} />
                                                             </div>
                                                         </div>
-                                                        <div>
-                                                            <label htmlFor="remediation" className="block text-base font-medium text-gray-900">
-                                                                Remediation
-                                                            </label>
-                                                            <div className="mt-1">
-                                                                {/* <span>
-                                                    Follow the remediation instructions of the Ensure IAM policies are attached only to
-                                                    groups or roles recommendation
-                                                    </span> */}
-                                                                <Remediate rule_data={selectedRuleAlertGroup.rule_data} />
+                                                        {ruleCategory!=="vulnerability"
+                                                        ?   <div>
+                                                                <label htmlFor="remediation" className="block text-base font-medium text-gray-900">
+                                                                    Remediation
+                                                                </label>
+                                                                <div className="mt-1">
+                                                                    <Remediate rule_data={selectedRuleAlertGroup.rule_data} />
+                                                                </div>
                                                             </div>
-                                                        </div>
+                                                        :   <div>
+                                                                <label htmlFor="yamlTemplate" className="block text-base font-medium text-gray-900">
+                                                                    CVE Template
+                                                                </label>
+                                                                <div className="mt-1">
+                                                                <SyntaxHighlighter language="yaml" style={agate} customStyle={{backgroundColor: 'black', 
+                                                                color: 'white',lineHeight:'28px',
+                                                                borderRadius:"6px", padding:"1rem",maxHeight:"600px",overflow:"scroll"}}>
+                                                                    {yamlStr}
+                                                                </SyntaxHighlighter>
+                                                                </div>
+                                                            </div>
+                                                        }
                                                         <RuleGraph ruleGraph={displayGraph.rule_graph} />
-                                                    </div>
-                                                    <div className="pt-4 pb-6">
-
                                                     </div>
                                                 </div>
                                             </div>
