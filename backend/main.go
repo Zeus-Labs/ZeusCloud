@@ -132,6 +132,10 @@ func main() {
 	mux.HandleFunc("/api/getRuleGraph", handlers.GetRuleGraph(driver))
 	mux.HandleFunc("/api/getAccessExplorerGraph", handlers.GetAccessExplorerGraph(driver))
 	mux.HandleFunc("/api/getEdgeInfo", handlers.GetEdgeInfo(driver))
+	mux.HandleFunc("/api/signup", handlers.SignUp(postgresDb))
+	mux.HandleFunc("/api/login", handlers.LogIn(postgresDb))
+	mux.HandleFunc("/api/logout", handlers.LogOut())
+	mux.HandleFunc("/api/user", handlers.GetUser(postgresDb))
 
 	log.Printf("serving on 8080...")
 	dLog := log.Default()
