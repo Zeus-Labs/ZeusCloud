@@ -8821,13 +8821,12 @@ postcss@^8.0.9, postcss@^8.3.5, postcss@^8.4.19, postcss@^8.4.20, postcss@^8.4.4
     picocolors "^1.0.0"
     source-map-js "^1.0.2"
 
-posthog-js@^1.55.1:
-  version "1.57.3"
-  resolved "https://registry.yarnpkg.com/posthog-js/-/posthog-js-1.57.3.tgz#91cd3497b93e74b38352d8fc27fd4986be7872d6"
-  integrity sha512-IOF+j+BMGp2zx7Gx71PbT36J4TEtyPcIO+8zcaY84JJAxFU2bQ0DwFp2c/Fz8RnIw+dELuBu4RbnGkuiyaOWgA==
+posthog-js@^1.72.2:
+  version "1.75.4"
+  resolved "https://registry.yarnpkg.com/posthog-js/-/posthog-js-1.75.4.tgz#8f000abf2796930b1406347befd283d9e7b5c67a"
+  integrity sha512-6vJTNe9FlkK8QyzpOLAzTQb1bp3Z+Qi/JOaX9+/H2CqvKaV7EUjToLDmAJG+vUibturAtzAlLeISpQt8GJB1sg==
   dependencies:
     fflate "^0.4.1"
-    rrweb-snapshot "^1.1.14"
 
 prelude-ls@^1.2.1:
   version "1.2.1"
@@ -9514,11 +9513,6 @@ rollup@^2.43.1:
   integrity sha512-uKxbd0IhMZOhjAiD5oAFp7BqvkA4Dv47qpOCtaNvng4HBwdbWtdOh8f5nZNuk2rp51PMGk3bzfWu5oayNEuYnw==
   optionalDependencies:
     fsevents "~2.3.2"
-
-rrweb-snapshot@^1.1.14:
-  version "1.1.14"
-  resolved "https://registry.npmjs.org/rrweb-snapshot/-/rrweb-snapshot-1.1.14.tgz"
-  integrity sha512-eP5pirNjP5+GewQfcOQY4uBiDnpqxNRc65yKPW0eSoU1XamDfc4M8oqpXGMyUyvLyxFDB0q0+DChuxxiU2FXBQ==
 
 run-parallel@^1.1.9:
   version "1.2.0"
